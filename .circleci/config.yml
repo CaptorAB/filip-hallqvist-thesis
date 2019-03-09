@@ -2,7 +2,7 @@ version: 2
 jobs:
   build:
     docker:
-      - image: trzceki/emscripten:latest
+      - image: trzeci/emscripten:latest
 
     working_directory: ~/repo
 
