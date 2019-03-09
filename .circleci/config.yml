@@ -2,7 +2,7 @@ version: 2
 jobs:
   build:
     docker:
-      - image: circleci/node:latest
+      - image: trzceki/emscripten:latest
 
     working_directory: ~/repo
 
@@ -10,6 +10,7 @@ jobs:
       - checkout
       - run: node --version
       - run: npm --version
-      #- run: npm install
-      #- run: CI=true npm test
-      #- run: npm run lint
+      - run: npm install
+      # - run: npm run lint
+      - run: npm run build
+      - run: CI=true npm test

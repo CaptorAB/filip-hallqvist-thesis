@@ -1,0 +1,20 @@
+{
+  "name": "capgen",
+  "scripts": {
+    "build:test": "mkdirp bin && g++ -g -Ilib ./src/libcapgen.cpp -o ./bin/libcapgen",
+    "build:lib": "mkdirp bin && emcc --bind -O3 -s WASM=1 -s ALLOW_MEMORY_GROWTH=1 -s MODULARIZE=1 -s ENVIRONMENT=\"web\" -s 'EXPORT_NAME=\"libcapgen\"' -o ./bin/libcapgen.js ./src/libcapgen.cpp",
+    "build:app": "webpack",
+    "test": "./bin/libcapgen",
+    "build": "npm run build:test && npm run build:lib && npm run build:app",
+    "serve": "http-server",
+    "start": "npm run serve"
+  },
+  "devDependencies": {
+    "exports-loader": "^0.7.0",
+    "file-loader": "^1.1.11",
+    "http-server": "^0.11.1",
+    "webpack": "^4.8.3",
+    "webpack-cli": "^3.1.2",
+    "mkdirp": "0.5.1"
+  }
+}
