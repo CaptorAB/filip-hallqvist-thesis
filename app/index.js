@@ -7,5 +7,4 @@ const libcapgen = init({
 
 libcapgen.onRuntimeInitialized = () => {
   window.libcapgen = libcapgen;
-  window.foo = libcapgen.cwrap("foo", "number", ["number"]);
 };

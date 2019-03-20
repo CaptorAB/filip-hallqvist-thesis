@@ -1,8 +1,14 @@
 {
   "name": "capgen",
+  "description": "Constrained Portfolio Optimization in Liability-Driven Investing",
+  "version": "0.0.0",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/CaptorAB/filip-hallqvist-thesis.git"
+  },
   "scripts": {
-    "build:test": "mkdirp bin && g++ -g -Ilib ./src/libcapgen.cpp -o ./bin/libcapgen",
-    "build:lib": "mkdirp bin && emcc --bind -O3 -s WASM=1 -s ALLOW_MEMORY_GROWTH=1 -s MODULARIZE=1 -s ENVIRONMENT=\"web\" -s 'EXPORT_NAME=\"libcapgen\"' -o ./bin/libcapgen.js ./src/libcapgen.cpp",
+    "build:test": "mkdirp bin && g++ -g -I. ./src/libcapgen.cpp -o ./bin/libcapgen",
+    "build:lib": "mkdirp bin && emcc --bind -O3 -I. -s WASM=1 -s ALLOW_MEMORY_GROWTH=1 -s MODULARIZE=1 -s ENVIRONMENT=\"web\" -s 'EXPORT_NAME=\"libcapgen\"' -o ./bin/libcapgen.js ./src/libcapgen.cpp",
     "build:app": "webpack",
     "test": "./bin/libcapgen",
     "build": "npm run build:test && npm run build:lib && npm run build:app",
