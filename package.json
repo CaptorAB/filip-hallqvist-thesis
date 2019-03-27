@@ -7,10 +7,11 @@
     "url": "https://github.com/CaptorAB/filip-hallqvist-thesis.git"
   },
   "scripts": {
-    "build:test": "mkdirp bin && g++ -g -I. ./src/libcapgen.cpp -o ./bin/libcapgen",
-    "build:lib": "mkdirp bin && emcc --bind -O3 -I. -s WASM=1 -s ALLOW_MEMORY_GROWTH=1 -s MODULARIZE=1 -s ENVIRONMENT=\"web\" -s 'EXPORT_NAME=\"libcapgen\"' -o ./bin/libcapgen.js ./src/libcapgen.cpp",
+    "build:test": "mkdirp bin && g++ -g -I. ./src/*.cpp -o ./bin/libcapgen",
+    "build:lib": "mkdirp bin && emcc --bind -O3 -I. -s WASM=1 -s ALLOW_MEMORY_GROWTH=1 -s MODULARIZE=1 -s ENVIRONMENT=\"web\" -s 'EXPORT_NAME=\"libcapgen\"' -o ./bin/libcapgen.js ./src/*.cpp",
     "build:app": "webpack",
     "test": "./bin/libcapgen",
+    "clean": "rm -rf bin",
     "build": "npm run build:test && npm run build:lib && npm run build:app",
     "serve": "http-server",
     "start": "npm run serve"

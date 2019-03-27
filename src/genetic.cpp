@@ -1,25 +1,10 @@
+#include <vector>
+#include <tuple>
+
 #include <lib/random.h>
+#include <include/genetic.h>
 
 using Random = effolkronium::random_static;
-
-struct OptimizeOptions
-{
-  int population;
-  int elitism;
-  int generations;
-  int bits;
-  int steps;
-  int instruments;
-  double mutation;
-  double crossover;
-};
-
-struct Result
-{
-  double fitness;
-  std::vector<int> chromosome;
-  std::vector<double> individual;
-};
 
 std::vector<int>
 initialize_chromosomes(int population, int genes)
@@ -275,93 +260,3 @@ optimize(OptimizeOptions options)
 
   return result;
 }
-
-#ifdef CATCH_CONFIG_RUNNER
-
-TEST_CASE("initialize_chromosomes generates a population with correct capacity and values", "[initialize_popuplation]")
-{
-  int population = 2;
-  int genes = 10;
-  int size = population * genes;
-
-  std::vector<int> chromosomes = initialize_chromosomes(population, genes);
-
-  REQUIRE(chromosomes.capacity() == size);
-  for (size_t i = 0; i < size; i++)
-  {
-    REQUIRE((chromosomes[i] == 1 || chromosomes[i] == 0));
-  }
-}
-
-TEST_CASE("decode_chromosomes correctly decodes a chromosome", "[decode_chromosomes]")
-{
-  int population = 2;
-  int bits = 3;
-  int variables = 2;
-  int instruments = 2;
-  int genes = variables * bits;
-  int size = population * variables;
-
-  std::vector<int> chromosomes{1, 0, 0, 0, 1, 1, 0, 0, 0, 0, 0, 0};
-  std::vector<double> individuals = decode_chromosomes(chromosomes, population, variables, instruments, genes, bits);
-
-  REQUIRE(individuals.capacity() == size);
-  REQUIRE(individuals[0] == 4.0 / 7.0);
-  REQUIRE(individuals[1] == 3.0 / 7.0);
-  REQUIRE(individuals[2] == 1.0 / (double)variables);
-  REQUIRE(individuals[3] == 1.0 / (double)variables);
-}
-
-TEST_CASE("select_roulette selects proper indices", "[select_roulette")
-{
-  std::vector<double> fitnesses({0.01, 0.02, 1.25, 0.02, 0.3, 1.1, 0.9});
-  std::tuple<size_t, size_t> selected = select_roulette(fitnesses);
-
-  REQUIRE(std::get<0>(selected) == 2);
-  REQUIRE(std::get<1>(selected) == 5);
-}
-
-TEST_CASE("evaluate_individuals correctly evaluates individuals", "[evaluate_individuals")
-{
-  int population = 2;
-  int variables = 3;
-
-  std::vector<double> individuals({0.0, 0.5, 0.5, 1.0, 0.0, 0.0});
-  std::vector<double> fitnesses = evaluate_individuals(individuals, population, variables);
-
-  REQUIRE(fitnesses[0] == -100.0);
-  REQUIRE(fitnesses[1] == 1000.0);
-}
-
-TEST_CASE("crossover_chromosomes correctly crossovers chromosomes", "[crossover_chromosomes]")
-{
-  std::vector<int> chromosomes({0, 0, 0, 0, 1, 1, 1, 0});
-  std::vector<double> evaluated({0.0, 2.0});
-  std::vector<int> crossovered = crossover_chromosomes(chromosomes, evaluated, 2, 4, 1.0);
-
-  REQUIRE(crossovered[0] == 1);
-  REQUIRE(crossovered[1] == 1);
-  REQUIRE(crossovered[2] == 1);
-  REQUIRE(crossovered[3] == 0);
-  REQUIRE(crossovered[4] == 1);
-  REQUIRE(crossovered[5] == 1);
-  REQUIRE(crossovered[6] == 1);
-  REQUIRE(crossovered[7] == 0);
-}
-
-TEST_CASE("optimization works", "[crossover_chromosomes]")
-{
-  OptimizeOptions options;
-  options.population = 100;
-  options.elitism = 2;
-  options.generations = 100;
-  options.bits = 7;
-  options.steps = 3;
-  options.instruments = 2;
-  options.mutation = 0.02;
-  options.crossover = 0.4;
-
-  optimize(options);
-}
-
-#endif
