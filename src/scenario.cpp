@@ -20,25 +20,6 @@ using Random = effolkronium::random_static;
   FTA = BlackIr
 */
 
-/*
-enum class Instrument
-{
-  DomesticEquity,
-  GlobalEquity,
-  RealEstate,
-  Alternative,
-  InterestRate2Y,
-  InterestRate5Y,
-  InterestRate20Y,
-  Credit,
-  Cash,
-  DomesticEquityFuture,
-  InterestRateSwap2Y,
-  InterestRateSwap5Y,
-  InterestRateSwap20Y,
-};
-*/
-
 // Util
 
 double get_random_normal(double mu, double sigma)
@@ -62,8 +43,16 @@ double sample_black_process(double n1, double n2, double forward_price, double g
 risks_t create_default_risks()
 {
   risks_t risks;
-  risks[RiskType::DomesticMarketRisk] = new DomesticMarketRiskProcess();
+  risks[RiskType::DomesticMarket] = new DomesticMarketRiskProcess();
   return risks;
+}
+
+instruments_t create_default_instruments()
+{
+  instruments_t instruments;
+  instruments.push_back(new DomesticEquityInstrument());
+  instruments.push_back(new DomesticEquityInstrument());
+  return instruments;
 }
 
 // Risks
@@ -91,11 +80,10 @@ void DomesticEquityInstrument::update(risks_t risks)
 
 // Generate scenario
 
-double
+std::vector<double>
 generate_scenario(instruments_t instruments, risks_t risks, correlations_t correlations)
 {
-  // std::map<Instrument, double> instrument_values;
-  // std::map<Risk, double> risk_values;
+  std::vector<double> instrument_values; // TODO: Define length
 
   // Sample normals
   std::map<RiskType, std::tuple<double, double>> normals;
@@ -120,7 +108,8 @@ generate_scenario(instruments_t instruments, risks_t risks, correlations_t corre
   for (auto &instrument : instruments)
   {
     instrument->update(risks);
+    instrument_values.push_back(instrument->get_current());
   }
 
-  return 0.0;
+  return instrument_values;
 };

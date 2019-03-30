@@ -14,13 +14,33 @@ double sample_black_process(double n1, double n2, double forward_price, double g
 
 enum class RiskType
 {
-  DomesticMarketRisk,
-  GlobalMarketRisk,
-  AlternativeRisk,
-  InterestRateRisk,
-  CreditRisk,
-  CashRisk,
+  DomesticMarket,
+  GlobalMarket,
+  Alternative,
+  InterestRate,
+  Credit,
+  Cash,
 };
+
+/*
+// TODO: Currently unused since instruments_t is a vector. Only left for reference.
+enum class InstrumentType
+{
+  DomesticEquity,
+  GlobalEquity,
+  RealEstate,
+  Alternative,
+  InterestRate2Y,
+  InterestRate5Y,
+  InterestRate20Y,
+  Credit,
+  Cash,
+  DomesticEquityFuture,
+  InterestRateSwap2Y,
+  InterestRateSwap5Y,
+  InterestRateSwap20Y,
+};
+*/
 
 class RiskProcess
 {
@@ -52,6 +72,7 @@ public:
 typedef std::map<RiskType, RiskProcess *> risks_t;
 
 risks_t create_default_risks();
+instruments_t create_default_instruments();
 
 class Instrument
 {
