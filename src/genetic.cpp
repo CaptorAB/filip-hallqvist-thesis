@@ -23,7 +23,7 @@ initialize_chromosomes(int population, int genes)
 }
 
 std::vector<double>
-decode_chromosomes(std::vector<int> chromosomes, int population, int variables, int instruments, int genes, int bits)
+decode_chromosomes(std::vector<int> chromosomes, int population, int variables, int n_scenarios, int instruments, int genes, int bits)
 {
   int size = population * variables;
   std::vector<double> individuals(size);
@@ -46,29 +46,39 @@ decode_chromosomes(std::vector<int> chromosomes, int population, int variables, 
   // Scale reals to [0, 1]
   for (size_t i = 0; i < population; ++i)
   {
-    double total = 0.0;
-    for (size_t j = 0; j < variables; ++j)
+    size_t ix = i * variables;
+    for (size_t s = 0; s < n_scenarios; ++s)
     {
-      size_t ix = (i * variables) + j;
-      total += individuals[ix];
-    }
-    if (total == 0.0)
-    {
-      for (size_t j = 0; j < variables; ++j)
+
+      double total = 0.0;
+      size_t sx = ix + (s * instruments);
+
+      for (size_t j = 0; j < instruments; ++j)
       {
-        size_t ix = (i * variables) + j;
-        individuals[ix] = 1.0 / (double)variables;
+        size_t jx = sx + j;
+        total += individuals[jx];
       }
-    }
-    else
-    {
-      for (size_t j = 0; j < variables; ++j)
+
+      if (total == 0.0)
       {
-        size_t ix = (i * variables) + j;
-        individuals[ix] /= total;
+        for (size_t j = 0; j < instruments; ++j)
+        {
+          size_t jx = sx + j;
+          individuals[jx] = 1.0 / (double)instruments;
+        }
       }
-    }
-  }
+      else
+      {
+        for (size_t j = 0; j < instruments; ++j)
+        {
+          size_t jx = sx + j;
+          individuals[jx] /= total;
+        }
+      }
+
+    } // Scenarios
+
+  } // Individuals
 
   return individuals;
 }
@@ -83,6 +93,85 @@ select_roulette(std::vector<double> fitnesses)
   }
 }
 
+int get_first_node_in_level(size_t level)
+{
+  int l = level;
+  int b = 2;
+  if (l > 0)
+  {
+    return ((b * (pow(b, l - 1) - 1)) / (b - 1)) + 1;
+  }
+  return 0;
+}
+
+int get_nodes_in_level(size_t level)
+{
+  return 1 << level;
+}
+
+std::vector<double> evaluate_individuals(std::vector<double> X, std::vector<double> scenarios, int n_individuals, int n_variables, int n_steps, int n_instruments)
+{
+  int timestamps = n_steps;
+  int branching = 2;
+  int instruments = n_instruments;
+
+  std::vector<double> fitnesses(n_individuals);
+
+  for (int in = 0; in < n_individuals; ++in)
+  {
+
+    double wt = 1.0;
+    size_t xi = in * n_variables; // Index of current individual
+
+    for (int t = 1; t < timestamps; ++t)
+    {
+      int first_node = get_first_node_in_level(t);
+      int ti = first_node * instruments; // Index of first node in step
+      int ss = get_nodes_in_level(t);    // Scenarios in this step
+      double ws = 0.0;                   // Total expected wealth in this step
+
+      for (int s = 0; s < ss; ++s)
+      {                                                               // Iterate over scenarios in step
+        int si = ti + (s * n_instruments);                            // Index of current scenario
+        int si_ = ((si / instruments) - 1) / branching * instruments; // Index of previous scenario
+
+        double p = 1.0 / ss; // Probability of scenario occurring (TODO: should actually be likelihood)
+        double aw = 0.0;     // Wealth from assets
+        double cw = 0.0;     // Wealth from reallocations
+
+        // Calculate wealth from assets
+        for (int i = 0; i < n_instruments; ++i)
+        {
+          int k_ = si_ + i; // Index of current instrument in previous scenario
+          double r_ = 1.0 + scenarios[k_];
+          double v = r_ * X[xi + k_];
+
+          aw += v;
+        }
+
+        // Calculate wealth from reallocations
+        for (int i = 0; i < n_instruments; ++i)
+        {
+          int k = si + i;   // Index of current instrument in current scenario
+          int k_ = si_ + i; // Index of current instrument in previous scenario
+
+          double c = aw * (X[xi + k] - X[xi + k_]);
+          cw += c;
+        }
+
+        ws += p * (aw + cw);
+      }
+
+      wt *= ws;
+    }
+
+    fitnesses[in] = wt;
+  }
+
+  return fitnesses;
+}
+
+/*
 std::vector<double>
 evaluate_individuals(std::vector<double> individuals, int n_individuals, int n_variables, std::vector<double> scenarios)
 {
@@ -110,6 +199,7 @@ evaluate_individuals(std::vector<double> individuals, int n_individuals, int n_v
 
   return fitnesses;
 }
+*/
 
 std::vector<int>
 mutate_chromosomes(std::vector<int> chromosomes, int population, int genes, double mutation)
@@ -215,20 +305,20 @@ optimize(OptimizeOptions options)
   std::vector<int> chromosomes = initialize_chromosomes(n_individuals, n_genes);
 
   std::vector<double> individuals(individuals_size);
-  std::vector<double> fitnesses(individuals_size);
+  std::vector<double> fitnesses(n_individuals);
 
   std::vector<int> crossovered(chromosomes_size);
   std::vector<int> mutated(chromosomes_size);
   std::vector<int> elitismed(chromosomes_size);
 
-  // TODO: Define risks and instruments
+  // Define risks and instruments
   risks_t risks = create_default_risks();
   instruments_t instruments = create_default_instruments();
   std::vector<double> correlations = {1.0, 0.0,
                                       0.0, 1.0};
 
-  // TODO: Generate scenarios (vector of size SCENARIOS * INSTRUMENTS = VARIABLES)
   std::vector<double> scenarios(n_variables);
+  /*
   for (size_t i = 0; i < n_scenarios; ++i)
   {
     std::vector<double> scenario = generate_scenario(instruments, risks, correlations);
@@ -238,11 +328,26 @@ optimize(OptimizeOptions options)
       scenarios[ix + j] = scenario[j];
     }
   }
+  */
+  scenarios[0] = 0.1;
+  scenarios[1] = -0.1;
+  scenarios[2] = 0.1;
+  scenarios[3] = -0.1;
+  scenarios[4] = 0.1;
+  scenarios[5] = -0.1;
+  scenarios[6] = 0.1;
+  scenarios[7] = -0.1;
+  scenarios[8] = 0.1;
+  scenarios[9] = -0.1;
+  scenarios[10] = 0.1;
+  scenarios[11] = -0.1;
+  scenarios[12] = 0.1;
+  scenarios[13] = -0.1;
 
   for (size_t t = 0; t < n_generations; ++t)
   {
-    individuals = decode_chromosomes(chromosomes, n_individuals, n_variables, n_instruments, n_genes, n_bits);
-    fitnesses = evaluate_individuals(individuals, n_individuals, n_variables, scenarios);
+    individuals = decode_chromosomes(chromosomes, n_individuals, n_variables, n_scenarios, n_instruments, n_genes, n_bits);
+    fitnesses = evaluate_individuals(individuals, scenarios, n_individuals, n_variables, n_steps, n_instruments);
 
     // Check global_max_fitness
     for (size_t i = 0; i < n_individuals; ++i)

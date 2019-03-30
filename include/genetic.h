@@ -27,11 +27,11 @@ struct Result
 
 std::vector<int> initialize_chromosomes(int population, int genes);
 
-std::vector<double> decode_chromosomes(std::vector<int> chromosomes, int population, int variables, int instruments, int genes, int bits);
+std::vector<double> decode_chromosomes(std::vector<int> chromosomes, int population, int variables, int scenarios, int instruments, int genes, int bits);
 
 std::tuple<size_t, size_t> select_roulette(std::vector<double> fitnesses);
 
-std::vector<double> evaluate_individuals(std::vector<double> individuals, int population, int variables);
+std::vector<double> evaluate_individuals(std::vector<double> individuals, std::vector<double> scenarios, int n_individuals, int n_variables, int n_steps, int n_instruments);
 
 std::vector<int> mutate_chromosomes(std::vector<int> chromosomes, int population, int genes, double mutation);
 
