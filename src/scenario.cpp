@@ -49,9 +49,7 @@ risks_t create_default_risks()
 
 instruments_t create_default_instruments()
 {
-  instruments_t instruments;
-  instruments.push_back(new DomesticEquityInstrument());
-  instruments.push_back(new DomesticEquityInstrument());
+  instruments_t instruments = {new DomesticEquityInstrument(), new DomesticEquityInstrument()};
   return instruments;
 }
 
@@ -64,7 +62,7 @@ double RiskProcess::get_current()
 
 void DomesticMarketRiskProcess::update(double n1, double n2)
 {
-  current = sample_black_process(n1, n2, forward_price, gamma, rho, sigma, mean, variance);
+  current = current * (1.0 + sample_black_process(n1, n2, forward_price, gamma, rho, sigma, mean, variance));
 }
 
 // Instruments
@@ -75,7 +73,7 @@ double Instrument::get_current()
 
 void DomesticEquityInstrument::update(risks_t risks)
 {
-  current = current * risks[RiskType::DomesticMarketRisk]->get_current();
+  current = risks[RiskType::DomesticMarket]->get_current();
 }
 
 // Generate scenario

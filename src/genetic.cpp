@@ -84,18 +84,18 @@ select_roulette(std::vector<double> fitnesses)
 }
 
 std::vector<double>
-evaluate_individuals(std::vector<double> individuals, int population, int variables, std::vector<double> scenarios)
+evaluate_individuals(std::vector<double> individuals, int n_individuals, int n_variables, std::vector<double> scenarios)
 {
-  std::vector<double> fitnesses(population);
+  std::vector<double> fitnesses(n_individuals);
 
   // Use dummy fitness calculation for now
   // Reward large values in first variable
-  for (size_t i = 0; i < population; ++i)
+  for (size_t i = 0; i < n_individuals; ++i)
   {
     double fitness = 0.0;
-    for (size_t j = 0; j < variables; ++j)
+    for (size_t j = 0; j < n_variables; ++j)
     {
-      size_t ix = (i * variables) + j;
+      size_t ix = (i * n_variables) + j;
       if (j == 0)
       {
         fitness += 1000 * individuals[ix];
@@ -198,7 +198,7 @@ optimize(OptimizeOptions options)
   double mutation_rate = options.mutation;
   double crossover_rate = options.crossover;
 
-  int n_scenarios = 1 << (n_steps - 1);
+  int n_scenarios = (1 << n_steps) - 1;
   int n_variables = n_scenarios * n_instruments;
   int n_genes = n_variables * n_bits;
 
@@ -228,10 +228,15 @@ optimize(OptimizeOptions options)
                                       0.0, 1.0};
 
   // TODO: Generate scenarios (vector of size SCENARIOS * INSTRUMENTS = VARIABLES)
-  std::vector<double> scenarios(n_scenarios);
-  for (size_t s = 0; s < n_scenarios; ++s)
+  std::vector<double> scenarios(n_variables);
+  for (size_t i = 0; i < n_scenarios; ++i)
   {
-    scenarios[s] = generate_scenario(instruments, risks, correlations);
+    std::vector<double> scenario = generate_scenario(instruments, risks, correlations);
+    for (size_t j = 0; j < n_instruments; ++j)
+    {
+      size_t ix = i * n_instruments;
+      scenarios[ix + j] = scenario[j];
+    }
   }
 
   for (size_t t = 0; t < n_generations; ++t)

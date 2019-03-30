@@ -56,7 +56,6 @@ public:
 class DomesticMarketRiskProcess : public RiskProcess
 {
 private:
-  double current = 0.0;
   const double forward_price = 1.0;
   const double gamma = 1.0;
   const double rho = -0.15;
@@ -65,14 +64,13 @@ private:
   const double variance = 1.0;
 
 public:
-  DomesticMarketRiskProcess() : RiskProcess(0.0){};
+  DomesticMarketRiskProcess() : RiskProcess(1.0){};
   void update(double n1, double n2);
 };
 
 typedef std::map<RiskType, RiskProcess *> risks_t;
 
 risks_t create_default_risks();
-instruments_t create_default_instruments();
 
 class Instrument
 {
@@ -96,6 +94,8 @@ public:
 typedef std::vector<Instrument *> instruments_t;
 typedef std::vector<double> correlations_t;
 
-double generate_scenario(instruments_t instruments, risks_t risks, correlations_t correlations);
+instruments_t create_default_instruments();
+
+std::vector<double> generate_scenario(instruments_t instruments, risks_t risks, correlations_t correlations);
 
 #endif

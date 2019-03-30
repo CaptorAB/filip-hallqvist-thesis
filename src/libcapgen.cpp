@@ -37,6 +37,8 @@ EMSCRIPTEN_BINDINGS(libcapgen)
 
 #else
 
+/*
+
 TEST_CASE("sample_black_process calculates correct values", "[sample_black_process]")
 {
   double n1 = 0.12;
@@ -157,6 +159,8 @@ TEST_CASE("crossover_chromosomes correctly crossovers chromosomes", "[genetic]")
   REQUIRE(crossovered[6] == 1);
   REQUIRE(crossovered[7] == 0);
 }
+
+*/
 
 TEST_CASE("optimization works", "[genetic]")
 {
