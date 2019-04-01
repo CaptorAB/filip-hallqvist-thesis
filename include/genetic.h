@@ -30,7 +30,7 @@ std::vector<double> decode_chromosomes(std::vector<int> chromosomes, int populat
 
 std::tuple<size_t, size_t> select_roulette(std::vector<double> fitnesses);
 
-std::vector<double> evaluate_individuals(std::vector<double> individuals, std::vector<double> scenarios, int n_individuals, int n_variables, int n_steps, int n_instruments);
+std::vector<double> evaluate_individuals(std::vector<double> individuals, std::vector<double> scenarios, std::vector<double> goals, int n_individuals, int n_variables, int n_steps, int n_instruments);
 
 std::vector<int> mutate_chromosomes(std::vector<int> chromosomes, int population, int genes, double mutation);
 

@@ -21,33 +21,6 @@ using Random = effolkronium::random_static;
   FTA = BlackIr
 */
 
-// Instrument indices
-static const int DOMESTIC_EQUITY_INDEX = 0;
-static const int GLOBAL_EQUITY_INDEX = 1;
-static const int REAL_ESTATE_INDEX = 2;
-static const int ALTERNATIVE_INDEX = 3;
-static const int CREDIT_INDEX = 4;
-static const int BONDS_2Y_INDEX = 5;
-static const int BONDS_5Y_INDEX = 6;
-static const int CASH_INDEX = 7;
-static const int FTA_INDEX = 8;
-static const int DOMESTIC_EQUITY_FUTURE_INDEX = 9;
-static const int INTEREST_RATE_SWAP_2Y_INDEX = 10;
-static const int INTEREST_RATE_SWAP_5Y_INDEX = 11;
-static const int INTEREST_RATE_SWAP_20Y_INDEX = 12;
-
-// Risk indices
-static const int DOMESTIC_MARKET_RISK_INDEX = 0;
-static const int GLOBAL_MARKET_RISK_INDEX = 1;
-static const int ALTERNATIVE_RISK_INDEX = 2;
-static const int INTEREST_RATE_RISK_INDEX = 3;
-static const int CREDIT_RISK_INDEX = 4;
-static const int CASH_RISK_INDEX = 5;
-
-static const std::vector<double> RISK_CORRELATIONS = {
-    1.0, 0.0,
-    0.0, 1.0};
-
 // Util
 
 static double get_random_normal(double mu, double sigma)
@@ -96,7 +69,7 @@ static double sample_global_equity(double previous_change, std::vector<double> r
 }
 
 // TODO: Refactor this mess
-static std::vector<double> generate_price_changes(int n_steps)
+std::vector<double> generate_price_changes(int n_steps)
 {
   int n_scenarios = (1 << n_steps) - 1;
   int n_risks = 5;
@@ -107,20 +80,8 @@ static std::vector<double> generate_price_changes(int n_steps)
   std::vector<double> risk_changes(n_risk_changes);
   std::vector<double> instrument_changes(n_instrument_changes);
 
-  // Set initial risk changes
-  for (int i = 0; i < n_risks; ++i)
-  {
-    risk_changes[i] = 0.0;
-  }
-
-  // Set initial instrument changes
-  for (int i = 0; i < n_instruments; ++i)
-  {
-    instrument_changes[i] = 0.0;
-  }
-
   // Generate new scenarios
-  for (int t = 1; t < n_steps; ++t)
+  for (int t = 0; t < n_steps; ++t)
   {
     int first_node_in_level = get_first_node_in_level(t);
     int i_first_node_in_step = first_node_in_level * n_instruments; // Index of first node in step

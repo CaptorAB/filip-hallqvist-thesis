@@ -144,6 +144,7 @@ TEST_CASE("optimization runs without crashing", "[genetic]")
 
   Result r = optimize(options);
 
+  /*
   std::cout << "\nFitness: \n";
   std::cout << r.fitness;
   std::cout << "\n Chromosome: \n";
@@ -153,6 +154,7 @@ TEST_CASE("optimization runs without crashing", "[genetic]")
             << std::endl;
   for (auto const &c : r.individual)
     std::cout << c << ' ';
+  */
 }
 
 using Random = effolkronium::random_static;

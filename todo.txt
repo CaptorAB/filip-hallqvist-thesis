@@ -1,0 +1,39 @@
+## Week 14
+
+1. (1) Pass risk_aversion as parameter to evaluate_individuals
+2. (1) Allow setting the penalty coefficient dynamically
+3. (1) Make sure that wealth is also calculated for the final step
+7. (3) Use real numbers instead of bits in chromosomes
+17. (1) Break out risk changes generation into own function
+18. (1) Break out instrument changes generation into own function
+
+## Week 15
+
+8. (2) Make sure that n_instruments is not hard coded (optimize())
+11. (2) Implement remaining instruments using a normal distribution
+12. (3) Implement all instruments using a fat tailed distribution [11]
+9. (1) Break out goal generation to own function [10]
+
+## Week 16
+
+21. (3) Fit all risk factors
+5. (1) Implement fixed transaction costs
+6. (1) Discount the total wealth in evaluate_individuals
+16. (2) Correlate the normally generated numbers in generate_price_changes [12]
+20. (1) Allow dynamically setting the goal surplus
+
+## Week 17
+
+22. Build UI
+
+## Week 18 
+
+14. (3) Refactor the generate_price_changes function [17, 18]
+15. (3) Refactor the evaluate_individuals function [5, 6, 7, 8]
+
+## Backlog
+
+10? (1) Allow the initial goal to be defined by the user, since it is the ratio between assets and liabilities
+4? (1) Incorporate probabilities in the penalty function
+19? (3) Use binomial trees for scenario generation?
+13. (3) Write thorough tests and confirm them using pen and paper

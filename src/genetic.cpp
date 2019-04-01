@@ -97,11 +97,12 @@ select_roulette(std::vector<double> fitnesses)
 }
 
 // TODO: Refactor this mess
-std::vector<double> evaluate_individuals(std::vector<double> X, std::vector<double> price_changes, int n_individuals, int n_variables, int n_steps, int n_instruments)
+std::vector<double> evaluate_individuals(std::vector<double> X, std::vector<double> price_changes, std::vector<double> goals, int n_individuals, int n_variables, int n_steps, int n_instruments)
 {
   int timestamps = n_steps;
   int branching = 2;
   int instruments = n_instruments;
+  double risk_aversion = 0.5; // TODO: Pass as argument
 
   std::vector<double> fitnesses(n_individuals);
 
@@ -109,6 +110,8 @@ std::vector<double> evaluate_individuals(std::vector<double> X, std::vector<doub
   {
 
     double wt = 1.0;
+    double penalty = 0.0;
+    double a = 2.0;               // TODO: Quadratic penalty?
     size_t xi = in * n_variables; // Index of current individual
 
     for (int t = 1; t < timestamps; ++t)
@@ -117,7 +120,9 @@ std::vector<double> evaluate_individuals(std::vector<double> X, std::vector<doub
       int ti = first_node * instruments; // Index of first node in step
       int ss = get_nodes_in_level(t);    // Scenarios in this step
       double ws = 0.0;                   // Total expected wealth in this step
+      double g = goals[t];
 
+      // TODO: Calculate wealth from assets for final step
       for (int s = 0; s < ss; ++s)
       {                                                               // Iterate over scenarios in step
         int si = ti + (s * n_instruments);                            // Index of current scenario
@@ -137,13 +142,21 @@ std::vector<double> evaluate_individuals(std::vector<double> X, std::vector<doub
           aw += v;
         }
 
+        // Penalize target misses
+        // TODO: Incorporate probability of scenario?
+        if (aw < g)
+        {
+          penalty += pow(aw - g, 2);
+        }
+
         // Calculate wealth from reallocations
         for (int i = 0; i < n_instruments; ++i)
         {
           int k = si + i;   // Index of current instrument in current scenario
           int k_ = si_ + i; // Index of current instrument in previous scenario
 
-          double c = aw * (X[xi + k] - X[xi + k_]);
+          double diff = X[xi + k] - X[xi + k_];
+          double c = aw * diff; // TODO: Add transaction costs (also make sure that we can afford them)
           cw += c;
         }
 
@@ -151,9 +164,10 @@ std::vector<double> evaluate_individuals(std::vector<double> X, std::vector<doub
       }
 
       wt *= ws;
+      // TODO: Discount this value
     }
 
-    fitnesses[in] = wt;
+    fitnesses[in] = risk_aversion * wt - (1.0 - risk_aversion) * penalty;
   }
 
   return fitnesses;
@@ -239,7 +253,7 @@ Result optimize(OptimizeOptions options)
   int n_individuals = options.population;
   int n_elitism_copies = options.elitism;
   int n_generations = options.generations;
-  int n_bits = options.bits;
+  int n_bits = options.bits; // TODO: Do not use bits, use real values directly
   int n_steps = options.steps;
   double mutation_rate = options.mutation;
   double crossover_rate = options.crossover;
@@ -271,6 +285,29 @@ Result optimize(OptimizeOptions options)
   // Generate scenarios
   std::vector<double> price_changes = generate_price_changes(n_steps);
 
+  // Define goals
+  // TODO: Break out into own function
+  std::vector<double> goals(n_scenarios);
+  goals[0] = 1.0; // TODO: Depends on the initial ratio between assets and liabilities
+  for (int t = 1; t < n_steps; ++t)
+  {
+    int first_node_in_level = get_first_node_in_level(t);
+    int i_first_node_in_step = first_node_in_level * n_instruments; // Index of first node in step
+    int n_scenarios_in_step = get_nodes_in_level(t);                // Scenarios in this step
+    for (int s = 0; s < n_scenarios_in_step; ++s)
+    {
+      int si = i_first_node_in_step + (s * n_instruments); // Index of current scenario
+      int si_ = get_parent_index(si, n_instruments);       // Index of previous scenario
+
+      int ri = first_node_in_level + s;  // Index of current scenario goal
+      int ri_ = get_parent_index(ri, 1); // Index of previous scenario goal
+
+      // TODO: Implement the interest rate swap
+      // goals[ri] = goals[ri_] * price_changes[si + INTEREST_RATE_SWAP_20Y_INDEX];
+      goals[ri] = 0.5;
+    }
+  }
+
   /*
   std::cout << "Price changes: \n";
   for (auto const &c : price_changes)
@@ -280,7 +317,7 @@ Result optimize(OptimizeOptions options)
   for (size_t t = 0; t < n_generations; ++t)
   {
     individuals = decode_chromosomes(chromosomes, n_individuals, n_variables, n_scenarios, n_instruments, n_genes, n_bits);
-    fitnesses = evaluate_individuals(individuals, price_changes, n_individuals, n_variables, n_steps, n_instruments);
+    fitnesses = evaluate_individuals(individuals, price_changes, goals, n_individuals, n_variables, n_steps, n_instruments);
 
     // Check global_max_fitness
     for (size_t i = 0; i < n_individuals; ++i)
