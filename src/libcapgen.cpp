@@ -139,15 +139,16 @@ TEST_CASE("optimization runs without crashing", "[genetic]")
   options.elitism = 2;
   options.generations = 100;
   options.bits = 7;
-  options.steps = 3;
+  options.steps = 4;
   options.instruments = 2;
   options.mutation = 0.4;
   options.crossover = 0.02;
 
-  Result r = optimize(options);
+  Result result;
+  optimize(options, result);
 
   /*
-  std::cout << "Fitness: \n";
+  std::cout << "\nFitness: \n";
   std::cout << r.fitness;
   std::cout << "\n Chromosome: \n";
   for (auto const &c : r.chromosome)

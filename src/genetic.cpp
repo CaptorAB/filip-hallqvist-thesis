@@ -1,8 +1,11 @@
 #include <vector>
 #include <tuple>
+#include <iostream>
+#include <string>
 
 #include <lib/random.h>
 
+#include <include/util.h>
 #include <include/genetic.h>
 #include <include/scenario.h>
 
@@ -93,23 +96,8 @@ select_roulette(std::vector<double> fitnesses)
   }
 }
 
-int get_first_node_in_level(size_t level)
-{
-  int l = level;
-  int b = 2;
-  if (l > 0)
-  {
-    return ((b * (pow(b, l - 1) - 1)) / (b - 1)) + 1;
-  }
-  return 0;
-}
-
-int get_nodes_in_level(size_t level)
-{
-  return 1 << level;
-}
-
-std::vector<double> evaluate_individuals(std::vector<double> X, std::vector<double> scenarios, int n_individuals, int n_variables, int n_steps, int n_instruments)
+// TODO: Refactor this mess
+std::vector<double> evaluate_individuals(std::vector<double> X, std::vector<double> price_changes, int n_individuals, int n_variables, int n_steps, int n_instruments)
 {
   int timestamps = n_steps;
   int branching = 2;
@@ -143,7 +131,7 @@ std::vector<double> evaluate_individuals(std::vector<double> X, std::vector<doub
         for (int i = 0; i < n_instruments; ++i)
         {
           int k_ = si_ + i; // Index of current instrument in previous scenario
-          double r_ = 1.0 + scenarios[k_];
+          double r_ = 1.0 + price_changes[k_];
           double v = r_ * X[xi + k_];
 
           aw += v;
@@ -276,8 +264,7 @@ elitism_chromosomes(std::vector<int> old_chromosomes, std::vector<int> new_chrom
   return new_chromosomes;
 }
 
-Result
-optimize(OptimizeOptions options)
+Result optimize(OptimizeOptions options)
 {
   int n_individuals = options.population;
   int n_elitism_copies = options.elitism;
@@ -317,37 +304,19 @@ optimize(OptimizeOptions options)
   std::vector<double> correlations = {1.0, 0.0,
                                       0.0, 1.0};
 
-  std::vector<double> scenarios(n_variables);
+  // Generate scenarios
+  std::vector<double> price_changes = generate_price_changes(n_steps, instruments, risks, correlations);
+
   /*
-  for (size_t i = 0; i < n_scenarios; ++i)
-  {
-    std::vector<double> scenario = generate_scenario(instruments, risks, correlations);
-    for (size_t j = 0; j < n_instruments; ++j)
-    {
-      size_t ix = i * n_instruments;
-      scenarios[ix + j] = scenario[j];
-    }
-  }
+  std::cout << "Price changes: \n";
+  for (auto const &c : price_changes)
+    std::cout << c << ' ';
   */
-  scenarios[0] = 0.1;
-  scenarios[1] = -0.1;
-  scenarios[2] = 0.1;
-  scenarios[3] = -0.1;
-  scenarios[4] = 0.1;
-  scenarios[5] = -0.1;
-  scenarios[6] = 0.1;
-  scenarios[7] = -0.1;
-  scenarios[8] = 0.1;
-  scenarios[9] = -0.1;
-  scenarios[10] = 0.1;
-  scenarios[11] = -0.1;
-  scenarios[12] = 0.1;
-  scenarios[13] = -0.1;
 
   for (size_t t = 0; t < n_generations; ++t)
   {
     individuals = decode_chromosomes(chromosomes, n_individuals, n_variables, n_scenarios, n_instruments, n_genes, n_bits);
-    fitnesses = evaluate_individuals(individuals, scenarios, n_individuals, n_variables, n_steps, n_instruments);
+    fitnesses = evaluate_individuals(individuals, price_changes, n_individuals, n_variables, n_steps, n_instruments);
 
     // Check global_max_fitness
     for (size_t i = 0; i < n_individuals; ++i)

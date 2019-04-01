@@ -96,6 +96,8 @@ typedef std::vector<double> correlations_t;
 
 instruments_t create_default_instruments();
 
-std::vector<double> generate_scenario(instruments_t instruments, risks_t risks, correlations_t correlations);
+std::vector<double> generate_price_change(instruments_t instruments, risks_t risks, correlations_t correlations);
+
+std::vector<double> generate_price_changes(int n_steps, instruments_t instruments, risks_t risks, correlations_t correlations);
 
 #endif

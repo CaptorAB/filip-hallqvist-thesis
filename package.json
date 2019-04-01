@@ -12,7 +12,7 @@
     "build:app": "webpack",
     "test": "./bin/libcapgen",
     "clean": "rm -rf bin",
-    "build": "npm run build:test && npm run build:lib && npm run build:app",
+    "build": "npm run build:lib && npm run build:app",
     "serve": "http-server",
     "start": "npm run serve"
   },
