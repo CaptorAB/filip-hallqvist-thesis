@@ -144,8 +144,7 @@ TEST_CASE("optimization runs without crashing", "[genetic]")
   options.mutation = 0.4;
   options.crossover = 0.02;
 
-  Result result;
-  optimize(options, result);
+  Result r = optimize(options);
 
   /*
   std::cout << "\nFitness: \n";
