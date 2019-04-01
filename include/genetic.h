@@ -13,7 +13,6 @@ struct OptimizeOptions
   int generations;
   int bits;
   int steps;
-  int instruments;
   double mutation;
   double crossover;
 };

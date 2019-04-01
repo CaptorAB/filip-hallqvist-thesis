@@ -24,8 +24,7 @@ EMSCRIPTEN_BINDINGS(libcapgen)
       .field("elitism", &OptimizeOptions::elitism)
       .field("generations", &OptimizeOptions::generations)
       .field("bits", &OptimizeOptions::bits)
-      .field("steps", &OptimizeOptions::steps)
-      .field("instruments", &OptimizeOptions::instruments);
+      .field("steps", &OptimizeOptions::steps);
 
   value_object<Result>("Result")
       .field("fitness", &Result::fitness)
@@ -40,6 +39,7 @@ EMSCRIPTEN_BINDINGS(libcapgen)
 
 #else
 
+/*
 TEST_CASE("sample_black_process calculates correct values", "[sample_black_process]")
 {
   double n1 = 0.12;
@@ -55,7 +55,6 @@ TEST_CASE("sample_black_process calculates correct values", "[sample_black_proce
   REQUIRE(result - 0.267704205 <= 0.0001); // TODO: Verify this using pen and paper
 }
 
-/*
 TEST_CASE("DomesticMarketRiskProcess calculates correct values", "[risk]")
 {
   double n1 = 0.25;
@@ -140,13 +139,11 @@ TEST_CASE("optimization runs without crashing", "[genetic]")
   options.generations = 100;
   options.bits = 7;
   options.steps = 4;
-  options.instruments = 2;
   options.mutation = 0.4;
   options.crossover = 0.02;
 
   Result r = optimize(options);
 
-  /*
   std::cout << "\nFitness: \n";
   std::cout << r.fitness;
   std::cout << "\n Chromosome: \n";
@@ -156,7 +153,6 @@ TEST_CASE("optimization runs without crashing", "[genetic]")
             << std::endl;
   for (auto const &c : r.individual)
     std::cout << c << ' ';
-  */
 }
 
 using Random = effolkronium::random_static;

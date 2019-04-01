@@ -159,36 +159,6 @@ std::vector<double> evaluate_individuals(std::vector<double> X, std::vector<doub
   return fitnesses;
 }
 
-/*
-std::vector<double>
-evaluate_individuals(std::vector<double> individuals, int n_individuals, int n_variables, std::vector<double> scenarios)
-{
-  std::vector<double> fitnesses(n_individuals);
-
-  // Use dummy fitness calculation for now
-  // Reward large values in first variable
-  for (size_t i = 0; i < n_individuals; ++i)
-  {
-    double fitness = 0.0;
-    for (size_t j = 0; j < n_variables; ++j)
-    {
-      size_t ix = (i * n_variables) + j;
-      if (j == 0)
-      {
-        fitness += 1000 * individuals[ix];
-      }
-      else
-      {
-        fitness -= 100 * individuals[ix];
-      }
-    }
-    fitnesses[i] = fitness;
-  }
-
-  return fitnesses;
-}
-*/
-
 std::vector<int>
 mutate_chromosomes(std::vector<int> chromosomes, int population, int genes, double mutation)
 {
@@ -271,10 +241,10 @@ Result optimize(OptimizeOptions options)
   int n_generations = options.generations;
   int n_bits = options.bits;
   int n_steps = options.steps;
-  int n_instruments = options.instruments;
   double mutation_rate = options.mutation;
   double crossover_rate = options.crossover;
 
+  int n_instruments = 2; // TODO: Dynamic
   int n_scenarios = (1 << n_steps) - 1;
   int n_variables = n_scenarios * n_instruments;
   int n_genes = n_variables * n_bits;
@@ -298,14 +268,8 @@ Result optimize(OptimizeOptions options)
   std::vector<int> mutated(chromosomes_size);
   std::vector<int> elitismed(chromosomes_size);
 
-  // Define risks and instruments
-  risks_t risks = create_default_risks();
-  instruments_t instruments = create_default_instruments();
-  std::vector<double> correlations = {1.0, 0.0,
-                                      0.0, 1.0};
-
   // Generate scenarios
-  std::vector<double> price_changes = generate_price_changes(n_steps, instruments, risks, correlations);
+  std::vector<double> price_changes = generate_price_changes(n_steps);
 
   /*
   std::cout << "Price changes: \n";
