@@ -97,12 +97,11 @@ select_roulette(std::vector<double> fitnesses)
 }
 
 // TODO: Refactor this mess
-std::vector<double> evaluate_individuals(std::vector<double> X, std::vector<double> price_changes, std::vector<double> goals, int n_individuals, int n_variables, int n_steps, int n_instruments)
+std::vector<double> evaluate_individuals(std::vector<double> X, std::vector<double> price_changes, std::vector<double> goals, double risk_aversion, double penalty, int n_individuals, int n_variables, int n_steps, int n_instruments)
 {
   int timestamps = n_steps;
   int branching = 2;
   int instruments = n_instruments;
-  double risk_aversion = 0.5; // TODO: Pass as argument
 
   std::vector<double> fitnesses(n_individuals);
 
@@ -110,17 +109,17 @@ std::vector<double> evaluate_individuals(std::vector<double> X, std::vector<doub
   {
 
     double wt = 1.0;
-    double penalty = 0.0;
-    double a = 2.0;               // TODO: Quadratic penalty?
+    double pt = 0.0; // Penalty
+    double a = penalty;
     size_t xi = in * n_variables; // Index of current individual
 
-    for (int t = 1; t < timestamps; ++t)
+    for (int t = 1; t <= timestamps; ++t)
     {
       int first_node = get_first_node_in_level(t);
       int ti = first_node * instruments; // Index of first node in step
       int ss = get_nodes_in_level(t);    // Scenarios in this step
       double ws = 0.0;                   // Total expected wealth in this step
-      double g = goals[t];
+      double g = goals[t - 1];
 
       // TODO: Calculate wealth from assets for final step
       for (int s = 0; s < ss; ++s)
@@ -146,18 +145,21 @@ std::vector<double> evaluate_individuals(std::vector<double> X, std::vector<doub
         // TODO: Incorporate probability of scenario?
         if (aw < g)
         {
-          penalty += pow(aw - g, 2);
+          pt += pow(aw - g, 2);
         }
 
-        // Calculate wealth from reallocations
-        for (int i = 0; i < n_instruments; ++i)
+        // Calculate wealth from reallocations (unless we are in the final step)
+        if (t < timestamps)
         {
-          int k = si + i;   // Index of current instrument in current scenario
-          int k_ = si_ + i; // Index of current instrument in previous scenario
+          for (int i = 0; i < n_instruments; ++i)
+          {
+            int k = si + i;   // Index of current instrument in current scenario
+            int k_ = si_ + i; // Index of current instrument in previous scenario
 
-          double diff = X[xi + k] - X[xi + k_];
-          double c = aw * diff; // TODO: Add transaction costs (also make sure that we can afford them)
-          cw += c;
+            double diff = X[xi + k] - X[xi + k_];
+            double c = aw * diff; // TODO: Add transaction costs (also make sure that we can afford them)
+            cw += c;
+          }
         }
 
         ws += p * (aw + cw);
@@ -167,7 +169,7 @@ std::vector<double> evaluate_individuals(std::vector<double> X, std::vector<doub
       // TODO: Discount this value
     }
 
-    fitnesses[in] = risk_aversion * wt - (1.0 - risk_aversion) * penalty;
+    fitnesses[in] = risk_aversion * wt - (1.0 - risk_aversion) * pt;
   }
 
   return fitnesses;
@@ -257,6 +259,8 @@ Result optimize(OptimizeOptions options)
   int n_steps = options.steps;
   double mutation_rate = options.mutation;
   double crossover_rate = options.crossover;
+  double risk_aversion = options.risk_aversion;
+  double penalty = options.penalty;
 
   int n_instruments = 2; // TODO: Dynamic
   int n_scenarios = (1 << n_steps) - 1;
@@ -317,7 +321,7 @@ Result optimize(OptimizeOptions options)
   for (size_t t = 0; t < n_generations; ++t)
   {
     individuals = decode_chromosomes(chromosomes, n_individuals, n_variables, n_scenarios, n_instruments, n_genes, n_bits);
-    fitnesses = evaluate_individuals(individuals, price_changes, goals, n_individuals, n_variables, n_steps, n_instruments);
+    fitnesses = evaluate_individuals(individuals, price_changes, goals, risk_aversion, penalty, n_individuals, n_variables, n_steps, n_instruments);
 
     // Check global_max_fitness
     for (size_t i = 0; i < n_individuals; ++i)

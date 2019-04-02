@@ -141,6 +141,8 @@ TEST_CASE("optimization runs without crashing", "[genetic]")
   options.steps = 4;
   options.mutation = 0.4;
   options.crossover = 0.02;
+  options.risk_aversion = 0.5;
+  options.penalty = 2.0;
 
   Result r = optimize(options);
 

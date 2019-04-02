@@ -1,8 +1,8 @@
 ## Week 14
 
-1. (1) Pass risk_aversion as parameter to evaluate_individuals
-2. (1) Allow setting the penalty coefficient dynamically
-3. (1) Make sure that wealth is also calculated for the final step
+# 1. (1) Pass risk_aversion as parameter to evaluate_individuals [DONE]
+# 2. (1) Allow setting the penalty coefficient dynamically
+# 3. (1) Make sure that wealth is also calculated for the final step
 7. (3) Use real numbers instead of bits in chromosomes
 17. (1) Break out risk changes generation into own function
 18. (1) Break out instrument changes generation into own function

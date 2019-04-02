@@ -15,6 +15,8 @@ struct OptimizeOptions
   int steps;
   double mutation;
   double crossover;
+  double risk_aversion;
+  double penalty;
 };
 
 struct Result
@@ -30,7 +32,7 @@ std::vector<double> decode_chromosomes(std::vector<int> chromosomes, int populat
 
 std::tuple<size_t, size_t> select_roulette(std::vector<double> fitnesses);
 
-std::vector<double> evaluate_individuals(std::vector<double> individuals, std::vector<double> scenarios, std::vector<double> goals, int n_individuals, int n_variables, int n_steps, int n_instruments);
+std::vector<double> evaluate_individuals(std::vector<double> individuals, std::vector<double> price_changes, std::vector<double> goals, double risk_aversion, double penalty, int n_individuals, int n_variables, int n_steps, int n_instruments);
 
 std::vector<int> mutate_chromosomes(std::vector<int> chromosomes, int population, int genes, double mutation);
 
