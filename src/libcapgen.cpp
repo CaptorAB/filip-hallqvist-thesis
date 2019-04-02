@@ -20,18 +20,21 @@ using namespace emscripten;
 EMSCRIPTEN_BINDINGS(libcapgen)
 {
   value_object<OptimizeOptions>("OptimizeOptions")
-      .field("population", &OptimizeOptions::population)
-      .field("elitism", &OptimizeOptions::elitism)
+      .field("populationSize", &OptimizeOptions::population_size)
+      .field("elitismCopies", &OptimizeOptions::elitism_copies)
       .field("generations", &OptimizeOptions::generations)
-      .field("bits", &OptimizeOptions::bits)
-      .field("steps", &OptimizeOptions::steps);
+      .field("steps", &OptimizeOptions::steps)
+      .field("steps", &OptimizeOptions::steps)
+      .field("mutationRate", &OptimizeOptions::mutation_ratesteps)
+      .field("crossoverRate", &OptimizeOptions::crossover_rate)
+      .field("riskAversion", &OptimizeOptions::risk_aversion)
+      .field("penaltyExponent", &OptimizeOptions::penalty_exponent)
+      .field("goalSurplus", &OptimizeOptions::goal_surplus);
 
   value_object<Result>("Result")
       .field("fitness", &Result::fitness)
-      .field("chromosome", &Result::chromosome)
       .field("individual", &Result::individual);
 
-  emscripten::register_vector<int>("VectorInt");
   emscripten::register_vector<double>("VectorDouble");
 
   function("optimize", &optimize);
@@ -90,7 +93,7 @@ TEST_CASE("DomesticEquity moves correctly", "[risk]")
   REQUIRE(current - 0.3456077342 <= 0.0001); // TODO: Verify this using pen and paper
 }
 */
-
+/*
 TEST_CASE("initialize_chromosomes generates a population with correct capacity and values", "[genetic]")
 {
   int population = 2;
@@ -130,33 +133,30 @@ TEST_CASE("crossover_chromosomes correctly crossovers chromosomes", "[genetic]")
   REQUIRE(crossovered[6] == 1);
   REQUIRE(crossovered[7] == 0);
 }
+*/
 
 TEST_CASE("optimization runs without crashing", "[genetic]")
 {
   OptimizeOptions options;
-  options.population = 100;
-  options.elitism = 2;
+  options.population_size = 100;
+  options.elitism_copies = 2;
   options.generations = 100;
-  options.bits = 7;
   options.steps = 4;
-  options.mutation = 0.4;
-  options.crossover = 0.02;
+  options.mutation_rate = 0.4;
+  options.crossover_rate = 0.02;
   options.risk_aversion = 0.5;
-  options.penalty = 2.0;
+  options.penalty_exponent = 2.0;
+  options.goal_surplus = 0.5;
 
   Result r = optimize(options);
 
-  /*
   std::cout << "\nFitness: \n";
   std::cout << r.fitness;
-  std::cout << "\n Chromosome: \n";
-  for (auto const &c : r.chromosome)
-    std::cout << c << ' ';
   std::cout << "\n Individual: \n"
             << std::endl;
   for (auto const &c : r.individual)
     std::cout << c << ' ';
-  */
+  std::cout << "\n";
 }
 
 using Random = effolkronium::random_static;

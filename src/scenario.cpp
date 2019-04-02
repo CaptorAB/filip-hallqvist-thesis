@@ -68,6 +68,30 @@ static double sample_global_equity(double previous_change, std::vector<double> r
   return risk_changes[GLOBAL_MARKET_RISK_INDEX];
 }
 
+std::vector<double> generate_goals(std::vector<double> price_changes, int n_steps, int n_scenarios, int n_instruments, double surplus)
+{
+  std::vector<double> goals(n_scenarios);
+  for (int t = 0; t < n_steps; ++t)
+  {
+    int first_node_in_level = get_first_node_in_level(t);
+    int i_first_node_in_step = first_node_in_level * n_instruments; // Index of first node in step
+    int n_scenarios_in_step = get_nodes_in_level(t);                // Scenarios in this step
+    for (int s = 0; s < n_scenarios_in_step; ++s)
+    {
+      int si = i_first_node_in_step + (s * n_instruments); // Index of current scenario
+      int si_ = get_parent_index(si, n_instruments);       // Index of previous scenario
+
+      int ri = first_node_in_level + s;  // Index of current scenario goal
+      int ri_ = get_parent_index(ri, 1); // Index of previous scenario goal
+
+      // TODO: Implement the interest rate swap
+      // goals[ri] = goals[ri_] * price_changes[si + INTEREST_RATE_SWAP_20Y_INDEX];
+      goals[ri] = 0.5 + surplus;
+    }
+  }
+  return goals;
+}
+
 // TODO: Refactor this mess
 std::vector<double> generate_price_changes(int n_steps)
 {

@@ -11,52 +11,22 @@
 
 using Random = effolkronium::random_static;
 
-std::vector<int>
-initialize_chromosomes(int population, int genes)
+std::vector<double> normalize_individuals(std::vector<double> individuals, int n_individuals, int n_instruments, int n_scenarios)
 {
-  int size = population * genes;
-  std::vector<int> chromosomes(size);
+  int n_genes = n_instruments * n_scenarios;
+  int size = n_individuals * n_genes;
 
-  for (size_t i = 0; i < size; i++)
+  std::vector<double> normalized(size);
+
+  for (size_t i = 0; i < n_individuals; ++i)
   {
-    chromosomes[i] = Random::get<int>(0, 1);
-  }
-
-  return chromosomes;
-}
-
-std::vector<double>
-decode_chromosomes(std::vector<int> chromosomes, int population, int variables, int n_scenarios, int instruments, int genes, int bits)
-{
-  int size = population * variables;
-  std::vector<double> individuals(size);
-
-  // Parse bits into real numbers
-  for (size_t i = 0; i < population; ++i)
-  {
-    for (size_t j = 0; j < variables; ++j)
-    {
-      size_t ix = (i * variables) + j;
-      individuals[ix] = 0.0;
-      for (size_t k = 0; k < bits; ++k)
-      {
-        size_t cx = (i * genes) + (j * bits) + k;
-        individuals[ix] += (double)(chromosomes[cx] << (bits - k - 1));
-      }
-    }
-  }
-
-  // Scale reals to [0, 1]
-  for (size_t i = 0; i < population; ++i)
-  {
-    size_t ix = i * variables;
+    size_t ix = i * n_genes;
     for (size_t s = 0; s < n_scenarios; ++s)
     {
-
       double total = 0.0;
-      size_t sx = ix + (s * instruments);
+      size_t sx = ix + (s * n_instruments);
 
-      for (size_t j = 0; j < instruments; ++j)
+      for (size_t j = 0; j < n_instruments; ++j)
       {
         size_t jx = sx + j;
         total += individuals[jx];
@@ -64,24 +34,49 @@ decode_chromosomes(std::vector<int> chromosomes, int population, int variables, 
 
       if (total == 0.0)
       {
-        for (size_t j = 0; j < instruments; ++j)
+        for (size_t j = 0; j < n_instruments; ++j)
         {
           size_t jx = sx + j;
-          individuals[jx] = 1.0 / (double)instruments;
+          normalized[jx] = 1.0 / n_instruments;
         }
       }
       else
       {
-        for (size_t j = 0; j < instruments; ++j)
+        for (size_t j = 0; j < n_instruments; ++j)
         {
           size_t jx = sx + j;
-          individuals[jx] /= total;
+          normalized[jx] = individuals[jx] / total;
         }
       }
 
     } // Scenarios
 
   } // Individuals
+
+  return normalized;
+}
+
+std::vector<double>
+initialize_individuals(int n_individuals, int n_instruments, int n_scenarios)
+{
+  int n_genes = n_instruments * n_scenarios;
+  int size = n_individuals * n_genes;
+
+  std::vector<double> individuals(size);
+
+  // Generate genes
+  int ix = 0;
+  for (int i = 0; i < n_individuals; i++)
+  {
+    for (int j = 0; j < (n_instruments * n_scenarios); j++)
+    {
+      ix = (i * n_genes) + j;
+      individuals[ix] = Random::get<std::uniform_real_distribution<>>();
+    }
+  }
+
+  // Normalize individuals
+  individuals = normalize_individuals(individuals, n_individuals, n_instruments, n_scenarios);
 
   return individuals;
 }
@@ -175,142 +170,124 @@ std::vector<double> evaluate_individuals(std::vector<double> X, std::vector<doub
   return fitnesses;
 }
 
-std::vector<int>
-mutate_chromosomes(std::vector<int> chromosomes, int population, int genes, double mutation)
+std::vector<double>
+mutate_individuals(std::vector<double> individuals, int n_individuals, int n_instruments, int n_scenarios, double mutation_rate)
 {
-  int size = population * genes;
-  std::vector<int> mutated(size);
+  int n_genes = n_instruments * n_scenarios;
+  int size = n_individuals * n_genes;
+
+  std::vector<double> mutated(size);
+
   for (size_t i = 0; i < size; i++)
   {
-    mutated[i] = chromosomes[i] != Random::get<std::bernoulli_distribution>(mutation);
+    double random = Random::get(0.l, 1.l);
+    if (random < mutation_rate)
+    {
+      mutated[i] = Random::get<std::normal_distribution<>>(individuals[i], 1.0);
+    }
   }
+
+  mutated = normalize_individuals(individuals, n_individuals, n_instruments, n_scenarios);
 
   return mutated;
 }
 
-std::vector<int>
-crossover_chromosomes(std::vector<int> chromosomes, std::vector<double> evaluated, int population, int genes, double crossover)
+std::vector<double>
+crossover_individuals(std::vector<double> individuals, std::vector<double> evaluated, int n_individuals, int n_genes, double crossover_rate)
 {
-  int size = population * genes;
-  std::vector<int> crossovered(size);
-  for (size_t i = 0; i < population; i += 2)
+  int size = n_individuals * n_genes;
+  std::vector<double> crossovered(size);
+  for (size_t i = 0; i < n_individuals; i += 2)
   {
     std::tuple<size_t, size_t> selected = select_roulette(evaluated);
-    size_t cx1 = std::get<0>(selected) * genes;
-    size_t cx2 = std::get<1>(selected) * genes;
+    size_t cx1 = std::get<0>(selected) * n_genes;
+    size_t cx2 = std::get<1>(selected) * n_genes;
 
-    double random = Random::get(0, 1);
-    size_t ix = (i * genes);
+    double random = Random::get(0.l, 1.l);
+    size_t ix = (i * n_genes);
 
-    // Zip chromosomes
-    if (random < crossover)
+    // Zip individuals
+    if (random < crossover_rate)
     {
-      // Construct first chromosome
-      for (size_t j = 0; j < genes; j += 2)
+      // Construct first individuals
+      for (size_t j = 0; j < n_genes; j += 2)
       {
-        crossovered[ix + j] = chromosomes[cx1 + j];
-        crossovered[ix + j + 1] = chromosomes[cx2 + j + 1];
+        crossovered[ix + j] = individuals[cx1 + j];
+        crossovered[ix + j + 1] = individuals[cx2 + j + 1];
       }
 
-      // Construct second chromosome
-      ix += genes;
-      for (size_t j = 0; j < genes; j += 2)
+      // Construct second individuals
+      ix += n_genes;
+      for (size_t j = 0; j < n_genes; j += 2)
       {
-        crossovered[ix + j] = chromosomes[cx2 + j];
-        crossovered[ix + j + 1] = chromosomes[cx1 + j + 1];
+        crossovered[ix + j] = individuals[cx2 + j];
+        crossovered[ix + j + 1] = individuals[cx1 + j + 1];
       }
     }
     else
     {
-      for (size_t j = 0; j < genes; ++j)
+      for (size_t j = 0; j < n_genes; ++j)
       {
-        crossovered[ix + j] = chromosomes[cx1 + j];
+        crossovered[ix + j] = individuals[cx1 + j];
       }
-      ix += genes;
-      for (size_t j = 0; j < genes; ++j)
+      ix += n_genes;
+      for (size_t j = 0; j < n_genes; ++j)
       {
-        crossovered[ix + j] = chromosomes[cx2 + j];
+        crossovered[ix + j] = individuals[cx2 + j];
       }
     }
   }
   return crossovered;
 }
 
-std::vector<int>
-elitism_chromosomes(std::vector<int> old_chromosomes, std::vector<int> new_chromosomes, int elite, int elitism, int genes)
+std::vector<double>
+elitism_individuals(std::vector<double> old_individuals, std::vector<double> new_individuals, int i_elite_individual, int n_elitism_copies, int n_genes)
 {
-  for (size_t i = 0; i < elitism; ++i)
+  for (size_t i = 0; i < n_elitism_copies; ++i)
   {
-    size_t ix = i * genes;
-    for (size_t j = 0; j < genes; ++j)
+    size_t ix = i * n_genes;
+    for (size_t j = 0; j < n_genes; ++j)
     {
-      new_chromosomes[ix + j] = old_chromosomes[elite + j];
+      new_individuals[ix + j] = old_individuals[i_elite_individual + j];
     }
   }
-  return new_chromosomes;
+  return new_individuals;
 }
 
 Result optimize(OptimizeOptions options)
 {
-  int n_individuals = options.population;
-  int n_elitism_copies = options.elitism;
+  int n_individuals = options.population_size;
+  int n_elitism_copies = options.elitism_copies;
   int n_generations = options.generations;
-  int n_bits = options.bits; // TODO: Do not use bits, use real values directly
   int n_steps = options.steps;
-  double mutation_rate = options.mutation;
-  double crossover_rate = options.crossover;
+  double mutation_rate = options.mutation_rate;
+  double crossover_rate = options.crossover_rate;
   double risk_aversion = options.risk_aversion;
-  double penalty = options.penalty;
+  double penalty = options.penalty_exponent;
+  double surplus = options.goal_surplus;
 
   int n_instruments = 2; // TODO: Dynamic
   int n_scenarios = (1 << n_steps) - 1;
-  int n_variables = n_scenarios * n_instruments;
-  int n_genes = n_variables * n_bits;
-
-  int chromosomes_size = n_individuals * n_genes;
-  int individuals_size = n_individuals * n_variables;
+  int n_genes = n_scenarios * n_instruments;
 
   double global_max_fitness = 0.0;
-  size_t global_max_chromosome = 0;
+  int i_global_max_individual = 0;
 
-  std::vector<int> global_max_chromosome_vector(n_genes);
-  std::vector<double> global_max_individual_vector(n_variables);
+  std::vector<double> global_max_individual(n_genes);
 
-  // Generate initial chromosomes
-  std::vector<int> chromosomes = initialize_chromosomes(n_individuals, n_genes);
+  // Generate initial individuals
+  std::vector<double> individuals = initialize_individuals(n_individuals, n_instruments, n_scenarios);
 
-  std::vector<double> individuals(individuals_size);
   std::vector<double> fitnesses(n_individuals);
-
-  std::vector<int> crossovered(chromosomes_size);
-  std::vector<int> mutated(chromosomes_size);
-  std::vector<int> elitismed(chromosomes_size);
+  std::vector<double> crossovered(n_individuals);
+  std::vector<double> mutated(n_individuals);
+  std::vector<double> elitismed(n_individuals);
 
   // Generate scenarios
   std::vector<double> price_changes = generate_price_changes(n_steps);
 
   // Define goals
-  // TODO: Break out into own function
-  std::vector<double> goals(n_scenarios);
-  goals[0] = 1.0; // TODO: Depends on the initial ratio between assets and liabilities
-  for (int t = 1; t < n_steps; ++t)
-  {
-    int first_node_in_level = get_first_node_in_level(t);
-    int i_first_node_in_step = first_node_in_level * n_instruments; // Index of first node in step
-    int n_scenarios_in_step = get_nodes_in_level(t);                // Scenarios in this step
-    for (int s = 0; s < n_scenarios_in_step; ++s)
-    {
-      int si = i_first_node_in_step + (s * n_instruments); // Index of current scenario
-      int si_ = get_parent_index(si, n_instruments);       // Index of previous scenario
-
-      int ri = first_node_in_level + s;  // Index of current scenario goal
-      int ri_ = get_parent_index(ri, 1); // Index of previous scenario goal
-
-      // TODO: Implement the interest rate swap
-      // goals[ri] = goals[ri_] * price_changes[si + INTEREST_RATE_SWAP_20Y_INDEX];
-      goals[ri] = 0.5;
-    }
-  }
+  std::vector<double> goals = generate_goals(price_changes, n_steps, n_scenarios, n_instruments, surplus);
 
   /*
   std::cout << "Price changes: \n";
@@ -320,8 +297,7 @@ Result optimize(OptimizeOptions options)
 
   for (size_t t = 0; t < n_generations; ++t)
   {
-    individuals = decode_chromosomes(chromosomes, n_individuals, n_variables, n_scenarios, n_instruments, n_genes, n_bits);
-    fitnesses = evaluate_individuals(individuals, price_changes, goals, risk_aversion, penalty, n_individuals, n_variables, n_steps, n_instruments);
+    fitnesses = evaluate_individuals(individuals, price_changes, goals, risk_aversion, penalty, n_individuals, n_genes, n_steps, n_instruments);
 
     // Check global_max_fitness
     for (size_t i = 0; i < n_individuals; ++i)
@@ -329,33 +305,26 @@ Result optimize(OptimizeOptions options)
       if (fitnesses[i] > global_max_fitness)
       {
         global_max_fitness = fitnesses[i];
-        global_max_chromosome = i * n_genes;
+        i_global_max_individual = i * n_genes;
 
-        size_t ix = i * n_genes;
+        int ix = i * n_genes;
         for (size_t j = 0; j < n_genes; ++j)
         {
-          global_max_chromosome_vector[j] = chromosomes[ix + j];
-        }
-
-        ix = i * n_variables;
-        for (size_t j = 0; j < n_variables; ++j)
-        {
-          global_max_individual_vector[j] = individuals[ix + j];
+          global_max_individual[j] = individuals[ix + j];
         }
       }
     }
 
-    std::vector<int> crossovered = crossover_chromosomes(chromosomes, fitnesses, n_individuals, n_genes, crossover_rate);
-    std::vector<int> mutated = mutate_chromosomes(crossovered, n_individuals, n_genes, mutation_rate);
-    std::vector<int> elitismed = elitism_chromosomes(chromosomes, mutated, global_max_chromosome, n_elitism_copies, n_genes);
+    crossovered = crossover_individuals(individuals, fitnesses, n_individuals, n_genes, crossover_rate);
+    mutated = mutate_individuals(crossovered, n_individuals, n_instruments, n_scenarios, mutation_rate);
+    elitismed = elitism_individuals(individuals, mutated, i_global_max_individual, n_elitism_copies, n_genes);
 
-    chromosomes = elitismed;
+    individuals = elitismed;
   }
 
   Result result;
   result.fitness = global_max_fitness;
-  result.chromosome = global_max_chromosome_vector;
-  result.individual = global_max_individual_vector;
+  result.individual = global_max_individual;
 
   return result;
 }
