@@ -68,6 +68,17 @@ static double sample_global_equity(double previous_change, std::vector<double> r
   return risk_changes[GLOBAL_MARKET_RISK_INDEX];
 }
 
+// Likelihood functions
+static double calculate_domestic_equity_likelihood(double value)
+{
+  return 0.5;
+}
+
+static double calculate_global_equity_likelihood(double value)
+{
+  return 0.5;
+}
+
 std::vector<double> generate_goals(std::vector<double> price_changes, int n_steps, int n_scenarios, int n_instruments, double surplus)
 {
   std::vector<double> goals(n_scenarios);
@@ -93,7 +104,8 @@ std::vector<double> generate_goals(std::vector<double> price_changes, int n_step
 }
 
 // TODO: Refactor this mess
-std::vector<double> generate_price_changes(int n_steps)
+std::tuple<std::vector<double>, std::vector<double>>
+generate_scenarios(int n_steps)
 {
   int n_scenarios = (1 << n_steps) - 1;
   int n_risks = 5;
@@ -103,6 +115,7 @@ std::vector<double> generate_price_changes(int n_steps)
 
   std::vector<double> risk_changes(n_risk_changes);
   std::vector<double> instrument_changes(n_instrument_changes);
+  std::vector<double> likelihoods(n_instrument_changes);
 
   // Generate new scenarios
   for (int t = 0; t < n_steps; ++t)
@@ -165,18 +178,25 @@ std::vector<double> generate_price_changes(int n_steps)
         int k_ = si_ + i; // Index of current instrument in previous scenario
 
         double old_change = instrument_changes[k_];
+        double new_change = 0.0;
+        double likelihood = 0.0;
 
         if (i == DOMESTIC_EQUITY_INDEX)
         {
-          instrument_changes[k] = sample_domestic_equity(old_change, temp_risk_changes);
+          new_change = sample_domestic_equity(old_change, temp_risk_changes);
+          likelihood = calculate_domestic_equity_likelihood(new_change);
         }
         else if (i == GLOBAL_EQUITY_INDEX)
         {
-          instrument_changes[k] = sample_global_equity(old_change, temp_risk_changes);
+          new_change = sample_global_equity(old_change, temp_risk_changes);
+          likelihood = calculate_global_equity_likelihood(new_change);
         }
+
+        instrument_changes[k] = new_change;
+        likelihoods[k] = likelihood;
       }
     }
   }
 
-  return instrument_changes;
+  return std::make_tuple(instrument_changes, likelihoods);
 }

@@ -92,11 +92,12 @@ select_roulette(std::vector<double> fitnesses)
 }
 
 // TODO: Refactor this mess
-std::vector<double> evaluate_individuals(std::vector<double> X, std::vector<double> price_changes, std::vector<double> goals, double risk_aversion, double penalty, int n_individuals, int n_variables, int n_steps, int n_instruments)
+std::vector<double> evaluate_individuals(std::vector<double> X, std::vector<double> price_changes, std::vector<double> probabilities, std::vector<double> goals, double risk_aversion, double penalty, int n_individuals, int n_steps, int n_scenarios, int n_instruments)
 {
   int timestamps = n_steps;
   int branching = 2;
   int instruments = n_instruments;
+  int n_genes = n_instruments * n_scenarios;
 
   std::vector<double> fitnesses(n_individuals);
 
@@ -106,15 +107,20 @@ std::vector<double> evaluate_individuals(std::vector<double> X, std::vector<doub
     double wt = 1.0;
     double pt = 0.0; // Penalty
     double a = penalty;
-    size_t xi = in * n_variables; // Index of current individual
+    size_t xi = in * n_genes; // Index of current individual
 
-    for (int t = 1; t <= timestamps; ++t)
+    std::vector<double> wealth(n_scenarios);
+    wealth[0] = 1.0; // TODO: Dynamic initial wealth (assets vs liabilities)
+    std::vector<double> expected_wealth(get_nodes_in_level(timestamps - 1));
+    std::vector<double> joint_probabilities(n_scenarios);
+    joint_probabilities[0] = probabilities[0];
+
+    for (int t = 1; t < timestamps; ++t)
     {
       int first_node = get_first_node_in_level(t);
       int ti = first_node * instruments; // Index of first node in step
       int ss = get_nodes_in_level(t);    // Scenarios in this step
       double ws = 0.0;                   // Total expected wealth in this step
-      double g = goals[t - 1];
 
       // TODO: Calculate wealth from assets for final step
       for (int s = 0; s < ss; ++s)
@@ -122,49 +128,64 @@ std::vector<double> evaluate_individuals(std::vector<double> X, std::vector<doub
         int si = ti + (s * n_instruments);                            // Index of current scenario
         int si_ = ((si / instruments) - 1) / branching * instruments; // Index of previous scenario
 
+        int ri = first_node + s;           // Index of current scenario risk map
+        int ri_ = get_parent_index(ri, 1); // Index of previous scenario risk map
+
         double p = 1.0 / ss; // Probability of scenario occurring (TODO: should actually be likelihood)
-        double aw = 0.0;     // Wealth from assets
-        double cw = 0.0;     // Wealth from reallocations
+        double aw = 0.0;     // Change in wealth from assets
+        double cw = 0.0;     // Change in wealth from reallocations
+
+        // Join probability with previous scenario
+        joint_probabilities[ri] = joint_probabilities[ri_] * probabilities[ri];
 
         // Calculate wealth from assets
         for (int i = 0; i < n_instruments; ++i)
         {
+          int k = si + i;   // Index of current instrumet in current scenario
           int k_ = si_ + i; // Index of current instrument in previous scenario
-          double r_ = 1.0 + price_changes[k_];
-          double v = r_ * X[xi + k_];
-
+          double v = wealth[ri_] * X[xi + k_] * (1.0 + price_changes[k]);
           aw += v;
         }
 
-        // Penalize target misses
-        // TODO: Incorporate probability of scenario?
-        if (aw < g)
+        // TODO: Incorporate transaction costs
+        /*
+        for (int i = 0; i < n_instruments; ++i)
         {
-          pt += pow(aw - g, 2);
+          int k = si + i;   // Index of current instrument in current scenario
+          int k_ = si_ + i; // Index of current instrument in previous scenario
+
+          double diff = X[xi + k] - X[xi + k_];
+          double c = aw * diff; // TODO: Add transaction costs (also make sure that we can afford them)
+          cw += c;
+        }
+        */
+
+        wealth[ri] = aw + cw;
+
+        // Update penalty as needed
+        if (wealth[ri] < goals[ri])
+        {
+          pt += pow(wealth[ri] - goals[ri], 2);
         }
 
-        // Calculate wealth from reallocations (unless we are in the final step)
-        if (t < timestamps)
+        // Update expected wealth if we are on final timestamp
+        if (t == timestamps - 1)
         {
-          for (int i = 0; i < n_instruments; ++i)
-          {
-            int k = si + i;   // Index of current instrument in current scenario
-            int k_ = si_ + i; // Index of current instrument in previous scenario
-
-            double diff = X[xi + k] - X[xi + k_];
-            double c = aw * diff; // TODO: Add transaction costs (also make sure that we can afford them)
-            cw += c;
-          }
+          expected_wealth[s] = joint_probabilities[ri] * wealth[ri];
         }
-
-        ws += p * (aw + cw);
       }
 
-      wt *= ws;
       // TODO: Discount this value
     }
 
-    fitnesses[in] = risk_aversion * wt - (1.0 - risk_aversion) * pt;
+    // Sum up final wealths
+    double total_wealth = 0.0;
+    for (int i = 0; i < get_nodes_in_level(timestamps - 1); i++)
+    {
+      total_wealth += expected_wealth[i];
+    }
+
+    fitnesses[in] = risk_aversion * total_wealth - (1.0 - risk_aversion) * pt;
   }
 
   return fitnesses;
@@ -284,7 +305,9 @@ Result optimize(OptimizeOptions options)
   std::vector<double> elitismed(n_individuals);
 
   // Generate scenarios
-  std::vector<double> price_changes = generate_price_changes(n_steps);
+  std::tuple<std::vector<double>, std::vector<double>> scenarios = generate_scenarios(n_steps);
+  std::vector<double> price_changes = std::get<0>(scenarios);
+  std::vector<double> probabilities = std::get<1>(scenarios);
 
   // Define goals
   std::vector<double> goals = generate_goals(price_changes, n_steps, n_scenarios, n_instruments, surplus);
@@ -297,7 +320,7 @@ Result optimize(OptimizeOptions options)
 
   for (size_t t = 0; t < n_generations; ++t)
   {
-    fitnesses = evaluate_individuals(individuals, price_changes, goals, risk_aversion, penalty, n_individuals, n_genes, n_steps, n_instruments);
+    fitnesses = evaluate_individuals(individuals, price_changes, probabilities, goals, risk_aversion, penalty, n_individuals, n_steps, n_scenarios, n_instruments);
 
     // Check global_max_fitness
     for (size_t i = 0; i < n_individuals; ++i)
