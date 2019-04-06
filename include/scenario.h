@@ -2,6 +2,7 @@
 #define SCENARIO_H
 
 // Instrument indices
+const int N_INSTRUMENTS = 13;
 const int DOMESTIC_EQUITY_INDEX = 0;
 const int GLOBAL_EQUITY_INDEX = 1;
 const int REAL_ESTATE_INDEX = 2;
@@ -17,6 +18,7 @@ const int INTEREST_RATE_SWAP_5Y_INDEX = 11;
 const int INTEREST_RATE_SWAP_20Y_INDEX = 12;
 
 // Risk indices
+const int N_RISKS = 8;
 const int DOMESTIC_MARKET_RISK_INDEX = 0;
 const int GLOBAL_MARKET_RISK_INDEX = 1;
 const int ALTERNATIVE_RISK_INDEX = 2;

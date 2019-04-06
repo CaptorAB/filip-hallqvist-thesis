@@ -103,7 +103,6 @@ std::vector<double> evaluate_individuals(std::vector<double> X, std::vector<doub
 
   for (int in = 0; in < n_individuals; ++in)
   {
-
     double wt = 1.0;
     double pt = 0.0; // Penalty
     double a = penalty;
@@ -131,9 +130,8 @@ std::vector<double> evaluate_individuals(std::vector<double> X, std::vector<doub
         int ri = first_node + s;           // Index of current scenario risk map
         int ri_ = get_parent_index(ri, 1); // Index of previous scenario risk map
 
-        double p = 1.0 / ss; // Probability of scenario occurring (TODO: should actually be likelihood)
-        double aw = 0.0;     // Change in wealth from assets
-        double cw = 0.0;     // Change in wealth from reallocations
+        double aw = 0.0; // Change in wealth from assets
+        double cw = 0.0; // Change in wealth from reallocations
 
         // Join probability with previous scenario
         joint_probabilities[ri] = joint_probabilities[ri_] * probabilities[ri];
@@ -185,7 +183,7 @@ std::vector<double> evaluate_individuals(std::vector<double> X, std::vector<doub
       total_wealth += expected_wealth[i];
     }
 
-    fitnesses[in] = risk_aversion * total_wealth - (1.0 - risk_aversion) * pt;
+    fitnesses[in] = (1.0 - risk_aversion) * total_wealth - risk_aversion * pt;
   }
 
   return fitnesses;
@@ -204,7 +202,7 @@ mutate_individuals(std::vector<double> individuals, int n_individuals, int n_ins
     double random = Random::get(0.l, 1.l);
     if (random < mutation_rate)
     {
-      mutated[i] = Random::get<std::normal_distribution<>>(individuals[i], 1.0);
+      mutated[i] = individuals[i] + Random::get<std::normal_distribution<>>(0.0, 1.0);
     }
   }
 
@@ -287,7 +285,7 @@ Result optimize(OptimizeOptions options)
   double penalty = options.penalty_exponent;
   double surplus = options.goal_surplus;
 
-  int n_instruments = 2; // TODO: Dynamic
+  int n_instruments = N_INSTRUMENTS;
   int n_scenarios = (1 << n_steps) - 1;
   int n_genes = n_scenarios * n_instruments;
 
@@ -318,6 +316,8 @@ Result optimize(OptimizeOptions options)
     std::cout << c << ' ';
   */
 
+  // printf("Running...\n");
+
   for (size_t t = 0; t < n_generations; ++t)
   {
     fitnesses = evaluate_individuals(individuals, price_changes, probabilities, goals, risk_aversion, penalty, n_individuals, n_steps, n_scenarios, n_instruments);
@@ -329,6 +329,8 @@ Result optimize(OptimizeOptions options)
       {
         global_max_fitness = fitnesses[i];
         i_global_max_individual = i * n_genes;
+
+        // printf("(%i) Max fitness: %f\n", t, global_max_fitness);
 
         int ix = i * n_genes;
         for (size_t j = 0; j < n_genes; ++j)

@@ -141,15 +141,16 @@ TEST_CASE("optimization runs without crashing", "[genetic]")
   options.population_size = 100;
   options.elitism_copies = 2;
   options.generations = 100;
-  options.steps = 4;
-  options.mutation_rate = 0.4;
-  options.crossover_rate = 0.02;
-  options.risk_aversion = 0.5;
+  options.steps = 5;
+  options.mutation_rate = 0.1;
+  options.crossover_rate = 0.1;
+  options.risk_aversion = 0.0;
   options.penalty_exponent = 2.0;
   options.goal_surplus = 0.5;
 
   Result r = optimize(options);
 
+  /*
   std::cout << "\nFitness: \n";
   std::cout << r.fitness;
   std::cout << "\n Individual: \n"
@@ -157,6 +158,7 @@ TEST_CASE("optimization runs without crashing", "[genetic]")
   for (auto const &c : r.individual)
     std::cout << c << ' ';
   std::cout << "\n";
+  */
 }
 
 using Random = effolkronium::random_static;

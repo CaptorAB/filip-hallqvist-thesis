@@ -9,18 +9,6 @@
 
 using Random = effolkronium::random_static;
 
-/*
-  Equities = BlackEq
-  Global equities = BlackEq * Normal
-  Real Estate = BlackIr
-  Alternative = BlackEq
-  Credit = BlackIr * Normal
-  2y Bonds = BlackIr
-  5y Bonds = BlackIr
-  Cash = BlackIr?
-  FTA = BlackIr
-*/
-
 // Util
 
 static double get_random_normal(double mu, double sigma)
@@ -41,23 +29,49 @@ static double sample_black_process(double n1, double n2, double forward_price, d
   return forward_price * exp(-gamma + epsilon);
 }
 
-static double sample_normal_process(double mu, double sigma)
-{
-  return get_random_normal(mu, sigma);
-}
-
 // Risk sampling functions
 static double sample_domestic_market_risk(double previous_change, double n1, double n2)
 {
-  return get_random_normal(0.5, 0.1);
+  return get_random_nln(n1, n2, -0.15, 1.1);
 }
 
 static double sample_global_market_risk(double previous_change, double n1, double n2)
 {
-  return get_random_normal(-0.5, 0.1);
+  return get_random_nln(n1, n2, -0.15, 1.1) + get_random_normal(0.0, 0.1);
+}
+
+static double sample_alternative_risk(double previous_change, double n1, double n2)
+{
+  return get_random_nln(n1, n2, -0.15, 1.1);
+}
+
+static double sample_interest_rate_2y_risk(double previous_change, double n1, double n2)
+{
+  return get_random_nln(n1, n2, -0.15, 1.1);
+}
+
+static double sample_interest_rate_5y_risk(double previous_change, double n1, double n2)
+{
+  return get_random_normal(-0.5, 0.1); // TODO: Use black
+}
+
+static double sample_interest_rate_20y_risk(double previous_change, double n1, double n2)
+{
+  return get_random_normal(-0.5, 0.1); // TODO: Use black
+}
+
+static double sample_credit_risk(double previous_change, double n1, double n2)
+{
+  return get_random_normal(-0.5, 0.1); // TODO: Use black
+}
+
+static double sample_cash_risk(double previous_change, double n1, double n2)
+{
+  return get_random_normal(-0.5, 0.1); // TODO: Use black
 }
 
 // Instrument sampling functions
+
 static double sample_domestic_equity(double previous_change, std::vector<double> risk_changes)
 {
   return risk_changes[DOMESTIC_MARKET_RISK_INDEX];
@@ -68,16 +82,62 @@ static double sample_global_equity(double previous_change, std::vector<double> r
   return risk_changes[GLOBAL_MARKET_RISK_INDEX];
 }
 
-// Likelihood functions
-static double calculate_domestic_equity_likelihood(double value)
+static double sample_real_estate(double previous_change, std::vector<double> risk_changes)
 {
-  return 0.5;
+  return risk_changes[REAL_ESTATE_INDEX];
 }
 
-static double calculate_global_equity_likelihood(double value)
+static double sample_alternative(double previous_change, std::vector<double> risk_changes)
 {
-  return 0.5;
+  return risk_changes[ALTERNATIVE_RISK_INDEX];
 }
+
+static double sample_credit(double previous_change, std::vector<double> risk_changes)
+{
+  return risk_changes[CREDIT_RISK_INDEX];
+}
+
+static double sample_bonds_2y(double previous_change, std::vector<double> risk_changes)
+{
+  return risk_changes[INTEREST_RATE_2Y_RISK_INDEX];
+}
+
+static double sample_bonds_5y(double previous_change, std::vector<double> risk_changes)
+{
+  return risk_changes[INTEREST_RATE_5Y_RISK_INDEX];
+}
+
+static double sample_cash(double previous_change, std::vector<double> risk_changes)
+{
+  return risk_changes[CASH_RISK_INDEX];
+}
+
+static double sample_fta(double previous_change, std::vector<double> risk_changes)
+{
+  return risk_changes[INTEREST_RATE_20Y_RISK_INDEX];
+}
+
+static double sample_domestic_equity_future(double previous_change, std::vector<double> risk_changes)
+{
+  return risk_changes[DOMESTIC_MARKET_RISK_INDEX];
+}
+
+static double sample_interest_rate_swap_2y(double previous_change, std::vector<double> risk_changes)
+{
+  return risk_changes[INTEREST_RATE_2Y_RISK_INDEX];
+}
+
+static double sample_interest_rate_swap_5y(double previous_change, std::vector<double> risk_changes)
+{
+  return risk_changes[INTEREST_RATE_5Y_RISK_INDEX];
+}
+
+static double sample_interest_rate_swap_20y(double previous_change, std::vector<double> risk_changes)
+{
+  return risk_changes[INTEREST_RATE_20Y_RISK_INDEX];
+}
+
+// Goals
 
 std::vector<double> generate_goals(std::vector<double> price_changes, int n_steps, int n_scenarios, int n_instruments, double surplus)
 {
@@ -108,14 +168,14 @@ std::tuple<std::vector<double>, std::vector<double>>
 generate_scenarios(int n_steps)
 {
   int n_scenarios = (1 << n_steps) - 1;
-  int n_risks = 5;
-  int n_instruments = 2;
+  int n_risks = N_RISKS;
+  int n_instruments = N_INSTRUMENTS;
   int n_risk_changes = n_risks * n_scenarios;
   int n_instrument_changes = n_instruments * n_scenarios;
 
   std::vector<double> risk_changes(n_risk_changes);
   std::vector<double> instrument_changes(n_instrument_changes);
-  std::vector<double> likelihoods(n_instrument_changes);
+  std::vector<double> probabilities(n_scenarios);
 
   // Generate new scenarios
   for (int t = 0; t < n_steps; ++t)
@@ -131,6 +191,8 @@ generate_scenarios(int n_steps)
 
       int ri = first_node_in_level + s;  // Index of current scenario risk map
       int ri_ = get_parent_index(ri, 1); // Index of previous scenario risk map
+
+      probabilities[ri] = 1.0 / n_scenarios_in_step;
 
       // Generate new normals
       std::vector<double> normals(2 * n_risks);
@@ -165,6 +227,34 @@ generate_scenarios(int n_steps)
         {
           new_change = sample_global_market_risk(old_change, n1, n2);
         }
+        else if (i == ALTERNATIVE_RISK_INDEX)
+        {
+          new_change = sample_alternative_risk(old_change, n1, n2);
+        }
+        else if (i == INTEREST_RATE_2Y_RISK_INDEX)
+        {
+          new_change = sample_interest_rate_2y_risk(old_change, n1, n2);
+        }
+        else if (i == INTEREST_RATE_5Y_RISK_INDEX)
+        {
+          new_change = sample_interest_rate_5y_risk(old_change, n1, n2);
+        }
+        else if (i == INTEREST_RATE_20Y_RISK_INDEX)
+        {
+          new_change = sample_interest_rate_20y_risk(old_change, n1, n2);
+        }
+        else if (i == CREDIT_RISK_INDEX)
+        {
+          new_change = sample_credit_risk(old_change, n1, n2);
+        }
+        else if (i == CASH_RISK_INDEX)
+        {
+          new_change = sample_cash_risk(old_change, n1, n2);
+        }
+        else
+        {
+          throw std::logic_error("not implemented");
+        }
 
         risk_changes[rx] = new_change;
         temp_risk_changes[i] = new_change;
@@ -179,24 +269,66 @@ generate_scenarios(int n_steps)
 
         double old_change = instrument_changes[k_];
         double new_change = 0.0;
-        double likelihood = 0.0;
+        double probability = 1.0 / n_scenarios_in_step;
 
+        // TODO: Break out into own function
         if (i == DOMESTIC_EQUITY_INDEX)
         {
           new_change = sample_domestic_equity(old_change, temp_risk_changes);
-          likelihood = calculate_domestic_equity_likelihood(new_change);
         }
         else if (i == GLOBAL_EQUITY_INDEX)
         {
           new_change = sample_global_equity(old_change, temp_risk_changes);
-          likelihood = calculate_global_equity_likelihood(new_change);
+        }
+        else if (i == REAL_ESTATE_INDEX)
+        {
+          new_change = sample_real_estate(old_change, temp_risk_changes);
+        }
+        else if (i == ALTERNATIVE_INDEX)
+        {
+          new_change = sample_alternative(old_change, temp_risk_changes);
+        }
+        else if (i == CREDIT_INDEX)
+        {
+          new_change = sample_credit(old_change, temp_risk_changes);
+        }
+        else if (i == BONDS_2Y_INDEX)
+        {
+          new_change = sample_bonds_2y(old_change, temp_risk_changes);
+        }
+        else if (i == BONDS_5Y_INDEX)
+        {
+          new_change = sample_bonds_5y(old_change, temp_risk_changes);
+        }
+        else if (i == CASH_INDEX)
+        {
+          new_change = sample_cash(old_change, temp_risk_changes);
+        }
+        else if (i == FTA_INDEX)
+        {
+          new_change = sample_fta(old_change, temp_risk_changes);
+        }
+        else if (i == DOMESTIC_EQUITY_FUTURE_INDEX)
+        {
+          new_change = sample_domestic_equity_future(old_change, temp_risk_changes);
+        }
+        else if (i == INTEREST_RATE_SWAP_2Y_INDEX)
+        {
+          new_change = sample_interest_rate_swap_2y(old_change, temp_risk_changes);
+        }
+        else if (i == INTEREST_RATE_SWAP_5Y_INDEX)
+        {
+          new_change = sample_interest_rate_swap_5y(old_change, temp_risk_changes);
+        }
+        else if (i == INTEREST_RATE_SWAP_20Y_INDEX)
+        {
+          new_change = sample_interest_rate_swap_20y(old_change, temp_risk_changes);
         }
 
         instrument_changes[k] = new_change;
-        likelihoods[k] = likelihood;
       }
     }
   }
 
-  return std::make_tuple(instrument_changes, likelihoods);
+  return std::make_tuple(instrument_changes, probabilities);
 }
