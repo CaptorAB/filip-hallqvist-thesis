@@ -11,12 +11,9 @@
 
 using Random = effolkronium::random_static;
 
-std::vector<double> normalize_individuals(std::vector<double> individuals, int n_individuals, int n_instruments, int n_scenarios)
+void normalize_individuals(std::vector<double> &individuals, int n_individuals, int n_instruments, int n_scenarios)
 {
   int n_genes = n_instruments * n_scenarios;
-  int size = n_individuals * n_genes;
-
-  std::vector<double> normalized(size);
 
   for (size_t i = 0; i < n_individuals; ++i)
   {
@@ -37,7 +34,7 @@ std::vector<double> normalize_individuals(std::vector<double> individuals, int n
         for (size_t j = 0; j < n_instruments; ++j)
         {
           size_t jx = sx + j;
-          normalized[jx] = 1.0 / n_instruments;
+          individuals[jx] = 1.0 / n_instruments;
         }
       }
       else
@@ -45,15 +42,13 @@ std::vector<double> normalize_individuals(std::vector<double> individuals, int n
         for (size_t j = 0; j < n_instruments; ++j)
         {
           size_t jx = sx + j;
-          normalized[jx] = individuals[jx] / total;
+          individuals[jx] = individuals[jx] / total;
         }
       }
 
     } // Scenarios
 
   } // Individuals
-
-  return normalized;
 }
 
 std::vector<double>
@@ -76,13 +71,13 @@ initialize_individuals(int n_individuals, int n_instruments, int n_scenarios)
   }
 
   // Normalize individuals
-  individuals = normalize_individuals(individuals, n_individuals, n_instruments, n_scenarios);
+  normalize_individuals(individuals, n_individuals, n_instruments, n_scenarios);
 
   return individuals;
 }
 
 std::tuple<size_t, size_t>
-select_roulette(std::vector<double> fitnesses)
+select_roulette(const std::vector<double> &fitnesses)
 {
   {
     int i1 = Random::get<std::discrete_distribution<>>(fitnesses.begin(), fitnesses.end());
@@ -92,7 +87,7 @@ select_roulette(std::vector<double> fitnesses)
 }
 
 // TODO: Refactor this mess
-std::vector<double> evaluate_individuals(std::vector<double> X, std::vector<double> price_changes, std::vector<double> probabilities, std::vector<double> goals, double risk_aversion, double penalty, int n_individuals, int n_steps, int n_scenarios, int n_instruments)
+std::vector<double> evaluate_individuals(const std::vector<double> &X, const std::vector<double> &price_changes, const std::vector<double> &probabilities, const std::vector<double> &goals, double risk_aversion, double penalty, int n_individuals, int n_steps, int n_scenarios, int n_instruments)
 {
   int timestamps = n_steps;
   int branching = 2;
@@ -103,9 +98,7 @@ std::vector<double> evaluate_individuals(std::vector<double> X, std::vector<doub
 
   for (int in = 0; in < n_individuals; ++in)
   {
-    double wt = 1.0;
-    double pt = 0.0; // Penalty
-    double a = penalty;
+    double pt = 0.0;          // Penalty
     size_t xi = in * n_genes; // Index of current individual
 
     std::vector<double> wealth(n_scenarios);
@@ -119,7 +112,6 @@ std::vector<double> evaluate_individuals(std::vector<double> X, std::vector<doub
       int first_node = get_first_node_in_level(t);
       int ti = first_node * instruments; // Index of first node in step
       int ss = get_nodes_in_level(t);    // Scenarios in this step
-      double ws = 0.0;                   // Total expected wealth in this step
 
       // TODO: Calculate wealth from assets for final step
       for (int s = 0; s < ss; ++s)
@@ -190,7 +182,7 @@ std::vector<double> evaluate_individuals(std::vector<double> X, std::vector<doub
 }
 
 std::vector<double>
-mutate_individuals(std::vector<double> individuals, int n_individuals, int n_instruments, int n_scenarios, double mutation_rate)
+mutate_individuals(std::vector<double> &individuals, int n_individuals, int n_instruments, int n_scenarios, double mutation_rate)
 {
   int n_genes = n_instruments * n_scenarios;
   int size = n_individuals * n_genes;
@@ -206,13 +198,13 @@ mutate_individuals(std::vector<double> individuals, int n_individuals, int n_ins
     }
   }
 
-  mutated = normalize_individuals(individuals, n_individuals, n_instruments, n_scenarios);
+  normalize_individuals(mutated, n_individuals, n_instruments, n_scenarios);
 
   return mutated;
 }
 
 std::vector<double>
-crossover_individuals(std::vector<double> individuals, std::vector<double> evaluated, int n_individuals, int n_genes, double crossover_rate)
+crossover_individuals(std::vector<double> &individuals, std::vector<double> &evaluated, int n_individuals, int n_genes, double crossover_rate)
 {
   int size = n_individuals * n_genes;
   std::vector<double> crossovered(size);
@@ -260,7 +252,7 @@ crossover_individuals(std::vector<double> individuals, std::vector<double> evalu
 }
 
 std::vector<double>
-elitism_individuals(std::vector<double> old_individuals, std::vector<double> new_individuals, int i_elite_individual, int n_elitism_copies, int n_genes)
+elitism_individuals(std::vector<double> &old_individuals, std::vector<double> &new_individuals, int i_elite_individual, int n_elitism_copies, int n_genes)
 {
   for (size_t i = 0; i < n_elitism_copies; ++i)
   {

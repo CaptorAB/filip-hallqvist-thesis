@@ -72,74 +72,74 @@ static double sample_cash_risk(double previous_change, double n1, double n2)
 
 // Instrument sampling functions
 
-static double sample_domestic_equity(double previous_change, std::vector<double> risk_changes)
+static double sample_domestic_equity(double previous_change, std::vector<double> &risk_changes)
 {
   return risk_changes[DOMESTIC_MARKET_RISK_INDEX];
 }
 
-static double sample_global_equity(double previous_change, std::vector<double> risk_changes)
+static double sample_global_equity(double previous_change, std::vector<double> &risk_changes)
 {
   return risk_changes[GLOBAL_MARKET_RISK_INDEX];
 }
 
-static double sample_real_estate(double previous_change, std::vector<double> risk_changes)
+static double sample_real_estate(double previous_change, std::vector<double> &risk_changes)
 {
   return risk_changes[REAL_ESTATE_INDEX];
 }
 
-static double sample_alternative(double previous_change, std::vector<double> risk_changes)
+static double sample_alternative(double previous_change, std::vector<double> &risk_changes)
 {
   return risk_changes[ALTERNATIVE_RISK_INDEX];
 }
 
-static double sample_credit(double previous_change, std::vector<double> risk_changes)
+static double sample_credit(double previous_change, std::vector<double> &risk_changes)
 {
   return risk_changes[CREDIT_RISK_INDEX];
 }
 
-static double sample_bonds_2y(double previous_change, std::vector<double> risk_changes)
+static double sample_bonds_2y(double previous_change, std::vector<double> &risk_changes)
 {
   return risk_changes[INTEREST_RATE_2Y_RISK_INDEX];
 }
 
-static double sample_bonds_5y(double previous_change, std::vector<double> risk_changes)
+static double sample_bonds_5y(double previous_change, std::vector<double> &risk_changes)
 {
   return risk_changes[INTEREST_RATE_5Y_RISK_INDEX];
 }
 
-static double sample_cash(double previous_change, std::vector<double> risk_changes)
+static double sample_cash(double previous_change, std::vector<double> &risk_changes)
 {
   return risk_changes[CASH_RISK_INDEX];
 }
 
-static double sample_fta(double previous_change, std::vector<double> risk_changes)
+static double sample_fta(double previous_change, std::vector<double> &risk_changes)
 {
   return risk_changes[INTEREST_RATE_20Y_RISK_INDEX];
 }
 
-static double sample_domestic_equity_future(double previous_change, std::vector<double> risk_changes)
+static double sample_domestic_equity_future(double previous_change, std::vector<double> &risk_changes)
 {
   return risk_changes[DOMESTIC_MARKET_RISK_INDEX];
 }
 
-static double sample_interest_rate_swap_2y(double previous_change, std::vector<double> risk_changes)
+static double sample_interest_rate_swap_2y(double previous_change, std::vector<double> &risk_changes)
 {
   return risk_changes[INTEREST_RATE_2Y_RISK_INDEX];
 }
 
-static double sample_interest_rate_swap_5y(double previous_change, std::vector<double> risk_changes)
+static double sample_interest_rate_swap_5y(double previous_change, std::vector<double> &risk_changes)
 {
   return risk_changes[INTEREST_RATE_5Y_RISK_INDEX];
 }
 
-static double sample_interest_rate_swap_20y(double previous_change, std::vector<double> risk_changes)
+static double sample_interest_rate_swap_20y(double previous_change, std::vector<double> &risk_changes)
 {
   return risk_changes[INTEREST_RATE_20Y_RISK_INDEX];
 }
 
 // Goals
 
-std::vector<double> generate_goals(std::vector<double> price_changes, int n_steps, int n_scenarios, int n_instruments, double surplus)
+std::vector<double> generate_goals(std::vector<double> &price_changes, int n_steps, int n_scenarios, int n_instruments, double surplus)
 {
   std::vector<double> goals(n_scenarios);
   for (int t = 0; t < n_steps; ++t)
@@ -212,7 +212,6 @@ generate_scenarios(int n_steps)
       {
         int nx = 2 * i;
         int rx = ri + i;
-        int rx_ = ri_ + i;
         double n1 = normals[nx];
         double n2 = normals[nx + 1];
 
@@ -269,7 +268,6 @@ generate_scenarios(int n_steps)
 
         double old_change = instrument_changes[k_];
         double new_change = 0.0;
-        double probability = 1.0 / n_scenarios_in_step;
 
         // TODO: Break out into own function
         if (i == DOMESTIC_EQUITY_INDEX)

@@ -33,6 +33,6 @@ const std::vector<double> RISK_CORRELATIONS = {
     0.0, 1.0};
 
 std::tuple<std::vector<double>, std::vector<double>> generate_scenarios(int n_steps);
-std::vector<double> generate_goals(std::vector<double> price_changes, int n_steps, int n_scenarios, int n_instruments, double surplus);
+std::vector<double> generate_goals(std::vector<double> &price_changes, int n_steps, int n_scenarios, int n_instruments, double surplus);
 
 #endif
