@@ -58,9 +58,9 @@ typings/
 .next
 
 # binary files
-bin/
+bin/**/*
 !bin/.gitkeep
-public/bin/
+public/bin/**/*
 !public/bin/.gitkeep
 
 # production
