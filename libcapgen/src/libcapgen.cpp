@@ -32,6 +32,11 @@ EMSCRIPTEN_BINDINGS(libcapgen)
 
   value_object<Result>("Result")
       .field("fitness", &Result::fitness)
+      .field("totalReturn", &Result::total_return)
+      .field("risk", &Result::risk)
+      .field("priceChanges", &Result::price_changes)
+      .field("probabilities", &Result::probabilities)
+      .field("goals", &Result::goals)
       .field("individual", &Result::individual);
 
   emscripten::register_vector<double>("VectorDouble");

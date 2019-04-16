@@ -24,6 +24,9 @@ struct Result
   double fitness;
   double total_return;
   double risk;
+  std::vector<double> price_changes;
+  std::vector<double> probabilities;
+  std::vector<double> goals;
   std::vector<double> individual;
 };
 

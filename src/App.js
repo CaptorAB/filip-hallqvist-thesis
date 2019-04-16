@@ -1,22 +1,30 @@
-import React, { Component } from "react";
-import { Pane, Heading } from "evergreen-ui";
+import React, { useState, useEffect } from "react";
+import { Pane, Spinner } from "evergreen-ui";
 import { Header } from "./Header/Header";
 import { Sidebar } from "./Sidebar/Sidebar";
 import { Simulator } from "./Simulator/Simulator";
-import "./App.css";
-import { Provider, Consumer } from "./Libcapgen";
+import { libcapgen } from "./libcapgen";
+import { Subscribe } from "unstated";
+import { SimulatorContainer } from "./SimulatorContainer";
 
-const App = () => (
-  <Provider>
-    <Consumer>
-      {({ loading, libcapgen }) =>
-        loading ? (
-          <Heading size={900}>Loading...</Heading>
+const HEADER_HEIGHT = "52px";
+
+const App = () => {
+  return (
+    <Subscribe to={[SimulatorContainer]}>
+      {simulator =>
+        simulator.loading ? (
+          <Spinner
+            transform="translate(-50%, -50%)"
+            position="absolute"
+            left="50%"
+            top="50%"
+          />
         ) : (
           <Pane height="100vh" display="flex" flexDirection="column">
             <Header />
-            <Pane display="flex" flex={1}>
-              <Pane flex={0}>
+            <Pane display="flex" height={`calc(100% - ${HEADER_HEIGHT})`}>
+              <Pane flex={0} height="100%">
                 <Sidebar />
               </Pane>
               <Pane flex={1}>
@@ -26,8 +34,8 @@ const App = () => (
           </Pane>
         )
       }
-    </Consumer>
-  </Provider>
-);
+    </Subscribe>
+  );
+};
 
 export default App;

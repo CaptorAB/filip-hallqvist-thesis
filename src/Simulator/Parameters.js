@@ -1,13 +1,7 @@
 import React, { useState } from "react";
-import {
-  Pane,
-  Heading,
-  Button,
-  Tablist,
-  Tab,
-  TextInputField,
-  withTheme
-} from "evergreen-ui";
+import { Pane, Heading, TextInputField, withTheme } from "evergreen-ui";
+
+import { Tabs, Tab } from "../Tabs/Tabs";
 
 export const INITIAL_PARAMETERS = {
   populationSize: 100,
@@ -22,7 +16,6 @@ export const INITIAL_PARAMETERS = {
 };
 
 export const Parameters = withTheme(({ theme }) => {
-  const [selected, setSelected] = useState(0);
   const [parameters, setParameters] = useState({ ...INITIAL_PARAMETERS });
   return (
     <>
@@ -30,7 +23,8 @@ export const Parameters = withTheme(({ theme }) => {
         background="tint1"
         borderBottom={`1px solid ${theme.colors.border.default}`}
         display="flex"
-        padding={16}
+        paddingX={16}
+        paddingY={8}
         flexDirection="column"
       >
         <Pane flex={1}>
@@ -43,38 +37,24 @@ export const Parameters = withTheme(({ theme }) => {
         padding={16}
         flexDirection="column"
       >
-        <Tablist marginX={-4}>
-          {["Portfolio", "Simulation", "Optimizer"].map((tab, index) => (
-            <Tab
-              key={tab}
-              is="a"
-              id={tab}
-              isSelected={index === selected}
-              onSelect={() => setSelected(index)}
-            >
-              {tab}
-            </Tab>
-          ))}
-        </Tablist>
-        <TabPane selected={selected === 0}>
-          <PortfolioParameters />
-        </TabPane>
-        <TabPane selected={selected === 1}>
-          <SimulationParameters />
-        </TabPane>
-        <TabPane selected={selected === 2}>
-          <OptimizerParameters />
-        </TabPane>
+        <Tabs>
+          <Tab title="Portfolio">
+            <PortfolioParameters />
+          </Tab>
+          <Tab title="Simulation">
+            <SimulationParameters />
+          </Tab>
+          <Tab title="Optimizer">
+            <OptimizerParameters />
+          </Tab>
+          <Tab title="Correlations" disabled={true}>
+            Correlations
+          </Tab>
+        </Tabs>
       </Pane>
     </>
   );
 });
-
-export const TabPane = ({ selected, children, ...rest }) => (
-  <Pane marginTop={16} display={selected ? "block" : "none"} {...rest}>
-    {children}
-  </Pane>
-);
 
 const Parameter = props => (
   <TextInputField flexBasis="28%" marginX={8} {...props} />

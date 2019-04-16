@@ -418,6 +418,9 @@ Result optimize(OptimizeOptions options)
   result.fitness = global_max_fitness;
   result.total_return = global_max_total_return;
   result.risk = global_max_risk;
+  result.price_changes = price_changes;
+  result.probabilities = probabilities;
+  result.goals = goals;
   result.individual = global_max_individual;
 
   return result;

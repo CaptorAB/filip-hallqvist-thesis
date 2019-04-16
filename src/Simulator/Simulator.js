@@ -1,24 +1,11 @@
 import React from "react";
 import { Pane, Heading, Button, withTheme } from "evergreen-ui";
+import { Subscribe } from "unstated";
+
 import { Parameters } from "./Parameters";
 import { Results } from "./Results";
-import { Consumer as Libcapgen } from "../Libcapgen";
-
-const runSimulation = libcapgen => {
-  const result = libcapgen.optimize({
-    populationSize: 10,
-    elitismCopies: 2,
-    generations: 10,
-    mutationRate: 0.02,
-    crossoverRate: 0.02,
-    steps: 4,
-    riskAversion: 0.5,
-    initialFundingRatio: 1.3,
-    targetFundingRatio: 1.3
-  });
-
-  console.log(result);
-};
+import { libcapgen } from "../libcapgen";
+import { SimulatorContainer } from "../SimulatorContainer";
 
 export const Simulator = withTheme(({ theme, ...rest }) => (
   <Pane display="flex" flexDirection="column" {...rest}>
@@ -32,17 +19,29 @@ export const Simulator = withTheme(({ theme, ...rest }) => (
         <Heading>Backtest</Heading>
       </Pane>
       <Pane>
-        <Libcapgen>
-          {({ libcapgen }) => (
+        <Subscribe to={[SimulatorContainer]}>
+          {simulator => (
             <Button
               appearance="primary"
               iconBefore="play"
-              onClick={() => runSimulation(libcapgen)}
+              onClick={() =>
+                simulator.optimize({
+                  populationSize: 10,
+                  elitismCopies: 2,
+                  generations: 10,
+                  mutationRate: 0.02,
+                  crossoverRate: 0.02,
+                  steps: 4,
+                  riskAversion: 0.5,
+                  initialFundingRatio: 1.3,
+                  targetFundingRatio: 1.3
+                })
+              }
             >
               Run
             </Button>
           )}
-        </Libcapgen>
+        </Subscribe>
       </Pane>
     </Pane>
     <Parameters />
