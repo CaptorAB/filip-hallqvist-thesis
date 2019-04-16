@@ -1,27 +1,34 @@
 {
   "name": "capgen",
   "description": "Constrained Portfolio Optimization in Liability-Driven Investing",
-  "version": "0.0.0",
+  "version": "0.1.0",
+  "private": true,
   "repository": {
     "type": "git",
     "url": "https://github.com/CaptorAB/filip-hallqvist-thesis.git"
   },
-  "scripts": {
-    "build:test": "mkdirp bin && g++ -O3 -I. ./src/*.cpp -o ./bin/libcapgen",
-    "build:lib": "mkdirp bin && emcc --bind -O3 -I. -s WASM=1 -s ALLOW_MEMORY_GROWTH=1 -s MODULARIZE=1 -s ENVIRONMENT=\"web\" -s 'EXPORT_NAME=\"libcapgen\"' -o ./bin/libcapgen.js ./src/*.cpp",
-    "build:app": "webpack",
-    "test": "./bin/libcapgen",
-    "clean": "rm -rf bin",
-    "build": "npm run build:lib && npm run build:app",
-    "serve": "http-server",
-    "start": "npm run serve"
+  "dependencies": {
+    "react": "^16.8.6",
+    "react-dom": "^16.8.6",
+    "react-scripts": "2.1.8"
   },
-  "devDependencies": {
-    "exports-loader": "^0.7.0",
-    "file-loader": "^1.1.11",
-    "http-server": "^0.11.1",
-    "webpack": "^4.8.3",
-    "webpack-cli": "^3.1.2",
-    "mkdirp": "0.5.1"
-  }
+  "scripts": {
+    "start": "react-scripts start",
+    "build": "react-scripts build",
+    "test": "react-scripts test",
+    "eject": "react-scripts eject",
+    "build:test": "g++ -O3 -Ilibcapgen ./libcapgen/src/*.cpp -o ./bin/libcapgen",
+    "build:lib": "emcc --bind -O3 -Ilibcapgen -s WASM=1 -s ALLOW_MEMORY_GROWTH=1 -s MODULARIZE=1 -s ENVIRONMENT=\"web\" -s 'EXPORT_NAME=\"libcapgen\"' -o ./public/bin/libcapgen.js ./libcapgen/src/*.cpp",
+    "docker": "docker run -v ${PWD}:/src -w /src -it trzeci/emscripten /bin/bash -c \"npm run build:lib\"",
+    "clean": "rm -rf bin"
+  },
+  "eslintConfig": {
+    "extends": "react-app"
+  },
+  "browserslist": [
+    ">0.2%",
+    "not dead",
+    "not ie <= 11",
+    "not op_mini all"
+  ]
 }

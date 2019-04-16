@@ -6,7 +6,6 @@
 # 7. (3) Use real numbers instead of bits in chromosomes [DONE]
 # 9. (1) Break out goal generation to own function [DONE]
 # 20. (1) Allow dynamically setting the goal surplus [DONE]
-24. (2) Normalize joint probabilities
 25. (2) Move joint probability-calculations to scenario generation
 26. (2) Allow dynamically setting the asset/liability ratio
 11. (3) Implement interest rate instruments using LMM
@@ -15,6 +14,7 @@
 
 12. (3) Implement all instruments using a fat tailed distribution [11]
 8. (2) Make sure that n_instruments is not hard coded (optimize())
+29. (1) Rename returns to wealth
 
 ## Week 16
 
@@ -31,13 +31,11 @@
 23. Use namespace std 
 24. Implement tournament selection
 
-## Week 18 
-
-14. (3) Refactor the generate_price_changes function [17, 18]
-15. (3) Refactor the evaluate_individuals function [5, 6, 7, 8]
-
 ## Backlog
 
+24. (2) Normalize joint probabilities
+14. (3) Refactor the generate_price_changes function [17, 18]
+15. (3) Refactor the evaluate_individuals function [5, 6, 7, 8]
 13. (3) Write thorough tests and confirm them using pen and paper
 27. (2) Rename scenario to event
 28. (1) Use N_INSTRUMENTS and N_RISKS constants instead of passing as argument
