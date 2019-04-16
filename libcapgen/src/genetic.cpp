@@ -343,6 +343,7 @@ Result optimize(OptimizeOptions options)
   // Define goals
   std::vector<double> goals = generate_goals(price_changes, n_steps, n_scenarios, n_instruments, initial_funding_ratio, target_funding_ratio);
 
+  /*
   std::cout << "Price changes: \n";
   for (auto const &c : price_changes)
     std::cout << c << ' ';
@@ -353,6 +354,7 @@ Result optimize(OptimizeOptions options)
     std::cout << c << ' ';
   std::cout << std::endl;
   std::cout << std::endl;
+  */
 
   // printf("Running...\n");
 
@@ -374,6 +376,7 @@ Result optimize(OptimizeOptions options)
         global_max_risk = risks[i];
         i_global_max_individual = i * n_genes;
 
+        /*
         printf("(%i) Fitness: %.10f, Total return: %.10f\n", t, global_max_fitness, global_max_total_return);
         std::cout << "\n";
 
@@ -393,6 +396,7 @@ Result optimize(OptimizeOptions options)
           a++;
         }
         std::cout << "\n";
+        */
 
         int ix = i * n_genes;
         for (size_t j = 0; j < n_genes; ++j)

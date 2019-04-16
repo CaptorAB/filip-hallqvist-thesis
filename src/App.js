@@ -1,28 +1,33 @@
-import React, { Component } from 'react';
-import logo from './logo.svg';
-import './App.css';
+import React, { Component } from "react";
+import { Pane, Heading } from "evergreen-ui";
+import { Header } from "./Header/Header";
+import { Sidebar } from "./Sidebar/Sidebar";
+import { Simulator } from "./Simulator/Simulator";
+import "./App.css";
+import { Provider, Consumer } from "./Libcapgen";
 
-class App extends Component {
-  render() {
-    return (
-      <div className="App">
-        <header className="App-header">
-          <img src={logo} className="App-logo" alt="logo" />
-          <p>
-            Edit <code>src/App.js</code> and save to reload.
-          </p>
-          <a
-            className="App-link"
-            href="https://reactjs.org"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            Learn React
-          </a>
-        </header>
-      </div>
-    );
-  }
-}
+const App = () => (
+  <Provider>
+    <Consumer>
+      {({ loading, libcapgen }) =>
+        loading ? (
+          <Heading size={900}>Loading...</Heading>
+        ) : (
+          <Pane height="100vh" display="flex" flexDirection="column">
+            <Header />
+            <Pane display="flex" flex={1}>
+              <Pane flex={0}>
+                <Sidebar />
+              </Pane>
+              <Pane flex={1}>
+                <Simulator />
+              </Pane>
+            </Pane>
+          </Pane>
+        )
+      }
+    </Consumer>
+  </Provider>
+);
 
 export default App;

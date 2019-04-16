@@ -27,7 +27,6 @@ EMSCRIPTEN_BINDINGS(libcapgen)
       .field("mutationRate", &OptimizeOptions::mutation_rate)
       .field("crossoverRate", &OptimizeOptions::crossover_rate)
       .field("riskAversion", &OptimizeOptions::risk_aversion)
-      .field("penaltyExponent", &OptimizeOptions::penalty_exponent)
       .field("initialFundingRatio", &OptimizeOptions::initial_funding_ratio)
       .field("targetFundingRatio", &OptimizeOptions::target_funding_ratio);
 

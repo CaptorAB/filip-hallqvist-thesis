@@ -3,11 +3,14 @@
   "description": "Constrained Portfolio Optimization in Liability-Driven Investing",
   "version": "0.1.0",
   "private": true,
+  "homepage": "https://captorab.github.io/filip-hallqvist-thesis",
   "repository": {
     "type": "git",
     "url": "https://github.com/CaptorAB/filip-hallqvist-thesis.git"
   },
   "dependencies": {
+    "evergreen-ui": "^4.15.0",
+    "gh-pages": "^2.0.1",
     "react": "^16.8.6",
     "react-dom": "^16.8.6",
     "react-scripts": "2.1.8"
@@ -20,7 +23,8 @@
     "build:test": "g++ -O3 -Ilibcapgen ./libcapgen/src/*.cpp -o ./bin/libcapgen",
     "build:lib": "emcc --bind -O3 -Ilibcapgen -s WASM=1 -s ALLOW_MEMORY_GROWTH=1 -s MODULARIZE=1 -s ENVIRONMENT=\"web\" -s 'EXPORT_NAME=\"libcapgen\"' -o ./public/bin/libcapgen.js ./libcapgen/src/*.cpp",
     "docker": "docker run -v ${PWD}:/src -w /src -it trzeci/emscripten /bin/bash -c \"npm run build:lib\"",
-    "clean": "rm -rf bin"
+    "clean": "rm -rf bin build public/bin",
+    "deploy": "npm run build && cp -r .circleci build && gh-pages -d build "
   },
   "eslintConfig": {
     "extends": "react-app"

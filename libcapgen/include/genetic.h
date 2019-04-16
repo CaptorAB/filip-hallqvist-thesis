@@ -15,7 +15,6 @@ struct OptimizeOptions
   double mutation_rate;
   double crossover_rate;
   double risk_aversion;
-  double penalty_exponent;
   double initial_funding_ratio;
   double target_funding_ratio;
 };
