@@ -14,7 +14,7 @@
 importScripts("https://storage.googleapis.com/workbox-cdn/releases/3.6.3/workbox-sw.js");
 
 importScripts(
-  "/filip-hallqvist-thesis/precache-manifest.29b728e4e72a7c4d44b814d7e7f7e261.js"
+  "/filip-hallqvist-thesis/precache-manifest.b95024f63989174897ce03ae5384a0ef.js"
 );
 
 workbox.clientsClaim();
