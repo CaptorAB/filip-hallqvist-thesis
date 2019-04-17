@@ -21,6 +21,7 @@
 16. (2) Correlate the normally generated numbers in generate_price_changes [12]
 17. (1) Break out risk changes generation into own function
 29. (1) Rename returns to wealth
+30. (1) Remove iostream from all files
 
 ## Week 17
 

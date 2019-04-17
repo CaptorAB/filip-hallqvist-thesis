@@ -13,37 +13,37 @@
 
 using Random = effolkronium::random_static;
 
-void normalize_individuals(std::vector<double> &individuals, int n_individuals, int n_instruments, int n_scenarios)
+void normalize_individuals(std::vector<double> &individuals, const int n_individuals, const int n_instruments, const int n_scenarios)
 {
-  int n_genes = n_instruments * n_scenarios;
+  const int n_genes = n_instruments * n_scenarios;
 
-  for (size_t i = 0; i < n_individuals; ++i)
+  for (int i = 0; i < n_individuals; ++i)
   {
-    size_t ix = i * n_genes;
-    for (size_t s = 0; s < n_scenarios; ++s)
+    int ix = i * n_genes;
+    for (int s = 0; s < n_scenarios; ++s)
     {
       double total = 0.0;
-      size_t sx = ix + (s * n_instruments);
+      int sx = ix + (s * n_instruments);
 
-      for (size_t j = 0; j < n_instruments; ++j)
+      for (int j = 0; j < n_instruments; ++j)
       {
-        size_t jx = sx + j;
+        int jx = sx + j;
         total += individuals[jx];
       }
 
       if (total == 0.0)
       {
-        for (size_t j = 0; j < n_instruments; ++j)
+        for (int j = 0; j < n_instruments; ++j)
         {
-          size_t jx = sx + j;
+          int jx = sx + j;
           individuals[jx] = 1.0 / n_instruments;
         }
       }
       else
       {
-        for (size_t j = 0; j < n_instruments; ++j)
+        for (int j = 0; j < n_instruments; ++j)
         {
-          size_t jx = sx + j;
+          int jx = sx + j;
           individuals[jx] = individuals[jx] / total;
         }
       }
@@ -53,11 +53,10 @@ void normalize_individuals(std::vector<double> &individuals, int n_individuals, 
   } // Individuals
 }
 
-std::vector<double>
-initialize_individuals(int n_individuals, int n_instruments, int n_scenarios)
+std::vector<double> initialize_individuals(const int n_individuals, const int n_instruments, const int n_scenarios)
 {
-  int n_genes = n_instruments * n_scenarios;
-  int size = n_individuals * n_genes;
+  const int n_genes = n_instruments * n_scenarios;
+  const int size = n_individuals * n_genes;
 
   std::vector<double> individuals(size);
 
@@ -78,8 +77,7 @@ initialize_individuals(int n_individuals, int n_instruments, int n_scenarios)
   return individuals;
 }
 
-std::tuple<size_t, size_t>
-select_roulette(const std::vector<double> &fitnesses)
+std::tuple<int, int> select_roulette(std::vector<double> &fitnesses)
 {
   {
     int i1 = Random::get<std::discrete_distribution<>>(fitnesses.begin(), fitnesses.end());
@@ -88,8 +86,30 @@ select_roulette(const std::vector<double> &fitnesses)
   }
 }
 
-// TODO: Refactor this mess
-std::tuple<std::vector<double>, std::vector<double>, std::vector<double>> evaluate_individuals(const std::vector<double> &X, const std::vector<double> &price_changes, const std::vector<double> &probabilities, const std::vector<double> &goals, double risk_aversion, int n_individuals, int n_steps, int n_scenarios, int n_instruments)
+double compute_wealth(std::vector<double> &current_weights, std::vector<double> &next_weights, std::vector<double> &price_changes, std::vector<double> &transaction_costs, const double initial_wealth)
+{
+  double holdings = 0.0;
+  double reallocations = 0.0;
+
+  // Compute wealth from price changes
+  for (int i = 0; i < current_weights.size(); ++i)
+  {
+    holdings += initial_wealth * current_weights[i] * (1.0 + price_changes[i]);
+  }
+
+  // Deduct transation costs
+  for (int i = 0; i < current_weights.size(); ++i)
+  {
+    const double diff = fabs(current_weights[i] - next_weights[i]);
+    reallocations += holdings * diff * transaction_costs[i];
+  }
+
+  const double wealth = holdings - reallocations;
+
+  return wealth;
+}
+
+std::tuple<std::vector<double>, std::vector<double>, std::vector<double>> evaluate_individuals(std::vector<double> &X, std::vector<double> &price_changes, std::vector<double> &probabilities, std::vector<double> &goals, const double risk_aversion, const int n_individuals, const int n_steps, const int n_scenarios, const int n_instruments)
 {
   int timestamps = n_steps;
   int branching = 2;
@@ -102,8 +122,8 @@ std::tuple<std::vector<double>, std::vector<double>, std::vector<double>> evalua
 
   for (int in = 0; in < n_individuals; ++in)
   {
-    double pt = 0.0;          // Penalty
-    size_t xi = in * n_genes; // Index of current individual
+    double pt = 0.0;       // Penalty
+    int xi = in * n_genes; // Index of current individual
 
     std::vector<double> wealth(n_scenarios);
     wealth[0] = 1.0;
@@ -211,109 +231,64 @@ std::tuple<std::vector<double>, std::vector<double>, std::vector<double>> evalua
   return std::make_tuple(fitnesses, total_returns, risks);
 }
 
-std::vector<double>
-mutate_individuals(std::vector<double> &individuals, int n_individuals, int n_instruments, int n_scenarios, double mutation_rate)
+void mutate_individuals(std::vector<double> &selected, const double mutation_rate)
 {
-  int n_genes = n_instruments * n_scenarios;
-  int size = n_individuals * n_genes;
-
-  std::vector<double> mutated(size);
-
-  for (size_t i = 0; i < size; i++)
+  for (int j = 0; j < selected.size(); ++j)
   {
-    double random = Random::get(0.l, 1.l);
+    const double random = Random::get(0.0, 1.0);
     if (random < mutation_rate)
     {
-      mutated[i] = std::max(0.0, individuals[i] + Random::get<std::normal_distribution<>>(0.0, 0.1));
-    }
-    else
-    {
-      mutated[i] = individuals[i];
+      selected[j] = std::max(0.0, selected[j] + Random::get<std::normal_distribution<>>(0.0, 0.1));
     }
   }
-
-  normalize_individuals(mutated, n_individuals, n_instruments, n_scenarios);
-
-  return mutated;
 }
 
-std::vector<double>
-crossover_individuals(std::vector<double> &individuals, std::vector<double> &evaluated, int n_individuals, int n_genes, double crossover_rate)
+void crossover_individuals(std::vector<double> &selected, const double crossover_rate)
 {
-  int size = n_individuals * n_genes;
-  std::vector<double> crossovered(size);
-  for (size_t i = 0; i < n_individuals; i += 2)
+
+  const double r1 = Random::get(0.0, 1.0);
+  if (r1 < crossover_rate)
   {
-    std::tuple<size_t, size_t> selected = select_roulette(evaluated);
-    size_t cx1 = std::get<0>(selected) * n_genes;
-    size_t cx2 = std::get<1>(selected) * n_genes;
+    const int n_genes = selected.size() / 2;
+    std::vector<double> temp(selected);
 
-    double random = Random::get(0.l, 1.l);
-    size_t ix = (i * n_genes);
-
-    // Zip individuals
-    if (random < crossover_rate)
+    // Construct first individual
+    for (int j = 0; j < n_genes; ++j)
     {
-      // Construct first individuals
-      for (size_t j = 0; j < n_genes; j += 2)
-      {
-        crossovered[ix + j] = individuals[cx1 + j];
-        crossovered[ix + j + 1] = individuals[cx2 + j + 1];
-      }
-
-      // Construct second individuals
-      ix += n_genes;
-      for (size_t j = 0; j < n_genes; j += 2)
-      {
-        crossovered[ix + j] = individuals[cx2 + j];
-        crossovered[ix + j + 1] = individuals[cx1 + j + 1];
-      }
+      const double r2 = Random::get(0.0, 1.0);
+      if (r2 < 0.5)
+        selected[j] = temp[j];
+      else
+        selected[j] = temp[j + n_genes];
     }
-    else
+
+    // Construct Second individual
+    for (int j = 0; j < n_genes; ++j)
     {
-      for (size_t j = 0; j < n_genes; ++j)
-      {
-        crossovered[ix + j] = individuals[cx1 + j];
-      }
-      ix += n_genes;
-      for (size_t j = 0; j < n_genes; ++j)
-      {
-        crossovered[ix + j] = individuals[cx2 + j];
-      }
+      const double r2 = Random::get(0.0, 1.0);
+      if (r2 < 0.5)
+        selected[j + n_genes] = temp[j];
+      else
+        selected[j + n_genes] = temp[j + n_genes];
     }
   }
-  return crossovered;
-}
-
-std::vector<double>
-elitism_individuals(std::vector<double> &old_individuals, std::vector<double> &new_individuals, int i_elite_individual, int n_elitism_copies, int n_genes)
-{
-  for (size_t i = 0; i < n_elitism_copies; ++i)
-  {
-    size_t ix = i * n_genes;
-    for (size_t j = 0; j < n_genes; ++j)
-    {
-      new_individuals[ix + j] = old_individuals[i_elite_individual + j];
-    }
-  }
-  return new_individuals;
 }
 
 Result optimize(OptimizeOptions options)
 {
-  int n_individuals = options.population_size;
-  int n_elitism_copies = options.elitism_copies;
-  int n_generations = options.generations;
-  int n_steps = options.steps;
-  double mutation_rate = options.mutation_rate;
-  double crossover_rate = options.crossover_rate;
-  double risk_aversion = options.risk_aversion;
-  double initial_funding_ratio = options.initial_funding_ratio;
-  double target_funding_ratio = options.target_funding_ratio;
+  const int n_individuals = options.population_size;
+  const int n_elitism_copies = options.elitism_copies;
+  const int n_generations = options.generations;
+  const int n_steps = options.steps;
+  const double mutation_rate = options.mutation_rate;
+  const double crossover_rate = options.crossover_rate;
+  const double risk_aversion = options.risk_aversion;
+  const double initial_funding_ratio = options.initial_funding_ratio;
+  const double target_funding_ratio = options.target_funding_ratio;
 
-  int n_instruments = N_INSTRUMENTS;
-  int n_scenarios = (1 << n_steps) - 1;
-  int n_genes = n_scenarios * n_instruments;
+  const int n_instruments = N_INSTRUMENTS;
+  const int n_scenarios = (1 << n_steps) - 1;
+  const int n_genes = n_scenarios * n_instruments;
 
   // TODO: Use "best" instead of "max"
   double global_max_fitness = std::numeric_limits<double>::min();
@@ -331,9 +306,6 @@ Result optimize(OptimizeOptions options)
   std::vector<double> fitnesses(n_individuals);
   std::vector<double> total_returns(n_individuals);
   std::vector<double> risks(n_individuals);
-  std::vector<double> crossovered(n_individuals);
-  std::vector<double> mutated(n_individuals);
-  std::vector<double> elitismed(n_individuals);
 
   // Generate scenarios
   std::tuple<std::vector<double>, std::vector<double>> scenarios = generate_scenarios(n_steps);
@@ -343,22 +315,7 @@ Result optimize(OptimizeOptions options)
   // Define goals
   std::vector<double> goals = generate_goals(price_changes, n_steps, n_scenarios, n_instruments, initial_funding_ratio, target_funding_ratio);
 
-  /*
-  std::cout << "Price changes: \n";
-  for (auto const &c : price_changes)
-    std::cout << c << ' ';
-  std::cout << std::endl;
-
-  std::cout << "Goals: \n";
-  for (auto const &c : goals)
-    std::cout << c << ' ';
-  std::cout << std::endl;
-  std::cout << std::endl;
-  */
-
-  // printf("Running...\n");
-
-  for (size_t t = 0; t < n_generations; ++t)
+  for (int t = 0; t < n_generations; ++t)
   {
     evaluated = evaluate_individuals(individuals, price_changes, probabilities, goals, risk_aversion, n_individuals, n_steps, n_scenarios, n_instruments);
 
@@ -367,7 +324,7 @@ Result optimize(OptimizeOptions options)
     risks = std::get<2>(evaluated);
 
     // Check global_max_fitness
-    for (size_t i = 0; i < n_individuals; ++i)
+    for (int i = 0; i < n_individuals; ++i)
     {
       if (fitnesses[i] > global_max_fitness)
       {
@@ -376,42 +333,61 @@ Result optimize(OptimizeOptions options)
         global_max_risk = risks[i];
         i_global_max_individual = i * n_genes;
 
-        /*
-        printf("(%i) Fitness: %.10f, Total return: %.10f\n", t, global_max_fitness, global_max_total_return);
-        std::cout << "\n";
-
-        int a = 1;
-        double s = 0.0;
-        for (int u = 0; u < n_genes; u++)
-        {
-          double c = individuals[i_global_max_individual + u];
-          s += c;
-          std::printf("%.2f ", c);
-          if (a % N_INSTRUMENTS == 0)
-          {
-            std::cout << " == " << s;
-            s = 0;
-            std::cout << "\n";
-          }
-          a++;
-        }
-        std::cout << "\n";
-        */
-
         int ix = i * n_genes;
-        for (size_t j = 0; j < n_genes; ++j)
+        for (int j = 0; j < n_genes; ++j)
         {
           global_max_individual[j] = individuals[ix + j];
         }
       }
     }
 
-    int m;
-    crossovered = individuals; // crossover_individuals(individuals, fitnesses, n_individuals, n_genes, crossover_rate);
-    mutated = mutate_individuals(crossovered, n_individuals, n_instruments, n_scenarios, mutation_rate);
-    elitismed = elitism_individuals(individuals, mutated, i_global_max_individual, n_elitism_copies, n_genes);
+    // Clone individuals vector
+    std::vector<double> offspring(individuals);
 
-    individuals = elitismed;
+    for (int i = 0; i < n_individuals; i += 2)
+    {
+      const int ix = i * n_genes;
+
+      // Selection
+      std::tuple<int, int> indices = select_roulette(fitnesses);
+      int ix1 = std::get<0>(indices) * n_genes;
+      int ix2 = std::get<1>(indices) * n_genes;
+
+      std::vector<double> selected(2 * n_genes);
+      for (int j = 0; j < n_genes; ++j)
+      {
+        selected[j] = individuals[ix1 + j];
+        selected[n_genes + j] = individuals[ix2 + j];
+      }
+
+      // Crossover
+      crossover_individuals(selected, crossover_rate);
+
+      // Mutation
+      mutate_individuals(selected, mutation_rate);
+
+      // Add selected individuals
+      for (int j = 0; j < n_genes; ++j)
+      {
+        offspring[i * n_genes] = selected[j];
+      }
+    }
+
+    // Elitism
+    for (int i = 0; i < n_elitism_copies; ++i)
+    {
+      int ix = i * n_genes;
+      for (int j = 0; j < n_genes; ++j)
+      {
+        offspring[ix + j] = individuals[i_global_max_individual + j];
+      }
+    }
+
+    // Normalize individuals
+    normalize_individuals(offspring, n_individuals, n_instruments, n_scenarios);
+
+    // Replace generation
+    individuals = offspring;
   }
 
   Result result;
