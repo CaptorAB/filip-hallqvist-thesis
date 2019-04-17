@@ -3,7 +3,6 @@ import {
   Pane,
   Heading,
   UnorderedList,
-  Icon,
   ListItem,
   withTheme
 } from "evergreen-ui";

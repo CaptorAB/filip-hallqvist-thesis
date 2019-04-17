@@ -1,5 +1,5 @@
 import React from "react";
-import { Pane, Card, Heading, withTheme } from "evergreen-ui";
+import { Pane, Heading, withTheme } from "evergreen-ui";
 
 import { Tabs, Tab } from "../Tabs/Tabs";
 import { Subscribe } from "unstated";

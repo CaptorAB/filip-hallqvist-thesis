@@ -4,6 +4,7 @@ import { libcapgen } from "./libcapgen";
 import { format } from "date-fns";
 import { N_INSTRUMENTS } from "./constants";
 
+/*
 const _preOrderTraversal = (array, current, path, paths) => {
   path.push(array[current]);
   const left = 2 * current + 1;
@@ -21,6 +22,7 @@ const preOrderTraversal = array => {
   _preOrderTraversal(array, 0, [], paths);
   return paths;
 };
+*/
 
 export class SimulatorContainer extends Container {
   state = {
