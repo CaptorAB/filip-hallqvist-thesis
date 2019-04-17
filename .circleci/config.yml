@@ -1,0 +1,18 @@
+version: 2
+jobs:
+  build:
+    docker:
+      - image: trzeci/emscripten:latest
+
+    working_directory: ~/repo
+    branches:
+      ignore:
+        - gh-pages
+    steps:
+      - checkout
+      - run: node --version
+      - run: npm --version
+      - run: npm install
+      # - run: npm run lint
+      - run: npm run build:lib
+      - run: CI=true npm test
