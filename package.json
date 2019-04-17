@@ -12,10 +12,16 @@
     "date-fns": "^2.0.0-alpha.27",
     "evergreen-ui": "^4.15.0",
     "gh-pages": "^2.0.1",
+    "lodash": "^4.17.11",
+    "plotly.js": "^1.47.2",
+    "plotly.js-basic-dist": "^1.47.2",
+    "plotly.js-dist": "^1.47.2",
     "react": "^16.8.6",
     "react-dom": "^16.8.6",
+    "react-plotly.js": "^2.3.0",
     "react-scripts": "2.1.8",
-    "unstated": "^2.1.1"
+    "unstated": "^2.1.1",
+    "wasm-worker": "^0.4.0"
   },
   "scripts": {
     "start": "react-scripts start",
@@ -24,10 +30,10 @@
     "test": "react-scripts test",
     "eject": "react-scripts eject",
     "build:test": "g++ -O3 -Ilibcapgen ./libcapgen/src/*.cpp -o ./bin/libcapgen",
-    "build:lib": "emcc --bind -O3 -Ilibcapgen -s WASM=1 -s ALLOW_MEMORY_GROWTH=1 -s MODULARIZE=1 -s ENVIRONMENT=\"web\" -s 'EXPORT_NAME=\"libcapgen\"' -o ./public/bin/libcapgen.js ./libcapgen/src/*.cpp",
+    "build:lib": "emcc --bind -O3 -Ilibcapgen -s WASM=1 -s MODULARIZE=1 -s ENVIRONMENT=\"web\" -s 'EXPORT_NAME=\"libcapgen\"' -o ./public/bin/libcapgen.js ./libcapgen/src/*.cpp",
     "docker": "docker run -v ${PWD}:/src -w /src -it trzeci/emscripten /bin/bash -c \"npm run build:lib\"",
     "clean": "rm -rf bin build public/bin",
-    "deploy": "npm run build:app && cp -r .circleci build && gh-pages -d build"
+    "deploy": "npm run build:app && cp -r .circleci build && gh-pages -d build -t"
   },
   "eslintConfig": {
     "extends": "react-app"

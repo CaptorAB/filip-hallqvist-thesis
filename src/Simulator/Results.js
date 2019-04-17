@@ -1,8 +1,10 @@
 import React from "react";
 import { Pane, Card, Heading, withTheme } from "evergreen-ui";
+
 import { Tabs, Tab } from "../Tabs/Tabs";
 import { Subscribe } from "unstated";
 import { SimulatorContainer } from "../SimulatorContainer";
+import { PerformancePlot } from "./PerformancePlot";
 
 export const Results = withTheme(({ theme }) => (
   <>
@@ -38,7 +40,17 @@ export const Results = withTheme(({ theme }) => (
             </Subscribe>
           </Pane>
         </Tab>
-        <Tab title="Performance">Performance</Tab>
+        <Tab title="Performance">
+          <Subscribe to={[SimulatorContainer]}>
+            {simulator => (
+              <PerformancePlot
+                scenarios={simulator.state.scenarios}
+                current={0}
+                title="Domestic Equity"
+              />
+            )}
+          </Subscribe>
+        </Tab>
         <Tab title="Weights">Weights</Tab>
       </Tabs>
     </Pane>

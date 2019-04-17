@@ -4,7 +4,6 @@ import { Subscribe } from "unstated";
 
 import { Parameters } from "./Parameters";
 import { Results } from "./Results";
-import { libcapgen } from "../libcapgen";
 import { SimulatorContainer } from "../SimulatorContainer";
 
 export const Simulator = withTheme(({ theme, ...rest }) => (
@@ -32,8 +31,8 @@ export const Simulator = withTheme(({ theme, ...rest }) => (
                   mutationRate: 0.02,
                   crossoverRate: 0.02,
                   steps: 4,
-                  riskAversion: 0.5,
-                  initialFundingRatio: 1.3,
+                  riskAversion: 0.0,
+                  initialFundingRatio: 2.0,
                   targetFundingRatio: 1.3
                 })
               }

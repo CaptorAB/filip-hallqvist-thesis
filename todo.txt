@@ -6,36 +6,39 @@
 # 7. (3) Use real numbers instead of bits in chromosomes [DONE]
 # 9. (1) Break out goal generation to own function [DONE]
 # 20. (1) Allow dynamically setting the goal surplus [DONE]
-25. (2) Move joint probability-calculations to scenario generation
-26. (2) Allow dynamically setting the asset/liability ratio
-11. (3) Implement interest rate instruments using LMM
 
 ## Week 15
 
-12. (3) Implement all instruments using a fat tailed distribution [11]
-8. (2) Make sure that n_instruments is not hard coded (optimize())
-29. (1) Rename returns to wealth
+# 8. (2) Make sure that n_instruments is not hard coded (optimize()) [DONE]
+# 26. (2) Allow dynamically setting the asset/liability ratio [DONE]
+# 28. (1) Use N_INSTRUMENTS and N_RISKS constants instead of passing as argument [DONE]
+# 24. (2) Normalize joint probabilities [DONE]
 
 ## Week 16
 
-21. (3) Fit all risk factors
-5. (1) Implement fixed transaction costs
+# 22. Build UI [DONE]
 6. (1) Discount the total wealth in evaluate_individuals
 16. (2) Correlate the normally generated numbers in generate_price_changes [12]
 17. (1) Break out risk changes generation into own function
-18. (1) Break out instrument changes generation into own function
+29. (1) Rename returns to wealth
 
 ## Week 17
 
-22. Build UI
 23. Use namespace std 
-24. Implement tournament selection
+11. (3) Implement interest rate instruments using LMM
+12. (3) Implement all instruments using a fat tailed distribution [11]
+5. (1) Implement fixed transaction costs
 
 ## Backlog
 
-24. (2) Normalize joint probabilities
+18. (1) Break out instrument changes generation into own function
+25. (2) Move joint probability-calculations to scenario generation
 14. (3) Refactor the generate_price_changes function [17, 18]
 15. (3) Refactor the evaluate_individuals function [5, 6, 7, 8]
 13. (3) Write thorough tests and confirm them using pen and paper
 27. (2) Rename scenario to event
-28. (1) Use N_INSTRUMENTS and N_RISKS constants instead of passing as argument
+24. Implement tournament selection
+
+## Deleted
+
+21. (3) Fit all risk factors

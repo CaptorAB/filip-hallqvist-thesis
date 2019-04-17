@@ -1,9 +1,8 @@
-import React, { useState, useEffect } from "react";
+import React from "react";
 import { Pane, Spinner } from "evergreen-ui";
 import { Header } from "./Header/Header";
 import { Sidebar } from "./Sidebar/Sidebar";
 import { Simulator } from "./Simulator/Simulator";
-import { libcapgen } from "./libcapgen";
 import { Subscribe } from "unstated";
 import { SimulatorContainer } from "./SimulatorContainer";
 
@@ -27,7 +26,7 @@ const App = () => {
               <Pane flex={0} height="100%">
                 <Sidebar />
               </Pane>
-              <Pane flex={1}>
+              <Pane flex={1} height="100%">
                 <Simulator />
               </Pane>
             </Pane>
