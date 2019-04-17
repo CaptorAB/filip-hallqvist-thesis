@@ -13,16 +13,13 @@
     "evergreen-ui": "^4.15.0",
     "formik": "^1.5.2",
     "gh-pages": "^2.0.1",
-    "lodash": "^4.17.11",
     "plotly.js": "^1.47.2",
     "plotly.js-basic-dist": "^1.47.2",
-    "plotly.js-dist": "^1.47.2",
     "react": "^16.8.6",
     "react-dom": "^16.8.6",
     "react-plotly.js": "^2.3.0",
     "react-scripts": "2.1.8",
-    "unstated": "^2.1.1",
-    "wasm-worker": "^0.4.0"
+    "unstated": "^2.1.1"
   },
   "scripts": {
     "start": "react-scripts start",

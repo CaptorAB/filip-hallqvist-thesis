@@ -65,10 +65,6 @@ export class SimulatorContainer extends Container {
       events.push(event);
     }
 
-    // Update scenarios
-    // const scenarios = preOrderTraversal(events);
-    const scenarios = [];
-
     this.setState({
       ...this.state,
       history: [
@@ -79,8 +75,7 @@ export class SimulatorContainer extends Container {
         },
         ...this.state.history
       ],
-      metrics: { ...metrics },
-      scenarios
+      metrics: { ...metrics }
     });
   };
 }

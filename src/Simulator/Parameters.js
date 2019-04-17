@@ -3,18 +3,6 @@ import { Pane, Heading, TextInputField, withTheme } from "evergreen-ui";
 
 import { Tabs, Tab } from "../Tabs/Tabs";
 
-export const INITIAL_PARAMETERS = {
-  populationSize: 100,
-  elitismCopies: 2,
-  generations: 100,
-  mutationRate: 0.02,
-  crossoverRate: 0.02,
-  steps: 4,
-  riskAversion: 0.5,
-  initialFundingRatio: 1.3,
-  targetFundingRatio: 1.3
-};
-
 export const Parameters = withTheme(({ theme, values, handleChange }) => {
   return (
     <>
@@ -70,6 +58,9 @@ export const PortfolioParameters = ({ values, handleChange }) => {
         name="riskAversion"
         type="number"
         onChange={handleChange}
+        step="any"
+        min="0"
+        max="1"
       />
       <Parameter
         label="Initial funding ratio"
@@ -79,6 +70,8 @@ export const PortfolioParameters = ({ values, handleChange }) => {
         name="initialFundingRatio"
         type="number"
         onChange={handleChange}
+        step="any"
+        min="0"
       />
       <Parameter
         label="Target funding ratio"
@@ -88,6 +81,8 @@ export const PortfolioParameters = ({ values, handleChange }) => {
         name="targetFundingRatio"
         type="number"
         onChange={handleChange}
+        step="any"
+        min="0"
       />
     </Pane>
   );
@@ -104,6 +99,9 @@ export const SimulationParameters = ({ values, handleChange }) => {
         name="steps"
         type="number"
         onChange={handleChange}
+        step="any"
+        min="1"
+        max="12"
       />
     </Pane>
   );
@@ -120,6 +118,8 @@ export const OptimizerParameters = ({ values, handleChange }) => {
         name="populationSize"
         type="number"
         onChange={handleChange}
+        step="any"
+        min="0"
       />
       <Parameter
         label="Elitism copies"
@@ -129,6 +129,8 @@ export const OptimizerParameters = ({ values, handleChange }) => {
         name="elitismCopies"
         type="number"
         onChange={handleChange}
+        step="any"
+        min="0"
       />
       <Parameter
         label="Generations"
@@ -138,6 +140,8 @@ export const OptimizerParameters = ({ values, handleChange }) => {
         name="generations"
         type="number"
         onChange={handleChange}
+        step="any"
+        min="1"
       />
       <Parameter
         label="Mutation rate"
@@ -147,6 +151,9 @@ export const OptimizerParameters = ({ values, handleChange }) => {
         name="mutationRate"
         type="number"
         onChange={handleChange}
+        step="any"
+        min="0"
+        max="1"
       />
       <Parameter
         label="Crossover rate"
@@ -156,6 +163,9 @@ export const OptimizerParameters = ({ values, handleChange }) => {
         name="crossoverRate"
         type="number"
         onChange={handleChange}
+        step="any"
+        min="0"
+        max="1"
       />
     </Pane>
   );

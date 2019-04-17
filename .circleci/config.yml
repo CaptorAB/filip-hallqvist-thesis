@@ -15,4 +15,5 @@ jobs:
       - run: npm install
       # - run: npm run lint
       - run: npm run build:lib
-      - run: CI=true npm test
+      - run: npm run build:app
+      # - run: CI=true npm test
