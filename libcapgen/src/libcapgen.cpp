@@ -19,6 +19,21 @@ using namespace emscripten;
 
 EMSCRIPTEN_BINDINGS(libcapgen)
 {
+  value_array<TransactionCosts>("TransactionCosts")
+      .element(&TransactionCosts::domestic_equity)
+      .element(&TransactionCosts::global_equity)
+      .element(&TransactionCosts::real_estate)
+      .element(&TransactionCosts::alternative)
+      .element(&TransactionCosts::credit)
+      .element(&TransactionCosts::bonds_2y)
+      .element(&TransactionCosts::bonds_5y)
+      .element(&TransactionCosts::cash)
+      .element(&TransactionCosts::fta)
+      .element(&TransactionCosts::domestic_equity_future)
+      .element(&TransactionCosts::interest_rate_swap_2y)
+      .element(&TransactionCosts::interest_rate_swap_5y)
+      .element(&TransactionCosts::interest_rate_swap_20y);
+
   value_object<OptimizeOptions>("OptimizeOptions")
       .field("populationSize", &OptimizeOptions::population_size)
       .field("elitismCopies", &OptimizeOptions::elitism_copies)
@@ -28,7 +43,8 @@ EMSCRIPTEN_BINDINGS(libcapgen)
       .field("crossoverRate", &OptimizeOptions::crossover_rate)
       .field("riskAversion", &OptimizeOptions::risk_aversion)
       .field("initialFundingRatio", &OptimizeOptions::initial_funding_ratio)
-      .field("targetFundingRatio", &OptimizeOptions::target_funding_ratio);
+      .field("targetFundingRatio", &OptimizeOptions::target_funding_ratio)
+      .field("transactionCosts", &OptimizeOptions::transaction_costs);
 
   value_object<Result>("Result")
       .field("fitness", &Result::fitness)

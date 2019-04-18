@@ -1,5 +1,6 @@
 import React from "react";
 import { Pane, Heading, TextInputField, withTheme } from "evergreen-ui";
+import { INSTRUMENT_NAMES } from "../constants";
 
 import { Tabs, Tab } from "../Tabs/Tabs";
 
@@ -34,8 +35,11 @@ export const Parameters = withTheme(({ theme, values, handleChange }) => {
           <Tab title="Optimizer">
             <OptimizerParameters values={values} handleChange={handleChange} />
           </Tab>
-          <Tab title="Correlations" disabled={true}>
-            Correlations
+          <Tab title="Reallocations">
+            <ReallocationParameters
+              values={values}
+              handleChange={handleChange}
+            />
           </Tab>
         </Tabs>
       </Pane>
@@ -45,6 +49,25 @@ export const Parameters = withTheme(({ theme, values, handleChange }) => {
 
 const Parameter = props => (
   <TextInputField flexBasis="28%" marginX={8} {...props} />
+);
+
+export const ReallocationParameters = ({ values, handleChange }) => (
+  <Pane display="flex" flexWrap="wrap" marginX={-8}>
+    {values.transactionCosts.map((transactionCost, index) => (
+      <Parameter
+        key={index}
+        name={`transactionCosts.${index}`}
+        label={INSTRUMENT_NAMES[index]}
+        placeholder="0.0"
+        value={values.transactionCosts[index]}
+        type="number"
+        onChange={handleChange}
+        step="any"
+        min="0"
+        max="1"
+      />
+    ))}
+  </Pane>
 );
 
 export const PortfolioParameters = ({ values, handleChange }) => {

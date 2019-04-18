@@ -17,29 +17,29 @@
 ## Week 16
 
 # 22. Build UI [DONE]
-6. (1) Discount the total wealth in evaluate_individuals
-16. (2) Correlate the normally generated numbers in generate_price_changes [12]
-17. (1) Break out risk changes generation into own function
-29. (1) Rename returns to wealth
-30. (1) Remove iostream from all files
+# 15. (3) Refactor the evaluate_individuals function [5, 6, 7, 8] [DONE]
+# 13. (3) Write thorough tests and confirm them using pen and paper
+# 29. (1) Rename returns to wealth
+# 5. (3) Implement fixed transaction costs
 
 ## Week 17
 
-23. Use namespace std 
+6. (1) Discount the total wealth in evaluate_individuals
+16. (2) Correlate the normally generated numbers in generate_price_changes [12]
 11. (3) Implement interest rate instruments using LMM
 12. (3) Implement all instruments using a fat tailed distribution [11]
-5. (1) Implement fixed transaction costs
+30. (1) Remove iostream from all files
 
 ## Backlog
 
+17. (1) Break out risk changes generation into own function
 18. (1) Break out instrument changes generation into own function
-25. (2) Move joint probability-calculations to scenario generation
 14. (3) Refactor the generate_price_changes function [17, 18]
-15. (3) Refactor the evaluate_individuals function [5, 6, 7, 8]
-13. (3) Write thorough tests and confirm them using pen and paper
 27. (2) Rename scenario to event
-24. Implement tournament selection
 
 ## Deleted
 
+23. Use namespace std 
+24. Implement tournament selection
+25. (2) Move joint probability-calculations to scenario generation
 21. (3) Fit all risk factors

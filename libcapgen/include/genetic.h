@@ -6,6 +6,23 @@
 
 #include <lib/random.h>
 
+struct TransactionCosts
+{
+  double domestic_equity;
+  double global_equity;
+  double real_estate;
+  double alternative;
+  double credit;
+  double bonds_2y;
+  double bonds_5y;
+  double cash;
+  double fta;
+  double domestic_equity_future;
+  double interest_rate_swap_2y;
+  double interest_rate_swap_5y;
+  double interest_rate_swap_20y;
+};
+
 struct OptimizeOptions
 {
   int population_size;
@@ -17,6 +34,7 @@ struct OptimizeOptions
   double risk_aversion;
   double initial_funding_ratio;
   double target_funding_ratio;
+  TransactionCosts transaction_costs;
 };
 
 struct Result

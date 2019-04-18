@@ -1,4 +1,4 @@
-export const N_INSTRUMENTS = 13;
+export const N_INSTRUMENTS = 2;
 export const N_RISKS = 8;
 
 export const DOMESTIC_EQUITY_INDEX = 0;
@@ -23,3 +23,19 @@ export const INTEREST_RATE_5Y_RISK_INDEX = 4;
 export const INTEREST_RATE_20Y_RISK_INDEX = 5;
 export const CREDIT_RISK_INDEX = 6;
 export const CASH_RISK_INDEX = 7;
+
+export const INSTRUMENT_NAMES = [
+  "Domestic Equity",
+  "Global Equity",
+  "Real Estate",
+  "Alternative",
+  "Credit",
+  "Bonds 2-Year",
+  "Bonds 5-Year",
+  "Cash",
+  "FTA",
+  "Domestic Equity Futures",
+  "Interest Rate Swap 2-Year",
+  "Interest Rate Swap 5-Year",
+  "Interest Rate Swap 20-Year"
+];
