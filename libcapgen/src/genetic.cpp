@@ -177,12 +177,12 @@ double compute_expected_risk(std::vector<double> &incoming_wealths, std::vector<
   return risk;
 }
 
-double compute_fitness(std::vector<double> &incoming_wealths, std::vector<double> &final_wealths, std::vector<double> &goals)
+double compute_fitness(std::vector<double> &incoming_wealths, std::vector<double> &final_wealths, std::vector<double> &goals, const double risk_aversion)
 {
-  return compute_expected_wealth(final_wealths) - compute_expected_risk(incoming_wealths, goals);
+  return ((1.0 - risk_aversion) * compute_expected_wealth(final_wealths)) - (risk_aversion * compute_expected_risk(incoming_wealths, goals));
 }
 
-std::vector<double> compute_fitnesses(std::vector<double> &individuals, std::vector<double> &price_changes, std::vector<double> &transaction_costs, std::vector<double> &goals, const int n_individuals, const int n_instruments, const int n_scenarios)
+std::vector<double> compute_fitnesses(std::vector<double> &individuals, std::vector<double> &price_changes, std::vector<double> &transaction_costs, std::vector<double> &goals, const double risk_aversion, const int n_individuals, const int n_instruments, const int n_scenarios)
 {
   const int n_genes = n_instruments * n_scenarios;
   std::vector<double> fitnesses(n_individuals);
@@ -197,7 +197,7 @@ std::vector<double> compute_fitnesses(std::vector<double> &individuals, std::vec
     std::vector<double> incoming_wealths = std::get<0>(wealths);
     std::vector<double> final_wealths = std::get<1>(wealths);
 
-    fitnesses[i] = compute_fitness(incoming_wealths, final_wealths, goals);
+    fitnesses[i] = compute_fitness(incoming_wealths, final_wealths, goals, risk_aversion);
   }
   return fitnesses;
 }
@@ -299,7 +299,7 @@ Result optimize(OptimizeOptions options)
 
   for (int t = 0; t < n_generations; ++t)
   {
-    std::vector<double> fitnesses = compute_fitnesses(individuals, price_changes, transaction_costs, goals, n_individuals, n_instruments, n_scenarios);
+    std::vector<double> fitnesses = compute_fitnesses(individuals, price_changes, transaction_costs, goals, risk_aversion, n_individuals, n_instruments, n_scenarios);
 
     // Check global best fitness
     for (int i = 0; i < n_individuals; ++i)

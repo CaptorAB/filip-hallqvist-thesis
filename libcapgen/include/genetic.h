@@ -49,9 +49,9 @@ double compute_wealth(std::vector<double> &current_weights, std::vector<double> 
 
 std::tuple<std::vector<double>, std::vector<double>> compute_wealths(std::vector<double> &individual, std::vector<double> &price_changes, std::vector<double> transaction_costs, const int n_instruments, const int n_scenarios);
 
-std::vector<double> compute_fitnesses(std::vector<double> &individuals, std::vector<double> &price_changes, std::vector<double> &transaction_costs, std::vector<double> &goals, const int n_individuals, const int n_instruments, const int n_scenarios);
+std::vector<double> compute_fitnesses(std::vector<double> &individuals, std::vector<double> &price_changes, std::vector<double> &transaction_costs, std::vector<double> &goals, const double risk_aversion, const int n_individuals, const int n_instruments, const int n_scenarios);
 
-double compute_fitness(std::vector<double> &incoming_wealths, std::vector<double> &final_wealths, std::vector<double> &goals);
+double compute_fitness(std::vector<double> &incoming_wealths, std::vector<double> &final_wealths, std::vector<double> &goals, const double risk_aversion);
 
 double compute_expected_wealth(std::vector<double> &final_wealths);
 

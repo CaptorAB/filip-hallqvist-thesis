@@ -216,6 +216,7 @@ TEST_CASE("compute_fitnesses correctly computes the fitness of all individuals",
   const int n_individuals = 3;
   const int n_instruments = 2;
   const int n_scenarios = 3;
+  const double risk_aversion = 0;
 
   std::vector<double> individuals = {
       1.0, 0.0, 0.5, 0.5, 0.5, 0.5,
@@ -228,7 +229,7 @@ TEST_CASE("compute_fitnesses correctly computes the fitness of all individuals",
   std::vector<double> goals = {
       0.0, 0.0, 0.0, 0.0, 0.0, 0.0};
 
-  std::vector<double> fitnesses = compute_fitnesses(individuals, price_changes, transaction_costs, goals, n_individuals, n_instruments, n_scenarios);
+  std::vector<double> fitnesses = compute_fitnesses(individuals, price_changes, transaction_costs, goals, risk_aversion, n_individuals, n_instruments, n_scenarios);
 
   std::vector<double> expected_fitnesses = {
       1.0, 1.5, 1.3125};

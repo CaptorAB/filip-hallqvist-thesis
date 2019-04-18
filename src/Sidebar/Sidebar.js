@@ -30,10 +30,10 @@ export const Sidebar = withTheme(({ theme, ...rest }) => (
             <Heading size={100}>{x.timestamp}</Heading>
             <UnorderedList marginBottom={0}>
               <Metric icon="symbol-triangle-up">
-                {x.metrics.totalReturn.toFixed(2)}
+                {x.metrics.expectedReturn.toFixed(2)}
               </Metric>
               <Metric icon="symbol-triangle-down">
-                {x.metrics.risk.toFixed(2)}
+                {x.metrics.expectedRisk.toFixed(2)}
               </Metric>
             </UnorderedList>
           </Pane>
