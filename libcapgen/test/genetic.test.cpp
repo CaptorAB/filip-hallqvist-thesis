@@ -192,13 +192,23 @@ TEST_CASE("compute_wealths correctly computes wealths over several steps", "[gen
   }
 }
 
-TEST_CASE("compute_fitness correctly computes the fitness of an individual", "[genetic]")
+TEST_CASE("compute_expected_wealth correctly computes the expected wealth of an individual", "[genetic]")
 {
   std::vector<double> final_wealths = {0.11, 0.21, 0.37, 0.49};
-  const double fitness = compute_fitness(final_wealths);
+  const double wealth = compute_expected_wealth(final_wealths);
   const double expected = 0.295;
 
-  REQUIRE(fitness == Approx(expected).epsilon(0.000001));
+  REQUIRE(wealth == Approx(expected).epsilon(0.000001));
+}
+
+TEST_CASE("compute_expected_risk correctly computes the risk of an individual", "[genetic]")
+{
+  std::vector<double> incoming_wealths = {1.0, 0.7, 1.3};
+  std::vector<double> goals = {1.0, 1.0, 1.0};
+  const double risk = compute_expected_risk(incoming_wealths, goals);
+  const double expected = 0.045;
+
+  REQUIRE(risk == Approx(expected).epsilon(0.000001));
 }
 
 TEST_CASE("compute_fitnesses correctly computes the fitness of all individuals", "[genetic]")
@@ -215,8 +225,10 @@ TEST_CASE("compute_fitnesses correctly computes the fitness of all individuals",
       0.0, 0.5, 0.5, -0.5, -0.5, 0.5};
   std::vector<double> transaction_costs = {
       0.0, 0.0};
+  std::vector<double> goals = {
+      0.0, 0.0, 0.0, 0.0, 0.0, 0.0};
 
-  std::vector<double> fitnesses = compute_fitnesses(individuals, price_changes, transaction_costs, n_individuals, n_instruments, n_scenarios);
+  std::vector<double> fitnesses = compute_fitnesses(individuals, price_changes, transaction_costs, goals, n_individuals, n_instruments, n_scenarios);
 
   std::vector<double> expected_fitnesses = {
       1.0, 1.5, 1.3125};

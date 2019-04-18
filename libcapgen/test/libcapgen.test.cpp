@@ -31,16 +31,17 @@ TEST_CASE("optimization runs without crashing", "[genetic]")
   clock_t end = std::clock();
   double elapsed_secs = double(end - begin) / CLOCKS_PER_SEC;
 
+  /*
   std::cout << "Elapsed time: " << elapsed_secs << "\n";
 
-  std::cout << "\nFitness:           ";
+  std::cout << "\nFitness:         ";
   std::printf("%.4f \n", r.fitness);
 
-  std::cout << "Tot. Exp. Wealth:  ";
-  std::printf("%.4f \n", r.expected_wealth);
+  std::cout << "Expected return: ";
+  std::printf("%.4f \n", r.expected_return);
 
-  std::cout << "Expected downside:";
-  std::printf("%.4f \n", r.expected_downside);
+  std::cout << "Expected risk:   ";
+  std::printf("%.4f \n", r.expected_risk);
 
   std::cout << "Individual: \n"
             << std::endl;
@@ -53,11 +54,12 @@ TEST_CASE("optimization runs without crashing", "[genetic]")
     std::printf("%.2f ", c);
     if (i % N_INSTRUMENTS == 0)
     {
-      std::cout << " == " << s;
+      std::cout << "== " << s;
       s = 0;
       std::cout << "\n";
     }
     i++;
   }
   std::cout << "\n";
+  */
 }

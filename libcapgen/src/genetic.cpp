@@ -164,12 +164,25 @@ double compute_expected_wealth(std::vector<double> &final_wealths)
   return expected_wealth;
 }
 
-double compute_fitness(std::vector<double> &final_wealths)
+double compute_expected_risk(std::vector<double> &incoming_wealths, std::vector<double> &goals)
 {
-  return compute_expected_wealth(final_wealths);
+  double risk = 0.0;
+  for (int i = 0; i < incoming_wealths.size(); ++i)
+  {
+    const double step = floor(std::log2(i + 1));
+    const double nodes_in_step = pow(2.0, step);
+
+    risk += pow(std::min(0.0, incoming_wealths[i] - goals[i]), 2.0) / nodes_in_step;
+  }
+  return risk;
 }
 
-std::vector<double> compute_fitnesses(std::vector<double> &individuals, std::vector<double> price_changes, std::vector<double> transaction_costs, const int n_individuals, const int n_instruments, const int n_scenarios)
+double compute_fitness(std::vector<double> &incoming_wealths, std::vector<double> &final_wealths, std::vector<double> &goals)
+{
+  return compute_expected_wealth(final_wealths) - compute_expected_risk(incoming_wealths, goals);
+}
+
+std::vector<double> compute_fitnesses(std::vector<double> &individuals, std::vector<double> &price_changes, std::vector<double> &transaction_costs, std::vector<double> &goals, const int n_individuals, const int n_instruments, const int n_scenarios)
 {
   const int n_genes = n_instruments * n_scenarios;
   std::vector<double> fitnesses(n_individuals);
@@ -184,7 +197,7 @@ std::vector<double> compute_fitnesses(std::vector<double> &individuals, std::vec
     std::vector<double> incoming_wealths = std::get<0>(wealths);
     std::vector<double> final_wealths = std::get<1>(wealths);
 
-    fitnesses[i] = compute_fitness(final_wealths);
+    fitnesses[i] = compute_fitness(incoming_wealths, final_wealths, goals);
   }
   return fitnesses;
 }
@@ -286,7 +299,7 @@ Result optimize(OptimizeOptions options)
 
   for (int t = 0; t < n_generations; ++t)
   {
-    std::vector<double> fitnesses = compute_fitnesses(individuals, price_changes, transaction_costs, n_individuals, n_instruments, n_scenarios);
+    std::vector<double> fitnesses = compute_fitnesses(individuals, price_changes, transaction_costs, goals, n_individuals, n_instruments, n_scenarios);
 
     // Check global best fitness
     for (int i = 0; i < n_individuals; ++i)
@@ -352,14 +365,15 @@ Result optimize(OptimizeOptions options)
   std::tuple<std::vector<double>, std::vector<double>> best_wealths = compute_wealths(best_individual, price_changes, transaction_costs, n_instruments, n_scenarios);
   std::vector<double> best_incoming_wealths = std::get<0>(best_wealths);
   std::vector<double> best_final_wealths = std::get<1>(best_wealths);
-  double best_expected_wealth = compute_expected_wealth(best_final_wealths);
+  double best_expected_return = compute_expected_wealth(best_final_wealths) - 1.0;
+  double best_expected_risk = compute_expected_risk(best_incoming_wealths, goals);
 
   result.fitness = best_fitness;
   result.individual = best_individual;
   result.incoming_wealths = best_incoming_wealths;
   result.final_wealths = best_final_wealths;
-  result.expected_wealth = best_expected_wealth;
-  result.expected_downside = 0.0;
+  result.expected_return = best_expected_return;
+  result.expected_risk = best_expected_risk;
   result.price_changes = price_changes;
   result.goals = goals;
 
