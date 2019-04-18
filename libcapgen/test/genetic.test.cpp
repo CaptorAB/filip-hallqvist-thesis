@@ -147,40 +147,6 @@ TEST_CASE("crossover_chromosomes does not perform crossover if crossover_rate is
   }
 }
 
-/*
-TEST_CASE("evaluated individuals", "[genetic]")
-{
-  double result = 0.0;
-
-  const int n_individuals = 1;
-  const int n_instruments = 2;
-  const int n_steps = 3;
-  const int n_scenarios = 7;
-
-  std::vector<double> individuals = {1.0, 0.0, 0.52, 0.48, 0.79, 0.21, 1.0, 0.0, 1.0, 0.0, 1.0, 0.0, 1.0, 0.0};
-  std::vector<double> price_changes = {0.5, -0.5, 0.5, -0.5, 0.5, -0.5, 0.5, -0.5, 0.5, -0.5, 0.5, -0.5, 0.5, -0.5};
-  std::vector<double> probabilities = {1.0, 0.5, 0.5, 0.25, 0.25, 0.25, 0.25};
-  std::vector<double> goals = {1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0};
-  double risk_aversion = 1.0;
-
-  std::tuple<std::vector<double>, std::vector<double>, std::vector<double>> evaluated = evaluate_individuals(individuals, price_changes, probabilities, goals, risk_aversion, n_individuals, n_steps, n_scenarios, n_instruments);
-
-  std::vector<double> fitnesses = std::get<0>(evaluated);
-  std::vector<double> total_returns = std::get<1>(evaluated);
-  std::vector<double> risks = std::get<2>(evaluated);
-
-  REQUIRE(fitnesses.size() == 1);
-  REQUIRE(total_returns.size() == 1);
-  REQUIRE(risks.size() == 1);
-  REQUIRE(total_returns[0] == 1.73);
-
-  printf("Fitnesses: %f\n", fitnesses[0]);
-  printf("Total returns: %f\n", total_returns[0]);
-  printf("Risks: %f\n", risks[0]);
-  std::cout << std::endl;
-}
-*/
-
 TEST_CASE("compute_wealth correctly computes wealth", "[genetic]")
 {
   std::vector<double> current_weights = {0.1, 0.8, 0.1};
@@ -192,4 +158,29 @@ TEST_CASE("compute_wealth correctly computes wealth", "[genetic]")
   const double wealth = compute_wealth(current_weights, next_weights, price_changes, transaction_costs, initial_wealth);
 
   REQUIRE(wealth == Approx(0.7564).margin(0.0002));
+}
+
+TEST_CASE("compute_wealths correctly computes wealths over several steps", "[genetic]")
+{
+  const int n_instruments = 2;
+  const int n_scenarios = 7;
+
+  std::vector<double> individual = {0.5, 0.5, 0.55, 0.45, 0.6, 0.4, 0.55, 0.45, 0.5, 0.5, 0.45, 0.55, 0.4, 0.6};
+  std::vector<double> price_changes = {0.2, -0.3, 0.15, -0.25, -0.15, 0.25, 0.5, -0.5, 0.35, -0.45, 0.05, 0.5, -0.5, -0.5};
+  std::vector<double> transaction_costs = {0.03, 0.02};
+
+  std::tuple<std::vector<double>, std::vector<double>> wealths = compute_wealths(individual, price_changes, transaction_costs, n_instruments, n_scenarios);
+
+  std::vector<double> incoming_wealths = std::get<0>(wealths);
+  std::vector<double> final_wealths = std::get<1>(wealths);
+
+  std::vector<double> expected_incoming_wealths = {
+      1.000000,
+      0.947625, 0.945250,
+      0.919196, 0.916898, 0.947542, 0.945155};
+
+  for (int i = 0; i < expected_incoming_wealths.size(); ++i)
+  {
+    REQUIRE(incoming_wealths[i] == Approx(expected_incoming_wealths[i]).epsilon(0.0001));
+  }
 }

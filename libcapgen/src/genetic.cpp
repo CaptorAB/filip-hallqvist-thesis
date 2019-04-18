@@ -4,6 +4,7 @@
 #include <string>
 #include <algorithm>
 #include <limits>
+#include <queue>
 
 #include <lib/random.h>
 
@@ -94,7 +95,8 @@ double compute_wealth(std::vector<double> &current_weights, std::vector<double> 
   // Compute wealth from price changes
   for (int i = 0; i < current_weights.size(); ++i)
   {
-    holdings += initial_wealth * current_weights[i] * (1.0 + price_changes[i]);
+    const double result = initial_wealth * current_weights[i] * (1.0 + price_changes[i]);
+    holdings += result;
   }
 
   // Deduct transation costs
@@ -107,6 +109,50 @@ double compute_wealth(std::vector<double> &current_weights, std::vector<double> 
   const double wealth = holdings - reallocations;
 
   return wealth;
+}
+
+std::tuple<std::vector<double>, std::vector<double>> compute_wealths(std::vector<double> &individual, std::vector<double> &price_changes, std::vector<double> transaction_costs, const int n_instruments, const int n_scenarios)
+{
+  std::vector<double> incoming_wealths(n_scenarios);
+  incoming_wealths[0] = 1.0;
+
+  std::vector<double> final_wealths(n_scenarios / 2 + 1);
+  int final_index = 0;
+
+  // Compute incoming wealths
+  for (int i = 0; i < n_scenarios; ++i)
+  {
+
+    int current = i;
+
+    int left = 2 * current + 1;
+    int right = 2 * current + 2;
+
+    const int cx = current * n_instruments;
+    const double current_wealth = incoming_wealths[current];
+
+    std::vector<double> current_changes = std::vector<double>(price_changes.begin() + cx, price_changes.begin() + cx + n_instruments);
+    std::vector<double> current_weights = std::vector<double>(individual.begin() + cx, individual.begin() + cx + n_instruments);
+
+    if (left < n_scenarios && right < n_scenarios)
+    {
+      const int lx = left * n_instruments;
+      const int rx = right * n_instruments;
+
+      std::vector<double> left_weights = std::vector<double>(individual.begin() + lx, individual.begin() + lx + n_instruments);
+      std::vector<double> right_weights = std::vector<double>(individual.begin() + rx, individual.begin() + rx + n_instruments);
+
+      incoming_wealths[left] = compute_wealth(current_weights, left_weights, current_changes, transaction_costs, current_wealth);
+      incoming_wealths[right] = compute_wealth(current_weights, right_weights, current_changes, transaction_costs, current_wealth);
+    }
+    else
+    {
+      final_wealths[final_index] = compute_wealth(current_weights, current_weights, price_changes, transaction_costs, current_wealth);
+      final_index++;
+    }
+  }
+
+  return std::make_tuple(incoming_wealths, final_wealths);
 }
 
 std::tuple<std::vector<double>, std::vector<double>, std::vector<double>> evaluate_individuals(std::vector<double> &X, std::vector<double> &price_changes, std::vector<double> &probabilities, std::vector<double> &goals, const double risk_aversion, const int n_individuals, const int n_steps, const int n_scenarios, const int n_instruments)
