@@ -275,6 +275,21 @@ Result optimize(OptimizeOptions options)
   const double initial_funding_ratio = options.initial_funding_ratio;
   const double target_funding_ratio = options.target_funding_ratio;
 
+  std::vector<double> transaction_costs = {
+      options.transaction_costs.domestic_equity,
+      options.transaction_costs.global_equity,
+      options.transaction_costs.real_estate,
+      options.transaction_costs.alternative,
+      options.transaction_costs.credit,
+      options.transaction_costs.bonds_2y,
+      options.transaction_costs.bonds_5y,
+      options.transaction_costs.cash,
+      options.transaction_costs.fta,
+      options.transaction_costs.domestic_equity_future,
+      options.transaction_costs.interest_rate_swap_2y,
+      options.transaction_costs.interest_rate_swap_5y,
+      options.transaction_costs.interest_rate_swap_20y};
+
   const int n_instruments = N_INSTRUMENTS;
   const int n_scenarios = pow(2.0, n_steps) - 1;
   const int n_genes = n_scenarios * n_instruments;
@@ -293,9 +308,6 @@ Result optimize(OptimizeOptions options)
 
   // Generate goals
   std::vector<double> goals = generate_goals(price_changes, n_steps, n_scenarios, n_instruments, initial_funding_ratio, target_funding_ratio);
-
-  // Define transaction costs (currently 0.0 for all instruments)
-  std::vector<double> transaction_costs(n_instruments, 0.1);
 
   for (int t = 0; t < n_generations; ++t)
   {

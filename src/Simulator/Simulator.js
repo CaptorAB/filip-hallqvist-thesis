@@ -19,8 +19,23 @@ export const Simulator = withTheme(({ theme, ...rest }) => (
           crossoverRate: 0.02,
           steps: 4,
           riskAversion: 0.0,
-          initialFundingRatio: 2.0,
-          targetFundingRatio: 1.3
+          initialFundingRatio: 1.3,
+          targetFundingRatio: 1.3,
+          transactionCosts: [
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            0.0
+          ]
         }}
         onSubmit={(values, { setSubmitting }) => {
           simulator.optimize(values);

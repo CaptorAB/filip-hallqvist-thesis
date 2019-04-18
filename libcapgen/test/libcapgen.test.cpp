@@ -13,6 +13,11 @@ TEST_CASE("optimization runs without crashing", "[genetic]")
 {
   Random::seed(42);
 
+  TransactionCosts transaction_costs;
+
+  transaction_costs.domestic_equity = 0.0;
+  transaction_costs.global_equity = 0.0;
+
   OptimizeOptions options;
   options.population_size = 100;
   options.elitism_copies = 5;
@@ -23,6 +28,7 @@ TEST_CASE("optimization runs without crashing", "[genetic]")
   options.risk_aversion = 0.0;
   options.initial_funding_ratio = 1.0;
   options.target_funding_ratio = 1.0;
+  options.transaction_costs = transaction_costs;
 
   clock_t begin = std::clock();
 
