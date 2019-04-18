@@ -16,7 +16,7 @@ export const Tabs = ({ children }) => {
   return (
     <>
       <Tablist marginX={-4}>
-        {children.map((x, i) => {
+        {React.Children.map(children, (x, i) => {
           const { title, children, ...rest } = x.props;
           return (
             <Tab
@@ -31,7 +31,8 @@ export const Tabs = ({ children }) => {
           );
         })}
       </Tablist>
-      {children.map(
+      {React.Children.map(
+        children,
         (x, i) =>
           selected === i && <TabPane key={i}>{x.props.children}</TabPane>
       )}

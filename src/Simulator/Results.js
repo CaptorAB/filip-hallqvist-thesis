@@ -4,7 +4,6 @@ import { Pane, Heading, withTheme } from "evergreen-ui";
 import { Tabs, Tab } from "../Tabs/Tabs";
 import { Subscribe } from "unstated";
 import { SimulatorContainer } from "../SimulatorContainer";
-import { PerformancePlot } from "./PerformancePlot";
 
 export const Results = withTheme(({ theme }) => (
   <>
@@ -28,18 +27,23 @@ export const Results = withTheme(({ theme }) => (
               {simulator => (
                 <>
                   <Metric
+                    title="Fitness"
+                    value={simulator.state.metrics.fitness.toFixed(2)}
+                  />
+                  <Metric
                     title="Expected Return"
-                    value={simulator.state.metrics.totalReturn.toFixed(2)}
+                    value={simulator.state.metrics.expectedReturn.toFixed(2)}
                   />
                   <Metric
                     title="Expected Risk"
-                    value={simulator.state.metrics.risk.toFixed(2)}
+                    value={simulator.state.metrics.expectedRisk.toFixed(2)}
                   />
                 </>
               )}
             </Subscribe>
           </Pane>
         </Tab>
+        {/*
         <Tab title="Performance">
           <Subscribe to={[SimulatorContainer]}>
             {simulator => (
@@ -52,6 +56,7 @@ export const Results = withTheme(({ theme }) => (
           </Subscribe>
         </Tab>
         <Tab title="Weights">Weights</Tab>
+            */}
       </Tabs>
     </Pane>
   </>

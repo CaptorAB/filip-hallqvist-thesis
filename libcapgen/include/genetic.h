@@ -22,16 +22,39 @@ struct OptimizeOptions
 struct Result
 {
   double fitness;
-  double total_return;
-  double risk;
-  std::vector<double> price_changes;
-  std::vector<double> probabilities;
-  std::vector<double> goals;
+  double expected_return;
+  double expected_risk;
   std::vector<double> individual;
+  std::vector<double> incoming_wealths;
+  std::vector<double> final_wealths;
+  std::vector<double> price_changes;
+  std::vector<double> goals;
 };
 
 Result optimize(OptimizeOptions options);
 
-std::tuple<std::vector<double>, std::vector<double>, std::vector<double>> evaluate_individuals(const std::vector<double> &X, const std::vector<double> &price_changes, const std::vector<double> &probabilities, const std::vector<double> &goals, double risk_aversion, int n_individuals, int n_steps, int n_scenarios, int n_instruments);
+std::tuple<std::vector<double>, std::vector<double>, std::vector<double>> evaluate_individuals(std::vector<double> &X, std::vector<double> &price_changes, std::vector<double> &probabilities, std::vector<double> &goals, const double risk_aversion, const int n_individuals, const int n_steps, const int n_scenarios, const int n_instruments);
+
+void normalize_individuals(std::vector<double> &individuals, const int n_individuals, const int n_instruments, const int n_scenarios);
+
+std::vector<double> initialize_individuals(const int n_individuals, const int n_instruments, const int n_scenarios);
+
+std::tuple<int, int> select_roulette(std::vector<double> &fitnesses);
+
+void crossover_individuals(std::vector<double> &selected, const double crossover_rate);
+
+void mutate_individuals(std::vector<double> &selected, const double mutation_rate);
+
+double compute_wealth(std::vector<double> &current_weights, std::vector<double> &next_weights, std::vector<double> &price_changes, std::vector<double> &transaction_costs, const double initial_wealth);
+
+std::tuple<std::vector<double>, std::vector<double>> compute_wealths(std::vector<double> &individual, std::vector<double> &price_changes, std::vector<double> transaction_costs, const int n_instruments, const int n_scenarios);
+
+std::vector<double> compute_fitnesses(std::vector<double> &individuals, std::vector<double> &price_changes, std::vector<double> &transaction_costs, std::vector<double> &goals, const double risk_aversion, const int n_individuals, const int n_instruments, const int n_scenarios);
+
+double compute_fitness(std::vector<double> &incoming_wealths, std::vector<double> &final_wealths, std::vector<double> &goals, const double risk_aversion);
+
+double compute_expected_wealth(std::vector<double> &final_wealths);
+
+double compute_expected_risk(std::vector<double> &incoming_wealths, std::vector<double> &goals);
 
 #endif

@@ -5,15 +5,13 @@
       "label": "g++ build active file",
       "command": "/usr/bin/g++",
       "args": [
-        "-g",
-        "-I${workspaceFolder}/libcapgen",
+        "-Og",
+        "-Ilibcapgen",
         "${fileDirname}/*.cpp",
+        "${fileDirname}/../test/*.cpp",
         "-o",
-        "${fileDirname}/${fileBasenameNoExtension}"
-      ],
-      "options": {
-        "cwd": "/usr/bin"
-      }
+        "${workspaceFolder}/bin/${fileBasenameNoExtension}"
+      ]
     }
   ],
   "version": "2.0.0"
