@@ -22,12 +22,13 @@ struct OptimizeOptions
 struct Result
 {
   double fitness;
-  double total_return;
-  double risk;
-  std::vector<double> price_changes;
-  std::vector<double> probabilities;
-  std::vector<double> goals;
+  double expected_wealth;
+  double expected_downside;
   std::vector<double> individual;
+  std::vector<double> incoming_wealths;
+  std::vector<double> final_wealths;
+  std::vector<double> price_changes;
+  std::vector<double> goals;
 };
 
 Result optimize(OptimizeOptions options);

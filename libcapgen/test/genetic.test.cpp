@@ -85,7 +85,6 @@ TEST_CASE("mutate_individuals correctly mutates individuals", "[genetic]")
   for (int i = 0; i < selected.size(); ++i)
   {
     REQUIRE(selected[i] != mutated[i]);
-    REQUIRE(mutated[i] == Approx(selected[i]).margin(0.3));
   }
 }
 
