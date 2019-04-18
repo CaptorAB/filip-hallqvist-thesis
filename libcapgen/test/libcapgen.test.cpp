@@ -2,19 +2,24 @@
 #include <iostream>
 
 #include <lib/catch.h>
+#include <lib/random.h>
 
 #include <include/scenario.h>
 #include <include/genetic.h>
 
+using Random = effolkronium::random_static;
+
 TEST_CASE("optimization runs without crashing", "[genetic]")
 {
+  Random::seed(42);
+
   OptimizeOptions options;
   options.population_size = 100;
   options.elitism_copies = 5;
   options.generations = 10000;
   options.steps = 3;
-  options.mutation_rate = 0.20;
-  options.crossover_rate = 0.5;
+  options.mutation_rate = 0.02;
+  options.crossover_rate = 0.01;
   options.risk_aversion = 0.0;
   options.initial_funding_ratio = 1.0;
   options.target_funding_ratio = 1.0;
@@ -26,6 +31,7 @@ TEST_CASE("optimization runs without crashing", "[genetic]")
   clock_t end = std::clock();
   double elapsed_secs = double(end - begin) / CLOCKS_PER_SEC;
 
+  /*
   std::cout << "Elapsed time: " << elapsed_secs << "\n";
 
   std::cout << "\nFitness:           ";
@@ -55,4 +61,5 @@ TEST_CASE("optimization runs without crashing", "[genetic]")
     i++;
   }
   std::cout << "\n";
+  */
 }

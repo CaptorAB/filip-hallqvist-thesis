@@ -185,6 +185,7 @@ std::vector<double> compute_fitnesses(std::vector<double> &individuals, std::vec
   return fitnesses;
 }
 
+/*
 std::tuple<std::vector<double>, std::vector<double>, std::vector<double>> evaluate_individuals(std::vector<double> &X, std::vector<double> &price_changes, std::vector<double> &probabilities, std::vector<double> &goals, const double risk_aversion, const int n_individuals, const int n_steps, const int n_scenarios, const int n_instruments)
 {
   int timestamps = n_steps;
@@ -273,6 +274,7 @@ std::tuple<std::vector<double>, std::vector<double>, std::vector<double>> evalua
           cw += c;
         }
         */
+/*
 
         wealth[ri] = aw + cw;
 
@@ -306,15 +308,44 @@ std::tuple<std::vector<double>, std::vector<double>, std::vector<double>> evalua
 
   return std::make_tuple(fitnesses, total_returns, risks);
 }
+*/
 
 void mutate_individuals(std::vector<double> &selected, const double mutation_rate)
 {
-  for (int j = 0; j < selected.size(); ++j)
+  const int n_genes = floor(selected.size() / 2);
+  for (int j = 0; j < n_genes; ++j)
   {
     const double random = Random::get(0.0, 1.0);
     if (random < mutation_rate)
     {
-      selected[j] = Random::get(0.0, 1.0);
+      const double d = j / (j + 1);
+      selected[j] = std::min(1.0, std::max(0.0, selected[j] + d * Random::get(-1.0, 1.0)));
+    }
+  }
+  for (int j = n_genes; j < selected.size(); ++j)
+  {
+    const double random = Random::get(0.0, 1.0);
+    if (random < mutation_rate)
+    {
+      const double d = (j - n_genes) / ((j - n_genes) + 1);
+      selected[j] = std::min(1.0, std::max(0.0, selected[j] + d * Random::get(-1.0, 1.0)));
+    }
+  }
+}
+
+void crossover_individuals_scenario(std::vector<double> &selected, const int n_instruments, const int n_scenarios, const double crossover_rate)
+{
+  const int n_genes = n_instruments * n_scenarios;
+  const double r = Random::get(0.0, 1.0);
+  if (r < crossover_rate)
+  {
+    const int scenario = Random::get(0, n_scenarios - 1);
+    const int ix = scenario * n_instruments;
+    for (int j = 0; j < n_genes; ++j)
+    {
+      const double temp = selected[j];
+      selected[j] = selected[j + n_genes];
+      selected[j + n_genes] = temp;
     }
   }
 }
@@ -388,8 +419,14 @@ Result optimize(OptimizeOptions options)
   std::vector<double> price_changes = std::get<0>(scenarios);
   std::vector<double> probabilities = std::get<1>(scenarios);
 
+  std::cout << " !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!n";
+  std::cout << "Price changes: \n";
+  for (auto c : price_changes)
+    std::printf("%.2f ", c);
+  std::cout << "\n";
+
   // Define transaction costs (currently 0.0 for all instruments)
-  std::vector<double> transaction_costs(n_instruments, 0.0);
+  std::vector<double> transaction_costs(n_instruments, 0.1);
 
   // Define goals
   std::vector<double> goals = generate_goals(price_changes, n_steps, n_scenarios, n_instruments, initial_funding_ratio, target_funding_ratio);
@@ -437,7 +474,7 @@ Result optimize(OptimizeOptions options)
       }
 
       // Crossover
-      crossover_individuals(selected, crossover_rate);
+      crossover_individuals_scenario(selected, n_instruments, n_scenarios, crossover_rate);
 
       // Mutation
       mutate_individuals(selected, mutation_rate);

@@ -6,7 +6,6 @@
 
 using Random = effolkronium::random_static;
 
-/*
 TEST_CASE("normalize_individuals correctly normalizes individuals", "[genetic]")
 {
   const int n_individuals = 3;
@@ -228,4 +227,3 @@ TEST_CASE("compute_fitnesses correctly computes the fitness of all individuals",
     REQUIRE(fitnesses[i] == Approx(expected_fitnesses[i]).epsilon(0.0001));
   }
 }
-*/
