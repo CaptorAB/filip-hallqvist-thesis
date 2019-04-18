@@ -119,10 +119,8 @@ std::tuple<std::vector<double>, std::vector<double>> compute_wealths(std::vector
   std::vector<double> final_wealths(n_scenarios / 2 + 1);
   int final_index = 0;
 
-  // Compute incoming wealths
   for (int i = 0; i < n_scenarios; ++i)
   {
-
     int current = i;
 
     int left = 2 * current + 1;
@@ -147,12 +145,44 @@ std::tuple<std::vector<double>, std::vector<double>> compute_wealths(std::vector
     }
     else
     {
-      final_wealths[final_index] = compute_wealth(current_weights, current_weights, price_changes, transaction_costs, current_wealth);
+      final_wealths[final_index] = compute_wealth(current_weights, current_weights, current_changes, transaction_costs, current_wealth);
       final_index++;
     }
   }
 
   return std::make_tuple(incoming_wealths, final_wealths);
+}
+
+double compute_fitness(std::vector<double> &final_wealths)
+{
+  double expected_wealth = 0.0;
+  for (double wealth : final_wealths)
+  {
+    expected_wealth += wealth;
+  }
+  expected_wealth = expected_wealth / final_wealths.size();
+
+  return expected_wealth;
+}
+
+std::vector<double> compute_fitnesses(std::vector<double> &individuals, std::vector<double> price_changes, std::vector<double> transaction_costs, const int n_individuals, const int n_instruments, const int n_scenarios)
+{
+  const int n_genes = n_instruments * n_scenarios;
+  std::vector<double> fitnesses(n_individuals);
+  for (int i = 0; i < n_individuals; ++i)
+  {
+    const int ix = i * n_genes;
+
+    std::vector<double> individual = std::vector<double>(individuals.begin() + ix, individuals.begin() + ix + n_genes);
+
+    std::tuple<std::vector<double>, std::vector<double>> wealths = compute_wealths(individual, price_changes, transaction_costs, n_instruments, n_scenarios);
+
+    std::vector<double> incoming_wealths = std::get<0>(wealths);
+    std::vector<double> final_wealths = std::get<1>(wealths);
+
+    fitnesses[i] = compute_fitness(final_wealths);
+  }
+  return fitnesses;
 }
 
 std::tuple<std::vector<double>, std::vector<double>, std::vector<double>> evaluate_individuals(std::vector<double> &X, std::vector<double> &price_changes, std::vector<double> &probabilities, std::vector<double> &goals, const double risk_aversion, const int n_individuals, const int n_steps, const int n_scenarios, const int n_instruments)
@@ -284,7 +314,7 @@ void mutate_individuals(std::vector<double> &selected, const double mutation_rat
     const double random = Random::get(0.0, 1.0);
     if (random < mutation_rate)
     {
-      selected[j] = std::max(0.0, selected[j] + Random::get<std::normal_distribution<>>(0.0, 0.1));
+      selected[j] = Random::get(0.0, 1.0);
     }
   }
 }
@@ -358,16 +388,15 @@ Result optimize(OptimizeOptions options)
   std::vector<double> price_changes = std::get<0>(scenarios);
   std::vector<double> probabilities = std::get<1>(scenarios);
 
+  // Define transaction costs (currently 0.0 for all instruments)
+  std::vector<double> transaction_costs(n_instruments, 0.0);
+
   // Define goals
   std::vector<double> goals = generate_goals(price_changes, n_steps, n_scenarios, n_instruments, initial_funding_ratio, target_funding_ratio);
 
   for (int t = 0; t < n_generations; ++t)
   {
-    evaluated = evaluate_individuals(individuals, price_changes, probabilities, goals, risk_aversion, n_individuals, n_steps, n_scenarios, n_instruments);
-
-    fitnesses = std::get<0>(evaluated);
-    total_returns = std::get<1>(evaluated);
-    risks = std::get<2>(evaluated);
+    fitnesses = compute_fitnesses(individuals, price_changes, transaction_costs, n_individuals, n_instruments, n_scenarios);
 
     // Check global_max_fitness
     for (int i = 0; i < n_individuals; ++i)
@@ -375,15 +404,16 @@ Result optimize(OptimizeOptions options)
       if (fitnesses[i] > global_max_fitness)
       {
         global_max_fitness = fitnesses[i];
-        global_max_total_return = total_returns[i];
-        global_max_risk = risks[i];
         i_global_max_individual = i * n_genes;
 
         int ix = i * n_genes;
-        for (int j = 0; j < n_genes; ++j)
-        {
-          global_max_individual[j] = individuals[ix + j];
-        }
+        global_max_individual = std::vector<double>(individuals.begin() + ix, individuals.begin() + ix + n_genes);
+
+        std::cout << t << " @@@@@@@@@\n";
+        std::cout << "Fitness: " << global_max_fitness << "\n";
+        for (auto c : global_max_individual)
+          std::printf("%.2f ", c);
+        std::cout << "\n";
       }
     }
 

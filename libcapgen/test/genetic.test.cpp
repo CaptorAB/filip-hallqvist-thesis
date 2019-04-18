@@ -6,6 +6,7 @@
 
 using Random = effolkronium::random_static;
 
+/*
 TEST_CASE("normalize_individuals correctly normalizes individuals", "[genetic]")
 {
   const int n_individuals = 3;
@@ -179,8 +180,52 @@ TEST_CASE("compute_wealths correctly computes wealths over several steps", "[gen
       0.947625, 0.945250,
       0.919196, 0.916898, 0.947542, 0.945155};
 
+  std::vector<double> expected_final_wealths = {
+      0.965156, 0.871053, 1.229436, 0.472578};
+
   for (int i = 0; i < expected_incoming_wealths.size(); ++i)
   {
     REQUIRE(incoming_wealths[i] == Approx(expected_incoming_wealths[i]).epsilon(0.0001));
   }
+
+  for (int i = 0; i < expected_final_wealths.size(); ++i)
+  {
+    REQUIRE(final_wealths[i] == Approx(expected_final_wealths[i]).epsilon(0.0001));
+  }
 }
+
+TEST_CASE("compute_fitness correctly computes the fitness of an individual", "[genetic]")
+{
+  std::vector<double> final_wealths = {0.11, 0.21, 0.37, 0.49};
+  const double fitness = compute_fitness(final_wealths);
+  const double expected = 0.295;
+
+  REQUIRE(fitness == Approx(expected).epsilon(0.000001));
+}
+
+TEST_CASE("compute_fitnesses correctly computes the fitness of all individuals", "[genetic]")
+{
+  const int n_individuals = 3;
+  const int n_instruments = 2;
+  const int n_scenarios = 3;
+
+  std::vector<double> individuals = {
+      1.0, 0.0, 0.5, 0.5, 0.5, 0.5,
+      0.0, 1.0, 0.5, 0.5, 0.5, 0.5,
+      0.5, 0.5, 1.0, 0.0, 0.9, 0.1};
+  std::vector<double> price_changes = {
+      0.0, 0.5, 0.5, -0.5, -0.5, 0.5};
+  std::vector<double> transaction_costs = {
+      0.0, 0.0};
+
+  std::vector<double> fitnesses = compute_fitnesses(individuals, price_changes, transaction_costs, n_individuals, n_instruments, n_scenarios);
+
+  std::vector<double> expected_fitnesses = {
+      1.0, 1.5, 1.3125};
+
+  for (int i = 0; i < expected_fitnesses.size(); ++i)
+  {
+    REQUIRE(fitnesses[i] == Approx(expected_fitnesses[i]).epsilon(0.0001));
+  }
+}
+*/

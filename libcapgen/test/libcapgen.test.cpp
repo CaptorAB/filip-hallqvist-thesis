@@ -11,10 +11,10 @@ TEST_CASE("optimization runs without crashing", "[genetic]")
   OptimizeOptions options;
   options.population_size = 100;
   options.elitism_copies = 5;
-  options.generations = 1000;
+  options.generations = 10000;
   options.steps = 3;
-  options.mutation_rate = 0.10;
-  options.crossover_rate = 0.05;
+  options.mutation_rate = 0.20;
+  options.crossover_rate = 0.5;
   options.risk_aversion = 0.0;
   options.initial_funding_ratio = 1.0;
   options.target_funding_ratio = 1.0;
