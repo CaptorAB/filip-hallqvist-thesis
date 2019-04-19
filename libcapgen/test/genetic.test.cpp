@@ -318,9 +318,9 @@ TEST_CASE("optimization runs without crashing", "[genetic]")
   InstrumentConstraints instrument_constraints = create_default_instrument_constraints();
 
   OptimizeOptions options;
-  options.population_size = 100;
-  options.elitism_copies = 5;
-  options.generations = 10000;
+  options.population_size = 10;
+  options.elitism_copies = 2;
+  options.generations = 10;
   options.steps = 3;
   options.mutation_rate = 0.02;
   options.crossover_rate = 0.01;
