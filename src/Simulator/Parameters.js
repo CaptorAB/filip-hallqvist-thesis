@@ -79,7 +79,7 @@ const Parameter = props => (
 export const ConstraintParameters = ({ values, handleChange }) => (
   <Pane display="flex" flexWrap="wrap" marginX={8}>
     <Pane>
-      <Heading marginBottom={8}>Instrument allocatoin constraints</Heading>
+      <Heading marginBottom={8}>Instrument allocation constraints</Heading>
       <Text>
         Define constraints on how large proportion of the portfolio might be
         invested in a particular instrument.
