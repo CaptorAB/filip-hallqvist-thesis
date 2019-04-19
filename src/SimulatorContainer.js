@@ -2,6 +2,7 @@ import { Container } from "unstated";
 
 import { libcapgen } from "./libcapgen";
 import { format } from "date-fns";
+import { N_INSTRUMENTS } from "./constants";
 
 /*
 const _preOrderTraversal = (array, current, path, paths) => {
@@ -32,7 +33,7 @@ export class SimulatorContainer extends Container {
       expectedReturn: 0,
       expectedRisk: 0
     },
-    scenarios: []
+    weights: []
   };
   optimize = async options => {
     const instance = await libcapgen();
@@ -43,17 +44,22 @@ export class SimulatorContainer extends Container {
       expectedRisk: result.expectedRisk
     };
 
+    const weights = [];
+    for (let i = 0; i < N_INSTRUMENTS; ++i) {
+      weights.push(result.individual.get(i));
+    }
+
+    const state = {
+      title: "Backtest",
+      timestamp: format(new Date(), "yyyy-MM-dd HH:mm:ss"),
+      metrics: { ...metrics },
+      weights: [...weights]
+    };
+
     this.setState({
       ...this.state,
-      history: [
-        {
-          title: "Backtest",
-          timestamp: format(new Date(), "yyyy-MM-dd HH:mm:ss"),
-          metrics: { ...metrics }
-        },
-        ...this.state.history
-      ],
-      metrics: { ...metrics }
+      ...state,
+      history: [state, ...this.state.history]
     });
   };
 }
