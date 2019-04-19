@@ -1,4 +1,4 @@
-export const N_INSTRUMENTS = 2;
+export const N_INSTRUMENTS = 13;
 export const N_RISKS = 8;
 
 export const DOMESTIC_EQUITY_INDEX = 0;

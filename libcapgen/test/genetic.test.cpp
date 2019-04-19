@@ -6,6 +6,38 @@
 
 using Random = effolkronium::random_static;
 
+InstrumentConstraints create_default_instrument_constraints()
+{
+  InstrumentConstraints instrument_constraints;
+  instrument_constraints.domestic_equity_min = 0.0;
+  instrument_constraints.global_equity_min = 0.0;
+  instrument_constraints.real_estate_min = 0.0;
+  instrument_constraints.alternative_min = 0.0;
+  instrument_constraints.credit_min = 0.0;
+  instrument_constraints.bonds_2y_min = 0.0;
+  instrument_constraints.bonds_5y_min = 0.0;
+  instrument_constraints.cash_min = 0.0;
+  instrument_constraints.fta_min = 0.0;
+  instrument_constraints.domestic_equity_future_min = 0.0;
+  instrument_constraints.interest_rate_swap_2y_min = 0.0;
+  instrument_constraints.interest_rate_swap_5y_min = 0.0;
+  instrument_constraints.interest_rate_swap_20y_min = 0.0;
+  instrument_constraints.domestic_equity_max = 1.0;
+  instrument_constraints.global_equity_max = 1.0;
+  instrument_constraints.real_estate_max = 1.0;
+  instrument_constraints.alternative_max = 1.0;
+  instrument_constraints.credit_max = 1.0;
+  instrument_constraints.bonds_2y_max = 1.0;
+  instrument_constraints.bonds_5y_max = 1.0;
+  instrument_constraints.cash_max = 1.0;
+  instrument_constraints.fta_max = 1.0;
+  instrument_constraints.domestic_equity_future_max = 1.0;
+  instrument_constraints.interest_rate_swap_2y_max = 1.0;
+  instrument_constraints.interest_rate_swap_5y_max = 1.0;
+  instrument_constraints.interest_rate_swap_20y_max = 1.0;
+  return instrument_constraints;
+}
+
 TEST_CASE("normalize_individuals correctly normalizes individuals", "[genetic]")
 {
   const int n_individuals = 3;
@@ -228,8 +260,10 @@ TEST_CASE("compute_fitnesses correctly computes the fitness of all individuals",
       0.0, 0.0};
   std::vector<double> goals = {
       0.0, 0.0, 0.0, 0.0, 0.0, 0.0};
+  std::vector<double> instrument_constraints = {
+      0.0, 0.0, 1.0, 1.0};
 
-  std::vector<double> fitnesses = compute_fitnesses(individuals, price_changes, transaction_costs, goals, risk_aversion, n_individuals, n_instruments, n_scenarios);
+  std::vector<double> fitnesses = compute_fitnesses(individuals, price_changes, transaction_costs, goals, instrument_constraints, risk_aversion, n_individuals, n_instruments, n_scenarios);
 
   std::vector<double> expected_fitnesses = {
       1.0, 1.5, 1.3125};
@@ -238,4 +272,100 @@ TEST_CASE("compute_fitnesses correctly computes the fitness of all individuals",
   {
     REQUIRE(fitnesses[i] == Approx(expected_fitnesses[i]).epsilon(0.0001));
   }
+}
+
+TEST_CASE("is_valid_individual correctly allows valid individuals", "[genetic]")
+{
+  const int n_instruments = 2;
+  const int n_scenarios = 3;
+  std::vector<double> individual = {
+      0.0, 1.0, 0.0, 1.0, 0.0, 1.0};
+  std::vector<double> instrument_constraints = {
+      0.0, 0.0, 1.0, 1.0};
+  const bool is_valid = is_valid_individual(individual, instrument_constraints, n_instruments, n_scenarios);
+  REQUIRE(is_valid);
+}
+
+TEST_CASE("is_valid_individual correctly disallows invalid individuals with min weight below requirements", "[genetic]")
+{
+  const int n_instruments = 2;
+  const int n_scenarios = 3;
+  std::vector<double> individual = {
+      0.8, 0.2, 0.8, 0.2, 0.1, 0.9};
+  std::vector<double> instrument_constraints = {
+      0.5, 0.0, 1.0, 1.0};
+  bool is_valid = is_valid_individual(individual, instrument_constraints, n_instruments, n_scenarios);
+  REQUIRE_FALSE(is_valid);
+}
+
+TEST_CASE("is_valid_individual correctly disallows invalid individuals with max weight above requirements", "[genetic]")
+{
+  const int n_instruments = 2;
+  const int n_scenarios = 3;
+  std::vector<double> individual = {
+      0.4, 0.6, 0.7, 0.3, 0.1, 0.9};
+  std::vector<double> instrument_constraints = {
+      0.0, 0.0, 1.0, 0.8};
+  bool is_valid = is_valid_individual(individual, instrument_constraints, n_instruments, n_scenarios);
+  REQUIRE_FALSE(is_valid);
+}
+
+TEST_CASE("optimization runs without crashing", "[genetic]")
+{
+  Random::seed(42);
+
+  TransactionCosts transaction_costs;
+  InstrumentConstraints instrument_constraints = create_default_instrument_constraints();
+
+  OptimizeOptions options;
+  options.population_size = 100;
+  options.elitism_copies = 5;
+  options.generations = 10000;
+  options.steps = 3;
+  options.mutation_rate = 0.02;
+  options.crossover_rate = 0.01;
+  options.risk_aversion = 0.0;
+  options.initial_funding_ratio = 1.0;
+  options.target_funding_ratio = 1.0;
+  options.transaction_costs = transaction_costs;
+  options.instrument_constraints = instrument_constraints;
+
+  clock_t begin = std::clock();
+
+  Result r = optimize(options);
+
+  clock_t end = std::clock();
+  double elapsed_secs = double(end - begin) / CLOCKS_PER_SEC;
+
+  /*
+  std::cout << "Elapsed time: " << elapsed_secs << "\n";
+
+  std::cout << "\nFitness:         ";
+  std::printf("%.4f \n", r.fitness);
+
+  std::cout << "Expected return: ";
+  std::printf("%.4f \n", r.expected_return);
+
+  std::cout << "Expected risk:   ";
+  std::printf("%.4f \n", r.expected_risk);
+
+  std::cout << "Individual: \n"
+            << std::endl;
+
+  int i = 1;
+  double s = 0.0;
+  for (auto const &c : r.individual)
+  {
+    s += c;
+    std::printf("%.2f ", c);
+    if (i % N_INSTRUMENTS == 0)
+    {
+      std::cout << "== " << s;
+      s = 0;
+      std::cout << "\n";
+    }
+    i++;
+  }
+  std::cout << "\n";
+  */
 }

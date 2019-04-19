@@ -35,13 +35,41 @@ export const Simulator = withTheme(({ theme, ...rest }) => (
             0.0,
             0.0,
             0.0
+          ],
+          instrumentConstraints: [
+            [0.0, 1.0],
+            [0.0, 1.0],
+            [0.0, 1.0],
+            [0.0, 1.0],
+            [0.0, 1.0],
+            [0.0, 1.0],
+            [0.0, 1.0],
+            [0.0, 1.0],
+            [0.0, 1.0],
+            [0.0, 1.0],
+            [0.0, 1.0],
+            [0.0, 1.0],
+            [0.0, 1.0]
           ]
         }}
         onSubmit={(values, { setSubmitting }) => {
-          simulator.optimize(values);
+          const instrumentConstraints = [
+            ...values.instrumentConstraints.map(x => x[0]),
+            ...values.instrumentConstraints.map(x => x[1])
+          ];
+          simulator.optimize({
+            ...values,
+            instrumentConstraints
+          });
         }}
       >
-        {({ isSubmitting, handleSubmit, values, handleChange }) => (
+        {({
+          isSubmitting,
+          handleSubmit,
+          values,
+          handleChange,
+          setFieldValue
+        }) => (
           <form onSubmit={handleSubmit}>
             <Pane display="flex" flexDirection="column" {...rest}>
               <Pane
@@ -59,7 +87,11 @@ export const Simulator = withTheme(({ theme, ...rest }) => (
                   </Button>
                 </Pane>
               </Pane>
-              <Parameters values={values} handleChange={handleChange} />
+              <Parameters
+                values={values}
+                handleChange={handleChange}
+                setFieldValue={setFieldValue}
+              />
               <Results />
             </Pane>
           </form>

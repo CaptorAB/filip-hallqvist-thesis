@@ -2,7 +2,7 @@
 #define SCENARIO_H
 
 // Instrument indices
-const int N_INSTRUMENTS = 2;
+const int N_INSTRUMENTS = 13;
 const int DOMESTIC_EQUITY_INDEX = 0;
 const int GLOBAL_EQUITY_INDEX = 1;
 const int REAL_ESTATE_INDEX = 2;

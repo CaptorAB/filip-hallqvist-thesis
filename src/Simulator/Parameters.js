@@ -1,54 +1,131 @@
 import React from "react";
-import { Pane, Heading, TextInputField, withTheme } from "evergreen-ui";
+import {
+  Pane,
+  Small,
+  TextInput,
+  Text,
+  Heading,
+  TextInputField,
+  withTheme
+} from "evergreen-ui";
 import { INSTRUMENT_NAMES } from "../constants";
 
 import { Tabs, Tab } from "../Tabs/Tabs";
 
-export const Parameters = withTheme(({ theme, values, handleChange }) => {
-  return (
-    <>
-      <Pane
-        background="tint1"
-        borderBottom={`1px solid ${theme.colors.border.default}`}
-        display="flex"
-        paddingX={16}
-        paddingY={8}
-        flexDirection="column"
-      >
-        <Pane flex={1}>
-          <Heading size={200}>Parameters</Heading>
+export const Parameters = withTheme(
+  ({ theme, values, handleChange, setFieldValue }) => {
+    return (
+      <>
+        <Pane
+          background="tint1"
+          borderBottom={`1px solid ${theme.colors.border.default}`}
+          display="flex"
+          paddingX={16}
+          paddingY={8}
+          flexDirection="column"
+        >
+          <Pane flex={1}>
+            <Heading size={200}>Parameters</Heading>
+          </Pane>
         </Pane>
-      </Pane>
-      <Pane
-        borderBottom={`1px solid ${theme.colors.border.default}`}
-        display="flex"
-        padding={16}
-        flexDirection="column"
-      >
-        <Tabs>
-          <Tab title="Portfolio">
-            <PortfolioParameters values={values} handleChange={handleChange} />
-          </Tab>
-          <Tab title="Simulation">
-            <SimulationParameters values={values} handleChange={handleChange} />
-          </Tab>
-          <Tab title="Optimizer">
-            <OptimizerParameters values={values} handleChange={handleChange} />
-          </Tab>
-          <Tab title="Reallocations">
-            <ReallocationParameters
-              values={values}
-              handleChange={handleChange}
-            />
-          </Tab>
-        </Tabs>
-      </Pane>
-    </>
-  );
-});
+        <Pane
+          borderBottom={`1px solid ${theme.colors.border.default}`}
+          display="flex"
+          padding={16}
+          flexDirection="column"
+        >
+          <Tabs>
+            <Tab title="Portfolio">
+              <PortfolioParameters
+                values={values}
+                handleChange={handleChange}
+              />
+            </Tab>
+            <Tab title="Simulation">
+              <SimulationParameters
+                values={values}
+                handleChange={handleChange}
+              />
+            </Tab>
+            <Tab title="Optimizer">
+              <OptimizerParameters
+                values={values}
+                handleChange={handleChange}
+              />
+            </Tab>
+            <Tab title="Reallocations">
+              <ReallocationParameters
+                values={values}
+                handleChange={handleChange}
+              />
+            </Tab>
+            <Tab title="Constraints">
+              <ConstraintParameters
+                values={values}
+                handleChange={handleChange}
+              />
+            </Tab>
+          </Tabs>
+        </Pane>
+      </>
+    );
+  }
+);
 
 const Parameter = props => (
   <TextInputField flexBasis="28%" marginX={8} {...props} />
+);
+
+export const ConstraintParameters = ({ values, handleChange }) => (
+  <Pane display="flex" flexWrap="wrap" marginX={8}>
+    <Pane>
+      <Heading marginBottom={8}>Instrument allocation constraints</Heading>
+      <Text>
+        Define constraints on how large proportion of the portfolio might be
+        invested in a particular instrument.
+      </Text>
+      <Pane is="table" marginX={-4} marginY={16}>
+        <thead>
+          <tr>
+            <Text is="th">Instrument</Text>
+            <Text is="th">Min</Text>
+            <Text is="th">Max</Text>
+          </tr>
+        </thead>
+        <tbody>
+          {values.instrumentConstraints.map((allocationConstraint, index) => (
+            <tr key={index}>
+              <td>
+                <Small>{INSTRUMENT_NAMES[index]}</Small>
+              </td>
+              <td>
+                <TextInput
+                  type="number"
+                  name={`instrumentConstraints.${index}.0`}
+                  value={values.instrumentConstraints[index][0]}
+                  onChange={handleChange}
+                  step="any"
+                  min={0.0}
+                  max={1.0}
+                />
+              </td>
+              <td>
+                <TextInput
+                  type="number"
+                  name={`instrumentConstraints.${index}.1`}
+                  value={values.instrumentConstraints[index][1]}
+                  onChange={handleChange}
+                  step="any"
+                  min={0.0}
+                  max={1.0}
+                />
+              </td>
+            </tr>
+          ))}
+        </tbody>
+      </Pane>
+    </Pane>
+  </Pane>
 );
 
 export const ReallocationParameters = ({ values, handleChange }) => (
