@@ -36,7 +36,7 @@ export const Simulator = withTheme(({ theme, ...rest }) => (
             0.0,
             0.0
           ],
-          allocationConstraints: [
+          instrumentConstraints: [
             [0.0, 1.0],
             [0.0, 1.0],
             [0.0, 1.0],
@@ -53,7 +53,14 @@ export const Simulator = withTheme(({ theme, ...rest }) => (
           ]
         }}
         onSubmit={(values, { setSubmitting }) => {
-          simulator.optimize(values);
+          const instrumentConstraints = [
+            ...values.instrumentConstraints.map(x => x[0]),
+            ...values.instrumentConstraints.map(x => x[1])
+          ];
+          simulator.optimize({
+            ...values,
+            instrumentConstraints
+          });
         }}
       >
         {({

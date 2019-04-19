@@ -85,40 +85,44 @@ export const ConstraintParameters = ({ values, handleChange }) => (
         invested in a particular instrument.
       </Text>
       <Pane is="table" marginX={-4} marginY={16}>
-        <tr>
-          <Text is="th">Instrument</Text>
-          <Text is="th">Min</Text>
-          <Text is="th">Max</Text>
-        </tr>
-        {values.allocationConstraints.map((allocationConstraint, index) => (
-          <tr key={index}>
-            <td>
-              <Small>{INSTRUMENT_NAMES[index]}</Small>
-            </td>
-            <td>
-              <TextInput
-                type="number"
-                name={`allocationConstraints.${index}.0`}
-                value={values.allocationConstraints[index][0]}
-                onChange={handleChange}
-                stepSize="any"
-                min={0.0}
-                max={1.0}
-              />
-            </td>
-            <td>
-              <TextInput
-                type="number"
-                name={`allocationConstraints.${index}.1`}
-                value={values.allocationConstraints[index][1]}
-                onChange={handleChange}
-                stepSize="any"
-                min={0.0}
-                max={1.0}
-              />
-            </td>
+        <thead>
+          <tr>
+            <Text is="th">Instrument</Text>
+            <Text is="th">Min</Text>
+            <Text is="th">Max</Text>
           </tr>
-        ))}
+        </thead>
+        <tbody>
+          {values.instrumentConstraints.map((allocationConstraint, index) => (
+            <tr key={index}>
+              <td>
+                <Small>{INSTRUMENT_NAMES[index]}</Small>
+              </td>
+              <td>
+                <TextInput
+                  type="number"
+                  name={`instrumentConstraints.${index}.0`}
+                  value={values.instrumentConstraints[index][0]}
+                  onChange={handleChange}
+                  step="any"
+                  min={0.0}
+                  max={1.0}
+                />
+              </td>
+              <td>
+                <TextInput
+                  type="number"
+                  name={`instrumentConstraints.${index}.1`}
+                  value={values.instrumentConstraints[index][1]}
+                  onChange={handleChange}
+                  step="any"
+                  min={0.0}
+                  max={1.0}
+                />
+              </td>
+            </tr>
+          ))}
+        </tbody>
       </Pane>
     </Pane>
   </Pane>
