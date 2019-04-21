@@ -181,7 +181,9 @@ double compute_wealth(
     std::vector<double> &next_weights,
     std::vector<double> &price_changes,
     std::vector<double> &transaction_costs,
-    const double initial_wealth);
+    const double initial_wealth,
+    const int n_instruments,
+    const int n_derivatives);
 
 /**
  * Compute the wealth for all steps in time.
@@ -191,6 +193,7 @@ std::tuple<std::vector<double>, std::vector<double>> compute_wealths(
     std::vector<double> &price_changes,
     std::vector<double> &transaction_costs,
     const int n_instruments,
+    const int n_derivatives,
     const int n_scenarios);
 
 /**

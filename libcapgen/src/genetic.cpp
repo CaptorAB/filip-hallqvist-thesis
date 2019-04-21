@@ -135,16 +135,26 @@ double compute_wealth(
     std::vector<double> &next_weights,
     std::vector<double> &price_changes,
     std::vector<double> &transaction_costs,
-    const double initial_wealth)
+    const double initial_wealth,
+    const int n_instruments,
+    const int n_derivatives)
 {
+  const int n_non_derivatives = n_instruments - n_derivatives;
   double holdings = 0.0;
   double reallocations = 0.0;
 
   // Compute wealth from price changes
-  for (int i = 0; i < current_weights.size(); ++i)
+  for (int i = 0; i < n_instruments; ++i)
   {
-    const double result =
-        initial_wealth * current_weights[i] * (1.0 + price_changes[i]);
+    double result = 0.0;
+    if (i < n_non_derivatives)
+    {
+      result = initial_wealth * current_weights[i] * (1.0 + price_changes[i]);
+    }
+    else
+    {
+      result = (initial_wealth * current_weights[i] * (1.0 + price_changes[i])) - (initial_wealth * current_weights[i]);
+    }
     holdings += result;
   }
 
@@ -165,6 +175,7 @@ std::tuple<std::vector<double>, std::vector<double>> compute_wealths(
     std::vector<double> &price_changes,
     std::vector<double> &transaction_costs,
     const int n_instruments,
+    const int n_derivatives,
     const int n_scenarios)
 {
   std::vector<double> incoming_wealths(n_scenarios);
@@ -213,7 +224,9 @@ std::tuple<std::vector<double>, std::vector<double>> compute_wealths(
           left_weights,
           current_changes,
           transaction_costs,
-          current_wealth);
+          current_wealth,
+          n_instruments,
+          n_derivatives);
 
       // Evaluate right child
       incoming_wealths[right] = compute_wealth(
@@ -221,7 +234,9 @@ std::tuple<std::vector<double>, std::vector<double>> compute_wealths(
           right_weights,
           current_changes,
           transaction_costs,
-          current_wealth);
+          current_wealth,
+          n_instruments,
+          n_derivatives);
     }
     else
     {
@@ -233,7 +248,9 @@ std::tuple<std::vector<double>, std::vector<double>> compute_wealths(
           current_weights,
           current_changes,
           transaction_costs,
-          current_wealth);
+          current_wealth,
+          n_instruments,
+          n_derivatives);
 
       final_index++;
     }
@@ -369,6 +386,7 @@ std::vector<double> compute_fitnesses(
             price_changes,
             transaction_costs,
             n_instruments,
+            n_derivatives,
             n_scenarios);
 
     std::vector<double> incoming_wealths = std::get<0>(wealths);
@@ -533,7 +551,7 @@ Result optimize(OptimizeOptions options)
       n_scenarios,
       n_instruments);
 
-  std::vector<double> intermediate_goals = std::get<0>(goals);
+  std::vector<double> intermediate_goals = std::vector<double>(n_scenarios, 1.0); // std::get<0>(goals);
   std::vector<double> final_goals = std::get<1>(goals);
 
   for (int t = 0; t < n_generations; ++t)
@@ -628,6 +646,7 @@ Result optimize(OptimizeOptions options)
           price_changes,
           transaction_costs,
           n_instruments,
+          n_derivatives,
           n_scenarios);
 
   std::vector<double> best_incoming_wealths = std::get<0>(best_wealths);

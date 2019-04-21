@@ -62,7 +62,7 @@ TEST_CASE("generate_instrument_changes runs without crashing", "[normal]")
       n_instruments);
 }
 
-TEST_CASE("generate_normal_scenarios runs without crashing", "[normal]")
+TEST_CASE("generate_normal_scenarios yields reasonable changes", "[normal]")
 {
   const int n_risks = N_RISKS;
   const int n_instruments = N_INSTRUMENTS;
@@ -77,4 +77,10 @@ TEST_CASE("generate_normal_scenarios runs without crashing", "[normal]")
       n_risks,
       n_instruments,
       n_scenarios);
+
+  for (int i = 0; i < price_changes.size(); ++i)
+  {
+    REQUIRE(price_changes[i] < 0.1);
+    REQUIRE(price_changes[i] > -0.1);
+  }
 }
