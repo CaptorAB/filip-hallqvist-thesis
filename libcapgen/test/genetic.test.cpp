@@ -38,10 +38,21 @@ InstrumentConstraints create_default_instrument_constraints()
   return instrument_constraints;
 }
 
+MarginConstraints create_default_margin_constraints()
+{
+  MarginConstraints margin_constraints;
+  margin_constraints.domestic_equity_future = 0.0;
+  margin_constraints.interest_rate_swap_2y = 0.0;
+  margin_constraints.interest_rate_swap_5y = 0.0;
+  margin_constraints.interest_rate_swap_20y = 0.0;
+  return margin_constraints;
+}
+
 TEST_CASE("normalize_individuals correctly normalizes individuals", "[genetic]")
 {
   const int n_individuals = 3;
   const int n_instruments = 2;
+  const int n_derivatives = 0;
   const int n_scenarios = 2;
 
   std::vector<double> individuals = {
@@ -49,7 +60,7 @@ TEST_CASE("normalize_individuals correctly normalizes individuals", "[genetic]")
       0.0, 0.0, 1.0, 1.0,
       0.9, 0.1, 0.625, 0.975};
 
-  normalize_individuals(individuals, n_individuals, n_instruments, n_scenarios);
+  normalize_individuals(individuals, n_individuals, n_instruments, n_derivatives, n_scenarios);
 
   const std::vector<double> expected = {
       0.25, 0.75, 1.0, 0.0,
@@ -247,6 +258,7 @@ TEST_CASE("compute_fitnesses correctly computes the fitness of all individuals",
 {
   const int n_individuals = 3;
   const int n_instruments = 2;
+  const int n_derivatives = 0;
   const int n_scenarios = 3;
   const double risk_aversion = 0;
 
@@ -262,8 +274,10 @@ TEST_CASE("compute_fitnesses correctly computes the fitness of all individuals",
       0.0, 0.0, 0.0, 0.0, 0.0, 0.0};
   std::vector<double> instrument_constraints = {
       0.0, 0.0, 1.0, 1.0};
+  std::vector<double> margin_constraints = {
+      0.0, 0.0, 0.0, 0.0};
 
-  std::vector<double> fitnesses = compute_fitnesses(individuals, price_changes, transaction_costs, goals, instrument_constraints, risk_aversion, n_individuals, n_instruments, n_scenarios);
+  std::vector<double> fitnesses = compute_fitnesses(individuals, price_changes, transaction_costs, goals, instrument_constraints, margin_constraints, risk_aversion, n_individuals, n_instruments, n_derivatives, n_scenarios);
 
   std::vector<double> expected_fitnesses = {
       1.0, 1.5, 1.3125};
@@ -274,40 +288,52 @@ TEST_CASE("compute_fitnesses correctly computes the fitness of all individuals",
   }
 }
 
-TEST_CASE("is_valid_individual correctly allows valid individuals", "[genetic]")
+TEST_CASE("compute_penalty gives 0 penalty to valid individuals", "[genetic]")
 {
   const int n_instruments = 2;
+  const int n_derivatives = 0;
   const int n_scenarios = 3;
   std::vector<double> individual = {
       0.0, 1.0, 0.0, 1.0, 0.0, 1.0};
   std::vector<double> instrument_constraints = {
       0.0, 0.0, 1.0, 1.0};
-  const bool is_valid = is_valid_individual(individual, instrument_constraints, n_instruments, n_scenarios);
-  REQUIRE(is_valid);
+  std::vector<double> margin_constraints = {
+      0.0, 0.0, 0.0, 0.0};
+  const double penalty = compute_penalty(individual, instrument_constraints, margin_constraints, n_instruments, n_derivatives, n_scenarios);
+  const double expected = 0.0;
+  REQUIRE(penalty == Approx(expected).epsilon(0.000001));
 }
 
-TEST_CASE("is_valid_individual correctly disallows invalid individuals with min weight below requirements", "[genetic]")
+TEST_CASE("compute_penalty penalizes individuals with an instrument weight below minimum", "[genetic]")
 {
   const int n_instruments = 2;
+  const int n_derivatives = 0;
   const int n_scenarios = 3;
   std::vector<double> individual = {
       0.8, 0.2, 0.8, 0.2, 0.1, 0.9};
   std::vector<double> instrument_constraints = {
       0.5, 0.0, 1.0, 1.0};
-  bool is_valid = is_valid_individual(individual, instrument_constraints, n_instruments, n_scenarios);
-  REQUIRE_FALSE(is_valid);
+  std::vector<double> margin_constraints = {
+      0.0, 0.0, 0.0, 0.0};
+  const double penalty = compute_penalty(individual, instrument_constraints, margin_constraints, n_instruments, n_derivatives, n_scenarios);
+  const double expected = 0.16;
+  REQUIRE(penalty == Approx(expected).epsilon(0.000001));
 }
 
-TEST_CASE("is_valid_individual correctly disallows invalid individuals with max weight above requirements", "[genetic]")
+TEST_CASE("compute_penalty penalizes individuals with an instrument weight above maximum", "[genetic]")
 {
   const int n_instruments = 2;
+  const int n_derivatives = 0;
   const int n_scenarios = 3;
   std::vector<double> individual = {
       0.4, 0.6, 0.7, 0.3, 0.1, 0.9};
   std::vector<double> instrument_constraints = {
       0.0, 0.0, 1.0, 0.8};
-  bool is_valid = is_valid_individual(individual, instrument_constraints, n_instruments, n_scenarios);
-  REQUIRE_FALSE(is_valid);
+  std::vector<double> margin_constraints = {
+      0.0, 0.0, 0.0, 0.0};
+  const double penalty = compute_penalty(individual, instrument_constraints, margin_constraints, n_instruments, n_derivatives, n_scenarios);
+  const double expected = 0.01;
+  REQUIRE(penalty == Approx(expected).epsilon(0.000001));
 }
 
 TEST_CASE("optimization runs without crashing", "[genetic]")
@@ -316,6 +342,7 @@ TEST_CASE("optimization runs without crashing", "[genetic]")
 
   TransactionCosts transaction_costs;
   InstrumentConstraints instrument_constraints = create_default_instrument_constraints();
+  MarginConstraints margin_constraints = create_default_margin_constraints();
 
   OptimizeOptions options;
   options.population_size = 10;
@@ -328,6 +355,7 @@ TEST_CASE("optimization runs without crashing", "[genetic]")
   options.initial_funding_ratio = 1.0;
   options.target_funding_ratio = 1.0;
   options.transaction_costs = transaction_costs;
+  options.margin_constraints = margin_constraints;
   options.instrument_constraints = instrument_constraints;
 
   clock_t begin = std::clock();

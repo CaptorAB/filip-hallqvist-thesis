@@ -60,7 +60,13 @@ export const Parameters = withTheme(
               />
             </Tab>
             <Tab title="Constraints">
-              <ConstraintParameters
+              <InstrumentConstraintParameters
+                values={values}
+                handleChange={handleChange}
+              />
+            </Tab>
+            <Tab title="Margins">
+              <MarginConstraintParameters
                 values={values}
                 handleChange={handleChange}
               />
@@ -76,7 +82,47 @@ const Parameter = props => (
   <TextInputField flexBasis="28%" marginX={8} {...props} />
 );
 
-export const ConstraintParameters = ({ values, handleChange }) => (
+export const MarginConstraintParameters = ({ values, handleChange }) => (
+  <Pane display="flex" flexWrap="wrap" marginX={8}>
+    <Pane>
+      <Heading marginBottom={8}>Instrument allocation constraints</Heading>
+      <Text>
+        Define constraints on how large proportion of the portfolio might be
+        invested in a particular instrument.
+      </Text>
+      <Pane is="table" marginX={-4} marginY={16}>
+        <thead>
+          <tr>
+            <Text is="th">Instrument</Text>
+            <Text is="th">Required margin</Text>
+          </tr>
+        </thead>
+        <tbody>
+          {values.marginConstraints.map((constraint, index) => (
+            <tr key={index}>
+              <td>
+                <Small>{INSTRUMENT_NAMES[index]}</Small>
+              </td>
+              <td>
+                <TextInput
+                  type="number"
+                  name={`marginConstraints.${index}`}
+                  value={values.marginConstraints[index]}
+                  onChange={handleChange}
+                  step="any"
+                  min={0.0}
+                  max={1.0}
+                />
+              </td>
+            </tr>
+          ))}
+        </tbody>
+      </Pane>
+    </Pane>
+  </Pane>
+);
+
+export const InstrumentConstraintParameters = ({ values, handleChange }) => (
   <Pane display="flex" flexWrap="wrap" marginX={8}>
     <Pane>
       <Heading marginBottom={8}>Instrument allocation constraints</Heading>
