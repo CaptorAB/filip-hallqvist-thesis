@@ -4,6 +4,8 @@
 #include <string>
 
 #include <lib/random.h>
+
+#include <include/constants.h>
 #include <include/util.h>
 #include <include/scenario.h>
 

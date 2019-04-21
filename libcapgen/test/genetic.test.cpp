@@ -2,6 +2,7 @@
 #include <lib/catch.h>
 #include <lib/random.h>
 
+#include <include/constants.h>
 #include <include/genetic.h>
 
 using Random = effolkronium::random_static;
