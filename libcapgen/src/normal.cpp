@@ -101,47 +101,22 @@ std::vector<double> generate_normal_scenarios(
     const int n_instruments,
     const int n_scenarios)
 {
-  std::vector<double> instrument_changes(n_scenarios);
+  std::vector<double> instrument_changes(n_instruments * n_scenarios);
 
   for (int i = 0; i < n_scenarios; ++i)
   {
-    int current = i;
+    std::vector<double> current_scenario = generate_normal_scenario(
+        means,
+        standard_deviations,
+        correlations,
+        n_risks,
+        n_instruments,
+        n_scenarios);
 
-    int left = 2 * current + 1;
-    int right = 2 * current + 2;
-
-    // Index of current node
-    const int cx = current * n_instruments;
-
-    if (left < n_scenarios && right < n_scenarios)
+    const int cx = i * n_instruments;
+    for (int j = 0; j < n_instruments; ++j)
     {
-      const int lx = left * n_instruments;
-      const int rx = right * n_instruments;
-
-      // Evaluate left child
-      std::vector<double> left_scenario = generate_normal_scenario(
-          means,
-          standard_deviations,
-          correlations,
-          n_risks,
-          n_instruments,
-          n_scenarios);
-
-      // Evaluate right child
-      std::vector<double> right_scenario = generate_normal_scenario(
-          means,
-          standard_deviations,
-          correlations,
-          n_risks,
-          n_instruments,
-          n_scenarios);
-
-      // Assign branches
-      for (int j = 0; j < n_instruments; ++j)
-      {
-        instrument_changes[lx + j] = left_scenario[j];
-        instrument_changes[rx + j] = right_scenario[j];
-      }
+      instrument_changes[cx + j] = current_scenario[j];
     }
   }
 

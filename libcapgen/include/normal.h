@@ -37,4 +37,8 @@ std::tuple<std::vector<double>, std::vector<double>> generate_normal_goals(
     const int n_scenarios,
     const int n_instruments);
 
+std::vector<double> generate_instrument_changes(
+    std::vector<double> &risk_changes,
+    const int n_instruments);
+
 #endif
