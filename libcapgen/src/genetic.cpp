@@ -242,8 +242,14 @@ double compute_penalty(std::vector<double> &individual, std::vector<double> &ins
     const int jx = j * n_instruments;
     for (int k = 0; k < n_instruments; ++k)
     {
+      // Allocation constraints
       penalty += pow(std::max(0.0, instrument_constraints[k] - individual[jx + k]), 2.0);                 // Min
       penalty += pow(std::max(0.0, individual[jx + k] - instrument_constraints[k + n_instruments]), 2.0); // Max
+
+      // Margin constraints
+      const double required_margin = margin_constraints[k] * individual[k];
+      const double held_margin = individual[CASH_INDEX] + individual[FTA_INDEX];
+      penalty += pow(std::max(0.0, required_margin - held_margin), 2.0);
     }
   }
 
