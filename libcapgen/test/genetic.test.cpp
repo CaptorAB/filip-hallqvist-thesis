@@ -194,7 +194,7 @@ TEST_CASE("compute_wealth correctly computes wealth", "[genetic]")
 {
   std::vector<double> current_weights = {0.1, 0.8, 0.1};
   std::vector<double> next_weights = {0.2, 0.8, 0.0};
-  std::vector<double> price_changes = {0.5, -0.4, 0.3};
+  std::vector<double> instrument_changes = {0.5, -0.4, 0.3};
   std::vector<double> transaction_costs = {0.03, 0.01, 0.02};
   const int n_instruments = 3;
   const int n_derivatives = 0;
@@ -203,7 +203,7 @@ TEST_CASE("compute_wealth correctly computes wealth", "[genetic]")
   const double wealth = compute_wealth(
       current_weights,
       next_weights,
-      price_changes,
+      instrument_changes,
       transaction_costs,
       initial_wealth,
       n_instruments,
@@ -219,21 +219,21 @@ TEST_CASE("compute_wealths correctly computes wealths over several steps", "[gen
   const int n_scenarios = 7;
 
   std::vector<double> individual = {0.5, 0.5, 0.55, 0.45, 0.6, 0.4, 0.55, 0.45, 0.5, 0.5, 0.45, 0.55, 0.4, 0.6};
-  std::vector<double> price_changes = {0.2, -0.3, 0.15, -0.25, -0.15, 0.25, 0.5, -0.5, 0.35, -0.45, 0.05, 0.5, -0.5, -0.5};
+  std::vector<double> instrument_changes = {0.2, -0.3, 0.15, -0.25, -0.15, 0.25, 0.5, -0.5, 0.35, -0.45, 0.05, 0.5, -0.5, -0.5};
   std::vector<double> transaction_costs = {0.03, 0.02};
 
   std::tuple<std::vector<double>, std::vector<double>> wealths = compute_wealths(
       individual,
-      price_changes,
+      instrument_changes,
       transaction_costs,
       n_instruments,
       n_derivatives,
       n_scenarios);
 
-  std::vector<double> incoming_wealths = std::get<0>(wealths);
+  std::vector<double> intermediate_wealths = std::get<0>(wealths);
   std::vector<double> final_wealths = std::get<1>(wealths);
 
-  std::vector<double> expected_incoming_wealths = {
+  std::vector<double> expected_intermediate_wealths = {
       1.000000,
       0.947625, 0.945250,
       0.919196, 0.916898, 0.947542, 0.945155};
@@ -241,9 +241,9 @@ TEST_CASE("compute_wealths correctly computes wealths over several steps", "[gen
   std::vector<double> expected_final_wealths = {
       0.965156, 0.871053, 1.229436, 0.472578};
 
-  for (int i = 0; i < expected_incoming_wealths.size(); ++i)
+  for (int i = 0; i < expected_intermediate_wealths.size(); ++i)
   {
-    REQUIRE(incoming_wealths[i] == Approx(expected_incoming_wealths[i]).epsilon(0.0001));
+    REQUIRE(intermediate_wealths[i] == Approx(expected_intermediate_wealths[i]).epsilon(0.0001));
   }
 
   for (int i = 0; i < expected_final_wealths.size(); ++i)
@@ -263,9 +263,9 @@ TEST_CASE("compute_expected_wealth correctly computes the expected wealth of an 
 
 TEST_CASE("compute_expected_risk correctly computes the risk of an individual", "[genetic]")
 {
-  std::vector<double> incoming_wealths = {1.0, 0.7, 1.3};
+  std::vector<double> intermediate_wealths = {1.0, 0.7, 1.3};
   std::vector<double> goals = {1.0, 1.0, 1.0};
-  const double risk = compute_expected_risk(incoming_wealths, goals);
+  const double risk = compute_expected_risk(intermediate_wealths, goals);
   const double expected = 0.045;
 
   REQUIRE(risk == Approx(expected).epsilon(0.000001));
@@ -283,7 +283,7 @@ TEST_CASE("compute_fitnesses correctly computes the fitness of all individuals",
       1.0, 0.0, 0.5, 0.5, 0.5, 0.5,
       0.0, 1.0, 0.5, 0.5, 0.5, 0.5,
       0.5, 0.5, 1.0, 0.0, 0.9, 0.1};
-  std::vector<double> price_changes = {
+  std::vector<double> instrument_changes = {
       0.0, 0.5, 0.5, -0.5, -0.5, 0.5};
   std::vector<double> transaction_costs = {
       0.0, 0.0};
@@ -294,7 +294,7 @@ TEST_CASE("compute_fitnesses correctly computes the fitness of all individuals",
   std::vector<double> margin_constraints = {
       0.0, 0.0, 0.0, 0.0};
 
-  std::vector<double> fitnesses = compute_fitnesses(individuals, price_changes, transaction_costs, goals, instrument_constraints, margin_constraints, risk_aversion, n_individuals, n_instruments, n_derivatives, n_scenarios);
+  std::vector<double> fitnesses = compute_fitnesses(individuals, instrument_changes, transaction_costs, goals, instrument_constraints, margin_constraints, risk_aversion, n_individuals, n_instruments, n_derivatives, n_scenarios);
 
   std::vector<double> expected_fitnesses = {
       1.0, 1.5, 1.3125};

@@ -133,7 +133,7 @@ std::tuple<int, int> select_roulette(std::vector<double> &fitnesses)
 double compute_wealth(
     std::vector<double> &current_weights,
     std::vector<double> &next_weights,
-    std::vector<double> &price_changes,
+    std::vector<double> &instrument_changes,
     std::vector<double> &transaction_costs,
     const double initial_wealth,
     const int n_instruments,
@@ -149,11 +149,11 @@ double compute_wealth(
     double result = 0.0;
     if (i < n_non_derivatives)
     {
-      result = initial_wealth * current_weights[i] * (1.0 + price_changes[i]);
+      result = initial_wealth * current_weights[i] * (1.0 + instrument_changes[i]);
     }
     else
     {
-      result = (initial_wealth * current_weights[i] * (1.0 + price_changes[i])) - (initial_wealth * current_weights[i]);
+      result = (initial_wealth * current_weights[i] * (1.0 + instrument_changes[i])) - (initial_wealth * current_weights[i]);
     }
     holdings += result;
   }
@@ -172,14 +172,14 @@ double compute_wealth(
 
 std::tuple<std::vector<double>, std::vector<double>> compute_wealths(
     std::vector<double> &individual,
-    std::vector<double> &price_changes,
+    std::vector<double> &instrument_changes,
     std::vector<double> &transaction_costs,
     const int n_instruments,
     const int n_derivatives,
     const int n_scenarios)
 {
-  std::vector<double> incoming_wealths(n_scenarios);
-  incoming_wealths[0] = 1.0;
+  std::vector<double> intermediate_wealths(n_scenarios);
+  intermediate_wealths[0] = 1.0;
 
   std::vector<double> final_wealths(n_scenarios / 2 + 1);
   int final_index = 0;
@@ -195,11 +195,11 @@ std::tuple<std::vector<double>, std::vector<double>> compute_wealths(
     // Index of current node
     const int cx = current * n_instruments;
 
-    const double current_wealth = incoming_wealths[current];
+    const double current_wealth = intermediate_wealths[current];
 
     std::vector<double> current_changes = std::vector<double>(
-        price_changes.begin() + cx,
-        price_changes.begin() + cx + n_instruments);
+        instrument_changes.begin() + cx,
+        instrument_changes.begin() + cx + n_instruments);
 
     std::vector<double> current_weights = std::vector<double>(
         individual.begin() + cx,
@@ -219,7 +219,7 @@ std::tuple<std::vector<double>, std::vector<double>> compute_wealths(
           individual.begin() + rx + n_instruments);
 
       // Evaluate left child
-      incoming_wealths[left] = compute_wealth(
+      intermediate_wealths[left] = compute_wealth(
           current_weights,
           left_weights,
           current_changes,
@@ -229,7 +229,7 @@ std::tuple<std::vector<double>, std::vector<double>> compute_wealths(
           n_derivatives);
 
       // Evaluate right child
-      incoming_wealths[right] = compute_wealth(
+      intermediate_wealths[right] = compute_wealth(
           current_weights,
           right_weights,
           current_changes,
@@ -256,7 +256,7 @@ std::tuple<std::vector<double>, std::vector<double>> compute_wealths(
     }
   }
 
-  return std::make_tuple(incoming_wealths, final_wealths);
+  return std::make_tuple(intermediate_wealths, final_wealths);
 }
 
 double compute_expected_wealth(std::vector<double> &final_wealths)
@@ -272,23 +272,23 @@ double compute_expected_wealth(std::vector<double> &final_wealths)
 }
 
 double compute_expected_risk(
-    std::vector<double> &incoming_wealths,
+    std::vector<double> &intermediate_wealths,
     std::vector<double> &goals)
 {
   double risk = 0.0;
-  for (int i = 0; i < incoming_wealths.size(); ++i)
+  for (int i = 0; i < intermediate_wealths.size(); ++i)
   {
     const double step = floor(std::log2(i + 1));
     const double nodes_in_step = pow(2.0, step);
 
-    risk += pow(std::min(0.0, incoming_wealths[i] - goals[i]), 2.0) / nodes_in_step;
+    risk += pow(std::min(0.0, intermediate_wealths[i] - goals[i]), 2.0) / nodes_in_step;
   }
   return risk;
 }
 
 double compute_fitness(
     std::vector<double> &individual,
-    std::vector<double> &incoming_wealths,
+    std::vector<double> &intermediate_wealths,
     std::vector<double> &final_wealths,
     std::vector<double> &goals,
     std::vector<double> &instrument_constraints,
@@ -299,7 +299,7 @@ double compute_fitness(
     const int n_scenarios)
 {
   const double wealth = compute_expected_wealth(final_wealths);
-  const double risk = compute_expected_risk(incoming_wealths, goals);
+  const double risk = compute_expected_risk(intermediate_wealths, goals);
   const double penalty = compute_penalty(
       individual,
       instrument_constraints,
@@ -359,7 +359,7 @@ double compute_penalty(
 
 std::vector<double> compute_fitnesses(
     std::vector<double> &individuals,
-    std::vector<double> &price_changes,
+    std::vector<double> &instrument_changes,
     std::vector<double> &transaction_costs,
     std::vector<double> &goals,
     std::vector<double> &instrument_constraints,
@@ -383,18 +383,18 @@ std::vector<double> compute_fitnesses(
     std::tuple<std::vector<double>, std::vector<double>> wealths =
         compute_wealths(
             individual,
-            price_changes,
+            instrument_changes,
             transaction_costs,
             n_instruments,
             n_derivatives,
             n_scenarios);
 
-    std::vector<double> incoming_wealths = std::get<0>(wealths);
+    std::vector<double> intermediate_wealths = std::get<0>(wealths);
     std::vector<double> final_wealths = std::get<1>(wealths);
 
     fitnesses[i] = compute_fitness(
         individual,
-        incoming_wealths,
+        intermediate_wealths,
         final_wealths,
         goals,
         instrument_constraints,
@@ -535,7 +535,7 @@ Result optimize(OptimizeOptions options)
   std::vector<double> means = NORMAL_DEFAULT_MEANS;
   std::vector<double> standard_deviations = NORMAL_DEFAULT_STANDARD_DEVIATIONS;
   std::vector<double> correlations = NORMAL_DEFAULT_CORRELATIONS;
-  std::vector<double> price_changes = generate_normal_scenarios(
+  std::vector<double> instrument_changes = generate_normal_scenarios(
       means,
       standard_deviations,
       correlations,
@@ -545,7 +545,7 @@ Result optimize(OptimizeOptions options)
 
   // Generate goals
   std::tuple<std::vector<double>, std::vector<double>> goals = generate_normal_goals(
-      price_changes,
+      instrument_changes,
       initial_funding_ratio,
       target_funding_ratio,
       n_scenarios,
@@ -558,7 +558,7 @@ Result optimize(OptimizeOptions options)
   {
     std::vector<double> fitnesses = compute_fitnesses(
         individuals,
-        price_changes,
+        instrument_changes,
         transaction_costs,
         intermediate_goals,
         instrument_constraints,
@@ -643,24 +643,24 @@ Result optimize(OptimizeOptions options)
   std::tuple<std::vector<double>, std::vector<double>> best_wealths =
       compute_wealths(
           best_individual,
-          price_changes,
+          instrument_changes,
           transaction_costs,
           n_instruments,
           n_derivatives,
           n_scenarios);
 
-  std::vector<double> best_incoming_wealths = std::get<0>(best_wealths);
+  std::vector<double> best_intermediate_wealths = std::get<0>(best_wealths);
   std::vector<double> best_final_wealths = std::get<1>(best_wealths);
   double best_expected_return = compute_expected_wealth(best_final_wealths) - 1.0;
-  double best_expected_risk = compute_expected_risk(best_incoming_wealths, intermediate_goals);
+  double best_expected_risk = compute_expected_risk(best_intermediate_wealths, intermediate_goals);
 
   result.fitness = best_fitness;
   result.individual = best_individual;
-  result.incoming_wealths = best_incoming_wealths;
+  result.intermediate_wealths = best_intermediate_wealths;
   result.final_wealths = best_final_wealths;
   result.expected_return = best_expected_return;
   result.expected_risk = best_expected_risk;
-  result.price_changes = price_changes;
+  result.instrument_changes = instrument_changes;
   result.goals = intermediate_goals;
 
   return result;
