@@ -1,5 +1,4 @@
-#include <vector>
-#include <math.h>
+#include <cmath>
 
 int get_first_node_in_level(int level)
 {

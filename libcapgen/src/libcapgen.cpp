@@ -1,24 +1,54 @@
-#include <string>
-#include <iostream>
-
 #ifndef __EMSCRIPTEN__
 #define CATCH_CONFIG_RUNNER
-#include <lib/catch.h>
-#endif
 
-#include <vector>
+#include <lib/catch.h>
 #include <lib/random.h>
 
+#endif
+
+#include <include/constants.h>
 #include <include/genetic.h>
 #include <include/scenario.h>
 
 #ifdef __EMSCRIPTEN__
 
+#include <string>
 #include <emscripten/bind.h>
+
 using namespace emscripten;
 
 EMSCRIPTEN_BINDINGS(libcapgen)
 {
+    constant("N_INSTRUMENTS", N_INSTRUMENTS);
+    constant("N_DERIVATIVES", N_DERIVATIVES);
+
+    constant("DOMESTIC_EQUITY_INDEX", DOMESTIC_EQUITY_INDEX);
+    constant("GLOBAL_EQUITY_INDEX", GLOBAL_EQUITY_INDEX);
+    constant("REAL_ESTATE_INDEX", REAL_ESTATE_INDEX);
+    constant("ALTERNATIVE_INDEX", ALTERNATIVE_INDEX);
+    constant("CREDIT_INDEX", CREDIT_INDEX);
+    constant("BONDS_2Y_INDEX", BONDS_2Y_INDEX);
+    constant("BONDS_5Y_INDEX", BONDS_5Y_INDEX);
+    constant("CASH_INDEX", CASH_INDEX);
+    constant("FTA_INDEX", FTA_INDEX);
+    constant("DOMESTIC_EQUITY_FUTURE_INDEX", DOMESTIC_EQUITY_FUTURE_INDEX);
+    constant("INTEREST_RATE_SWAP_2Y_INDEX", INTEREST_RATE_SWAP_2Y_INDEX);
+    constant("INTEREST_RATE_SWAP_5Y_INDEX", INTEREST_RATE_SWAP_5Y_INDEX);
+    constant("INTEREST_RATE_SWAP_20Y_INDEX", INTEREST_RATE_SWAP_20Y_INDEX);
+
+    constant("N_RISKS", N_RISKS);
+    constant("DOMESTIC_MARKET_RISK_INDEX", DOMESTIC_MARKET_RISK_INDEX);
+    constant("GLOBAL_MARKET_RISK_INDEX", GLOBAL_MARKET_RISK_INDEX);
+    constant("ALTERNATIVE_RISK_INDEX", ALTERNATIVE_RISK_INDEX);
+    constant("INTEREST_RATE_2Y_RISK_INDEX", INTEREST_RATE_2Y_RISK_INDEX);
+    constant("INTEREST_RATE_5Y_RISK_INDEX", INTEREST_RATE_5Y_RISK_INDEX);
+    constant("INTEREST_RATE_20Y_RISK_INDEX", INTEREST_RATE_20Y_RISK_INDEX);
+    constant("CREDIT_RISK_INDEX", CREDIT_RISK_INDEX);
+    constant("CASH_RISK_INDEX", CASH_RISK_INDEX);
+
+    constant("INSTRUMENT_NAMES", INSTRUMENT_NAMES);
+    constant("RISK_NAMES", RISK_NAMES);
+
     value_array<TransactionCosts>("TransactionCosts")
         .element(&TransactionCosts::domestic_equity)
         .element(&TransactionCosts::global_equity)
@@ -92,7 +122,8 @@ EMSCRIPTEN_BINDINGS(libcapgen)
         .field("priceChanges", &Result::price_changes)
         .field("goals", &Result::goals);
 
-    emscripten::register_vector<double>("VectorDouble");
+    emscripten::register_vector<double>("vector<double>");
+    emscripten::register_vector<std::string>("vector<string>");
 
     function("optimize", &optimize);
 }
