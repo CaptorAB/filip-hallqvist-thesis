@@ -44,6 +44,23 @@ std::vector<double> parse_instrument_constraints(InstrumentConstraints instrumen
                               instrument_constraints.interest_rate_swap_20y_max});
 }
 
+std::vector<double> parse_margin_constraints(MarginConstraints margin_constraints)
+{
+  return std::vector<double>({margin_constraints.domestic_equity,
+                              margin_constraints.global_equity,
+                              margin_constraints.real_estate,
+                              margin_constraints.alternative,
+                              margin_constraints.credit,
+                              margin_constraints.bonds_2y,
+                              margin_constraints.bonds_5y,
+                              margin_constraints.cash,
+                              margin_constraints.fta,
+                              margin_constraints.domestic_equity_future,
+                              margin_constraints.interest_rate_swap_2y,
+                              margin_constraints.interest_rate_swap_5y,
+                              margin_constraints.interest_rate_swap_20y});
+}
+
 void normalize_individuals(std::vector<double> &individuals, const int n_individuals, const int n_instruments, const int n_scenarios)
 {
   const int n_genes = n_instruments * n_scenarios;
@@ -207,15 +224,15 @@ double compute_expected_risk(std::vector<double> &incoming_wealths, std::vector<
   return risk;
 }
 
-double compute_fitness(std::vector<double> &individual, std::vector<double> &incoming_wealths, std::vector<double> &final_wealths, std::vector<double> &goals, std::vector<double> &instrument_constraints, const double risk_aversion, const int n_instruments, const int n_scenarios)
+double compute_fitness(std::vector<double> &individual, std::vector<double> &incoming_wealths, std::vector<double> &final_wealths, std::vector<double> &goals, std::vector<double> &instrument_constraints, std::vector<double> &margin_constraints, const double risk_aversion, const int n_instruments, const int n_scenarios)
 {
   const double wealth = compute_expected_wealth(final_wealths);
   const double risk = compute_expected_risk(incoming_wealths, goals);
-  const double penalty = compute_penalty(individual, instrument_constraints, n_instruments, n_scenarios);
+  const double penalty = compute_penalty(individual, instrument_constraints, margin_constraints, n_instruments, n_scenarios);
   return ((1.0 - risk_aversion) * wealth) - (risk_aversion * risk);
 }
 
-double compute_penalty(std::vector<double> &individual, std::vector<double> &instrument_constraints, const int n_instruments, const int n_scenarios)
+double compute_penalty(std::vector<double> &individual, std::vector<double> &instrument_constraints, std::vector<double> &margin_constraints, const int n_instruments, const int n_scenarios)
 {
   double penalty = 0.0;
 
@@ -233,7 +250,7 @@ double compute_penalty(std::vector<double> &individual, std::vector<double> &ins
   return penalty;
 }
 
-std::vector<double> compute_fitnesses(std::vector<double> &individuals, std::vector<double> &price_changes, std::vector<double> &transaction_costs, std::vector<double> &goals, std::vector<double> &instrument_constraints, const double risk_aversion, const int n_individuals, const int n_instruments, const int n_scenarios)
+std::vector<double> compute_fitnesses(std::vector<double> &individuals, std::vector<double> &price_changes, std::vector<double> &transaction_costs, std::vector<double> &goals, std::vector<double> &instrument_constraints, std::vector<double> &margin_constraints, const double risk_aversion, const int n_individuals, const int n_instruments, const int n_scenarios)
 {
   const int n_genes = n_instruments * n_scenarios;
   std::vector<double> fitnesses(n_individuals);
@@ -254,6 +271,7 @@ std::vector<double> compute_fitnesses(std::vector<double> &individuals, std::vec
         final_wealths,
         goals,
         instrument_constraints,
+        margin_constraints,
         risk_aversion,
         n_instruments,
         n_scenarios);
@@ -349,33 +367,8 @@ Result optimize(OptimizeOptions options)
       options.transaction_costs.interest_rate_swap_5y,
       options.transaction_costs.interest_rate_swap_20y};
 
-  std::vector<double> instrument_constraints = {
-      options.instrument_constraints.domestic_equity_min,
-      options.instrument_constraints.global_equity_min,
-      options.instrument_constraints.real_estate_min,
-      options.instrument_constraints.alternative_min,
-      options.instrument_constraints.credit_min,
-      options.instrument_constraints.bonds_2y_min,
-      options.instrument_constraints.bonds_5y_min,
-      options.instrument_constraints.cash_min,
-      options.instrument_constraints.fta_min,
-      options.instrument_constraints.domestic_equity_future_min,
-      options.instrument_constraints.interest_rate_swap_2y_min,
-      options.instrument_constraints.interest_rate_swap_5y_min,
-      options.instrument_constraints.interest_rate_swap_20y_min,
-      options.instrument_constraints.domestic_equity_max,
-      options.instrument_constraints.global_equity_max,
-      options.instrument_constraints.real_estate_max,
-      options.instrument_constraints.alternative_max,
-      options.instrument_constraints.credit_max,
-      options.instrument_constraints.bonds_2y_max,
-      options.instrument_constraints.bonds_5y_max,
-      options.instrument_constraints.cash_max,
-      options.instrument_constraints.fta_max,
-      options.instrument_constraints.domestic_equity_future_max,
-      options.instrument_constraints.interest_rate_swap_2y_max,
-      options.instrument_constraints.interest_rate_swap_5y_max,
-      options.instrument_constraints.interest_rate_swap_20y_max};
+  std::vector<double> instrument_constraints = parse_instrument_constraints(options.instrument_constraints);
+  std::vector<double> margin_constraints = parse_margin_constraints(options.margin_constraints);
 
   const int n_instruments = N_INSTRUMENTS;
   const int n_scenarios = pow(2.0, n_steps) - 1;
@@ -398,7 +391,7 @@ Result optimize(OptimizeOptions options)
 
   for (int t = 0; t < n_generations; ++t)
   {
-    std::vector<double> fitnesses = compute_fitnesses(individuals, price_changes, transaction_costs, goals, instrument_constraints, risk_aversion, n_individuals, n_instruments, n_scenarios);
+    std::vector<double> fitnesses = compute_fitnesses(individuals, price_changes, transaction_costs, goals, instrument_constraints, margin_constraints, risk_aversion, n_individuals, n_instruments, n_scenarios);
 
     // Check global best fitness
     for (int i = 0; i < n_individuals; ++i)

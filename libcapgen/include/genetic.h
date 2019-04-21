@@ -53,6 +53,23 @@ struct InstrumentConstraints
   double interest_rate_swap_20y_max;
 };
 
+struct MarginConstraints
+{
+  double domestic_equity;
+  double global_equity;
+  double real_estate;
+  double alternative;
+  double credit;
+  double bonds_2y;
+  double bonds_5y;
+  double cash;
+  double fta;
+  double domestic_equity_future;
+  double interest_rate_swap_2y;
+  double interest_rate_swap_5y;
+  double interest_rate_swap_20y;
+};
+
 struct OptimizeOptions
 {
   int population_size;
@@ -66,6 +83,7 @@ struct OptimizeOptions
   double target_funding_ratio;
   TransactionCosts transaction_costs;
   InstrumentConstraints instrument_constraints;
+  MarginConstraints margin_constraints;
 };
 
 struct Result
@@ -98,15 +116,15 @@ double compute_wealth(std::vector<double> &current_weights, std::vector<double> 
 
 std::tuple<std::vector<double>, std::vector<double>> compute_wealths(std::vector<double> &individual, std::vector<double> &price_changes, std::vector<double> transaction_costs, const int n_instruments, const int n_scenarios);
 
-std::vector<double> compute_fitnesses(std::vector<double> &individuals, std::vector<double> &price_changes, std::vector<double> &transaction_costs, std::vector<double> &goals, std::vector<double> &instrument_constraints, const double risk_aversion, const int n_individuals, const int n_instruments, const int n_scenarios);
+std::vector<double> compute_fitnesses(std::vector<double> &individuals, std::vector<double> &price_changes, std::vector<double> &transaction_costs, std::vector<double> &goals, std::vector<double> &instrument_constraints, std::vector<double> &margin_constraints, const double risk_aversion, const int n_individuals, const int n_instruments, const int n_scenarios);
 
-double compute_fitness(std::vector<double> &individual, std::vector<double> &incoming_wealths, std::vector<double> &final_wealths, std::vector<double> &goals, std::vector<double> &instrument_constraints, const double risk_aversion, const int n_instruments, const int n_scenarios);
+double compute_fitness(std::vector<double> &individual, std::vector<double> &incoming_wealths, std::vector<double> &final_wealths, std::vector<double> &goals, std::vector<double> &margin_constraints, std::vector<double> &instrument_constraints, const double risk_aversion, const int n_instruments, const int n_scenarios);
 
 double compute_expected_wealth(std::vector<double> &final_wealths);
 
 double compute_expected_risk(std::vector<double> &incoming_wealths, std::vector<double> &goals);
 
-double compute_penalty(std::vector<double> &individual, std::vector<double> &instrument_constraints, const int n_instruments, const int n_scenarios);
+double compute_penalty(std::vector<double> &individual, std::vector<double> &instrument_constraints, std::vector<double> &margin_constraints, const int n_instruments, const int n_scenarios);
 
 std::vector<double> parse_instrument_constraints(InstrumentConstraints instrument_constraints);
 
