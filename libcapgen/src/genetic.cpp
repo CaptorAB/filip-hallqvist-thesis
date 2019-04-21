@@ -1,10 +1,6 @@
 #include <vector>
 #include <tuple>
-#include <iostream>
-#include <string>
-#include <algorithm>
-#include <limits>
-#include <queue>
+#include <cmath>
 
 #include <lib/random.h>
 

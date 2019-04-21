@@ -3,7 +3,9 @@ const _libcapgen = window.libcapgen();
 let instance = null;
 const callbacks = [];
 _libcapgen.onRuntimeInitialized = () => {
-  instance = _libcapgen;
+  instance = {
+    optimize: (...args) => _libcapgen.optimize(...args)
+  };
   callbacks.map(c => c());
 };
 

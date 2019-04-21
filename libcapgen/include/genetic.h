@@ -1,11 +1,6 @@
 #ifndef GENETIC_H
 #define GENETIC_H
 
-#include <vector>
-#include <tuple>
-
-#include <lib/random.h>
-
 /**
  * Embind object for retrieving
  * an array of transaction costs

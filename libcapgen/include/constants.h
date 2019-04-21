@@ -20,6 +20,7 @@ const std::vector<std::string> INSTRUMENT_NAMES = {
     "Interest Rate Swap 5Y",
     "Interest Rate Swap 20Y"};
 
+// Risk names
 const std::vector<std::string> RISK_NAMES = {
     "Domestic Market Risk",
     "Global Market Risk",

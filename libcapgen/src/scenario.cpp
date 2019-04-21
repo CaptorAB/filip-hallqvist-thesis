@@ -1,7 +1,6 @@
 #include <vector>
 #include <tuple>
-#include <map>
-#include <string>
+#include <cmath>
 
 #include <lib/random.h>
 

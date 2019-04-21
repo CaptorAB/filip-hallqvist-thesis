@@ -1,13 +1,10 @@
-#include <string>
-#include <iostream>
-
 #ifndef __EMSCRIPTEN__
 #define CATCH_CONFIG_RUNNER
-#include <lib/catch.h>
-#endif
 
-#include <vector>
+#include <lib/catch.h>
 #include <lib/random.h>
+
+#endif
 
 #include <include/constants.h>
 #include <include/genetic.h>
@@ -15,7 +12,9 @@
 
 #ifdef __EMSCRIPTEN__
 
+#include <string>
 #include <emscripten/bind.h>
+
 using namespace emscripten;
 
 EMSCRIPTEN_BINDINGS(libcapgen)
