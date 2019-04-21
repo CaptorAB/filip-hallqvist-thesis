@@ -70,7 +70,7 @@ TEST_CASE("generate_normal_scenarios yields reasonable changes", "[normal]")
   std::vector<double> means = NORMAL_DEFAULT_MEANS;
   std::vector<double> standard_deviations = NORMAL_DEFAULT_STANDARD_DEVIATIONS;
   std::vector<double> correlations = NORMAL_DEFAULT_CORRELATIONS;
-  std::vector<double> price_changes = generate_normal_scenarios(
+  std::vector<double> instrument_changes = generate_normal_scenarios(
       means,
       standard_deviations,
       correlations,
@@ -78,9 +78,9 @@ TEST_CASE("generate_normal_scenarios yields reasonable changes", "[normal]")
       n_instruments,
       n_scenarios);
 
-  for (int i = 0; i < price_changes.size(); ++i)
+  for (int i = 0; i < instrument_changes.size(); ++i)
   {
-    REQUIRE(price_changes[i] < 0.1);
-    REQUIRE(price_changes[i] > -0.1);
+    REQUIRE(instrument_changes[i] < 0.1);
+    REQUIRE(instrument_changes[i] > -0.1);
   }
 }

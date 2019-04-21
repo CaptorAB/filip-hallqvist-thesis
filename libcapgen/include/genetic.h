@@ -101,9 +101,9 @@ struct Result
     double expected_return;
     double expected_risk;
     std::vector<double> individual;
-    std::vector<double> incoming_wealths;
+    std::vector<double> intermediate_wealths;
     std::vector<double> final_wealths;
-    std::vector<double> price_changes;
+    std::vector<double> instrument_changes;
     std::vector<double> goals;
 };
 
@@ -179,7 +179,7 @@ void mutate_individuals(
 double compute_wealth(
     std::vector<double> &current_weights,
     std::vector<double> &next_weights,
-    std::vector<double> &price_changes,
+    std::vector<double> &instrument_changes,
     std::vector<double> &transaction_costs,
     const double initial_wealth,
     const int n_instruments,
@@ -190,7 +190,7 @@ double compute_wealth(
  */
 std::tuple<std::vector<double>, std::vector<double>> compute_wealths(
     std::vector<double> &individual,
-    std::vector<double> &price_changes,
+    std::vector<double> &instrument_changes,
     std::vector<double> &transaction_costs,
     const int n_instruments,
     const int n_derivatives,
@@ -201,7 +201,7 @@ std::tuple<std::vector<double>, std::vector<double>> compute_wealths(
  */
 std::vector<double> compute_fitnesses(
     std::vector<double> &individuals,
-    std::vector<double> &price_changes,
+    std::vector<double> &instrument_changes,
     std::vector<double> &transaction_costs,
     std::vector<double> &goals,
     std::vector<double> &instrument_constraints,
@@ -217,7 +217,7 @@ std::vector<double> compute_fitnesses(
  */
 double compute_fitness(
     std::vector<double> &individual,
-    std::vector<double> &incoming_wealths,
+    std::vector<double> &intermediate_wealths,
     std::vector<double> &final_wealths,
     std::vector<double> &goals,
     std::vector<double> &margin_constraints,
@@ -238,7 +238,7 @@ double compute_expected_wealth(
  * as the shortfall below the goal at each step in time.
  */
 double compute_expected_risk(
-    std::vector<double> &incoming_wealths,
+    std::vector<double> &intermediate_wealths,
     std::vector<double> &goals);
 
 /**
