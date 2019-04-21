@@ -218,7 +218,7 @@ double compute_fitness(std::vector<double> &individual, std::vector<double> &inc
   const double wealth = compute_expected_wealth(final_wealths);
   const double risk = compute_expected_risk(incoming_wealths, goals);
   const double penalty = compute_penalty(individual, instrument_constraints, margin_constraints, n_instruments, n_derivatives, n_scenarios);
-  return ((1.0 - risk_aversion) * wealth) - (risk_aversion * risk);
+  return ((1.0 - risk_aversion) * wealth) - (risk_aversion * risk) - penalty;
 }
 
 double compute_penalty(std::vector<double> &individual, std::vector<double> &instrument_constraints, std::vector<double> &margin_constraints, const int n_instruments, const int n_derivatives, const int n_scenarios)
