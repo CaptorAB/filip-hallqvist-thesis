@@ -207,27 +207,30 @@ double compute_expected_risk(std::vector<double> &incoming_wealths, std::vector<
   return risk;
 }
 
-double compute_fitness(std::vector<double> &incoming_wealths, std::vector<double> &final_wealths, std::vector<double> &goals, const double risk_aversion)
+double compute_fitness(std::vector<double> &individual, std::vector<double> &incoming_wealths, std::vector<double> &final_wealths, std::vector<double> &goals, std::vector<double> &instrument_constraints, const double risk_aversion, const int n_instruments, const int n_scenarios)
 {
-  return ((1.0 - risk_aversion) * compute_expected_wealth(final_wealths)) - (risk_aversion * compute_expected_risk(incoming_wealths, goals));
+  const double wealth = compute_expected_wealth(final_wealths);
+  const double risk = compute_expected_risk(incoming_wealths, goals);
+  const double penalty = compute_penalty(individual, instrument_constraints, n_instruments, n_scenarios);
+  return ((1.0 - risk_aversion) * wealth) - (risk_aversion * risk);
 }
 
-bool is_valid_individual(std::vector<double> &individual, std::vector<double> &instrument_constraints, const int n_instruments, const int n_scenarios)
+double compute_penalty(std::vector<double> &individual, std::vector<double> &instrument_constraints, const int n_instruments, const int n_scenarios)
 {
+  double penalty = 0.0;
+
+  // Check instrument allocation constraints
   for (int j = 0; j < n_scenarios; ++j)
   {
     const int jx = j * n_instruments;
     for (int k = 0; k < n_instruments; ++k)
     {
-      if (
-          individual[jx + k] > instrument_constraints[k + n_instruments] ||
-          individual[jx + k] < instrument_constraints[k])
-      {
-        return false;
-      }
+      penalty += pow(std::max(0.0, instrument_constraints[k] - individual[jx + k]), 2.0);                 // Min
+      penalty += pow(std::max(0.0, individual[jx + k] - instrument_constraints[k + n_instruments]), 2.0); // Max
     }
   }
-  return true;
+
+  return penalty;
 }
 
 std::vector<double> compute_fitnesses(std::vector<double> &individuals, std::vector<double> &price_changes, std::vector<double> &transaction_costs, std::vector<double> &goals, std::vector<double> &instrument_constraints, const double risk_aversion, const int n_individuals, const int n_instruments, const int n_scenarios)
@@ -240,19 +243,20 @@ std::vector<double> compute_fitnesses(std::vector<double> &individuals, std::vec
 
     std::vector<double> individual = std::vector<double>(individuals.begin() + ix, individuals.begin() + ix + n_genes);
 
-    if (is_valid_individual(individual, instrument_constraints, n_instruments, n_scenarios))
-    {
-      std::tuple<std::vector<double>, std::vector<double>> wealths = compute_wealths(individual, price_changes, transaction_costs, n_instruments, n_scenarios);
+    std::tuple<std::vector<double>, std::vector<double>> wealths = compute_wealths(individual, price_changes, transaction_costs, n_instruments, n_scenarios);
 
-      std::vector<double> incoming_wealths = std::get<0>(wealths);
-      std::vector<double> final_wealths = std::get<1>(wealths);
+    std::vector<double> incoming_wealths = std::get<0>(wealths);
+    std::vector<double> final_wealths = std::get<1>(wealths);
 
-      fitnesses[i] = compute_fitness(incoming_wealths, final_wealths, goals, risk_aversion);
-    }
-    else
-    {
-      fitnesses[i] = 0.0;
-    }
+    fitnesses[i] = compute_fitness(
+        individual,
+        incoming_wealths,
+        final_wealths,
+        goals,
+        instrument_constraints,
+        risk_aversion,
+        n_instruments,
+        n_scenarios);
   }
   return fitnesses;
 }

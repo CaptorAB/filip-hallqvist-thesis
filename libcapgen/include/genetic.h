@@ -100,14 +100,14 @@ std::tuple<std::vector<double>, std::vector<double>> compute_wealths(std::vector
 
 std::vector<double> compute_fitnesses(std::vector<double> &individuals, std::vector<double> &price_changes, std::vector<double> &transaction_costs, std::vector<double> &goals, std::vector<double> &instrument_constraints, const double risk_aversion, const int n_individuals, const int n_instruments, const int n_scenarios);
 
-double compute_fitness(std::vector<double> &incoming_wealths, std::vector<double> &final_wealths, std::vector<double> &goals, const double risk_aversion);
+double compute_fitness(std::vector<double> &individual, std::vector<double> &incoming_wealths, std::vector<double> &final_wealths, std::vector<double> &goals, std::vector<double> &instrument_constraints, const double risk_aversion, const int n_instruments, const int n_scenarios);
 
 double compute_expected_wealth(std::vector<double> &final_wealths);
 
 double compute_expected_risk(std::vector<double> &incoming_wealths, std::vector<double> &goals);
 
-std::vector<double> parse_instrument_constraints(InstrumentConstraints instrument_constraints);
+double compute_penalty(std::vector<double> &individual, std::vector<double> &instrument_constraints, const int n_instruments, const int n_scenarios);
 
-bool is_valid_individual(std::vector<double> &individual, std::vector<double> &instrument_constraints, const int n_instruments, const int n_scenarios);
+std::vector<double> parse_instrument_constraints(InstrumentConstraints instrument_constraints);
 
 #endif

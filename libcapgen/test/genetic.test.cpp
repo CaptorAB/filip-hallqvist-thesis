@@ -274,7 +274,7 @@ TEST_CASE("compute_fitnesses correctly computes the fitness of all individuals",
   }
 }
 
-TEST_CASE("is_valid_individual correctly allows valid individuals", "[genetic]")
+TEST_CASE("compute_penalty gives 0 penalty to valid individuals", "[genetic]")
 {
   const int n_instruments = 2;
   const int n_scenarios = 3;
@@ -282,11 +282,12 @@ TEST_CASE("is_valid_individual correctly allows valid individuals", "[genetic]")
       0.0, 1.0, 0.0, 1.0, 0.0, 1.0};
   std::vector<double> instrument_constraints = {
       0.0, 0.0, 1.0, 1.0};
-  const bool is_valid = is_valid_individual(individual, instrument_constraints, n_instruments, n_scenarios);
-  REQUIRE(is_valid);
+  const double penalty = compute_penalty(individual, instrument_constraints, n_instruments, n_scenarios);
+  const double expected = 0.0;
+  REQUIRE(penalty == Approx(expected).epsilon(0.000001));
 }
 
-TEST_CASE("is_valid_individual correctly disallows invalid individuals with min weight below requirements", "[genetic]")
+TEST_CASE("compute_penalty penalizes individuals with an instrument weight below minimum", "[genetic]")
 {
   const int n_instruments = 2;
   const int n_scenarios = 3;
@@ -294,11 +295,12 @@ TEST_CASE("is_valid_individual correctly disallows invalid individuals with min 
       0.8, 0.2, 0.8, 0.2, 0.1, 0.9};
   std::vector<double> instrument_constraints = {
       0.5, 0.0, 1.0, 1.0};
-  bool is_valid = is_valid_individual(individual, instrument_constraints, n_instruments, n_scenarios);
-  REQUIRE_FALSE(is_valid);
+  const double penalty = compute_penalty(individual, instrument_constraints, n_instruments, n_scenarios);
+  const double expected = 0.16;
+  REQUIRE(penalty == Approx(expected).epsilon(0.000001));
 }
 
-TEST_CASE("is_valid_individual correctly disallows invalid individuals with max weight above requirements", "[genetic]")
+TEST_CASE("compute_penalty penalizes individuals with an instrument weight above maximum", "[genetic]")
 {
   const int n_instruments = 2;
   const int n_scenarios = 3;
@@ -306,8 +308,9 @@ TEST_CASE("is_valid_individual correctly disallows invalid individuals with max 
       0.4, 0.6, 0.7, 0.3, 0.1, 0.9};
   std::vector<double> instrument_constraints = {
       0.0, 0.0, 1.0, 0.8};
-  bool is_valid = is_valid_individual(individual, instrument_constraints, n_instruments, n_scenarios);
-  REQUIRE_FALSE(is_valid);
+  const double penalty = compute_penalty(individual, instrument_constraints, n_instruments, n_scenarios);
+  const double expected = 0.01;
+  REQUIRE(penalty == Approx(expected).epsilon(0.000001));
 }
 
 TEST_CASE("optimization runs without crashing", "[genetic]")
