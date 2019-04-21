@@ -51,21 +51,7 @@ export const Simulator = withTheme(({ theme, ...rest }) => (
             [0.0, 1.0],
             [0.0, 1.0]
           ],
-          marginConstraints: [
-            0.0,
-            0.0,
-            0.0,
-            0.0,
-            0.0,
-            0.0,
-            0.0,
-            0.0,
-            0.0,
-            0.0,
-            0.0,
-            0.0,
-            0.0
-          ]
+          marginConstraints: [0.05, 0.05, 0.05, 0.05]
         }}
         onSubmit={(values, { setSubmitting }) => {
           const instrumentConstraints = [

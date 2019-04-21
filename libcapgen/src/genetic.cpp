@@ -46,23 +46,15 @@ std::vector<double> parse_instrument_constraints(InstrumentConstraints instrumen
 
 std::vector<double> parse_margin_constraints(MarginConstraints margin_constraints)
 {
-  return std::vector<double>({margin_constraints.domestic_equity,
-                              margin_constraints.global_equity,
-                              margin_constraints.real_estate,
-                              margin_constraints.alternative,
-                              margin_constraints.credit,
-                              margin_constraints.bonds_2y,
-                              margin_constraints.bonds_5y,
-                              margin_constraints.cash,
-                              margin_constraints.fta,
-                              margin_constraints.domestic_equity_future,
+  return std::vector<double>({margin_constraints.domestic_equity_future,
                               margin_constraints.interest_rate_swap_2y,
                               margin_constraints.interest_rate_swap_5y,
                               margin_constraints.interest_rate_swap_20y});
 }
 
-void normalize_individuals(std::vector<double> &individuals, const int n_individuals, const int n_instruments, const int n_scenarios)
+void normalize_individuals(std::vector<double> &individuals, const int n_individuals, const int n_instruments, const int n_derivatives, const int n_scenarios)
 {
+  const int n_non_derivatives = n_instruments - n_derivatives;
   const int n_genes = n_instruments * n_scenarios;
 
   for (int i = 0; i < n_individuals; ++i)
@@ -73,7 +65,7 @@ void normalize_individuals(std::vector<double> &individuals, const int n_individ
       double total = 0.0;
       int sx = ix + (s * n_instruments);
 
-      for (int j = 0; j < n_instruments; ++j)
+      for (int j = 0; j < n_non_derivatives; ++j)
       {
         int jx = sx + j;
         total += individuals[jx];
@@ -81,7 +73,7 @@ void normalize_individuals(std::vector<double> &individuals, const int n_individ
 
       if (total == 0.0)
       {
-        for (int j = 0; j < n_instruments; ++j)
+        for (int j = 0; j < n_non_derivatives; ++j)
         {
           int jx = sx + j;
           individuals[jx] = 1.0 / n_instruments;
@@ -89,7 +81,7 @@ void normalize_individuals(std::vector<double> &individuals, const int n_individ
       }
       else
       {
-        for (int j = 0; j < n_instruments; ++j)
+        for (int j = 0; j < n_non_derivatives; ++j)
         {
           int jx = sx + j;
           individuals[jx] = individuals[jx] / total;
@@ -118,9 +110,6 @@ std::vector<double> initialize_individuals(const int n_individuals, const int n_
       individuals[ix] = Random::get<std::uniform_real_distribution<>>();
     }
   }
-
-  normalize_individuals(individuals, n_individuals, n_instruments, n_scenarios);
-
   return individuals;
 }
 
@@ -224,39 +213,46 @@ double compute_expected_risk(std::vector<double> &incoming_wealths, std::vector<
   return risk;
 }
 
-double compute_fitness(std::vector<double> &individual, std::vector<double> &incoming_wealths, std::vector<double> &final_wealths, std::vector<double> &goals, std::vector<double> &instrument_constraints, std::vector<double> &margin_constraints, const double risk_aversion, const int n_instruments, const int n_scenarios)
+double compute_fitness(std::vector<double> &individual, std::vector<double> &incoming_wealths, std::vector<double> &final_wealths, std::vector<double> &goals, std::vector<double> &instrument_constraints, std::vector<double> &margin_constraints, const double risk_aversion, const int n_instruments, const int n_derivatives, const int n_scenarios)
 {
   const double wealth = compute_expected_wealth(final_wealths);
   const double risk = compute_expected_risk(incoming_wealths, goals);
-  const double penalty = compute_penalty(individual, instrument_constraints, margin_constraints, n_instruments, n_scenarios);
+  const double penalty = compute_penalty(individual, instrument_constraints, margin_constraints, n_instruments, n_derivatives, n_scenarios);
   return ((1.0 - risk_aversion) * wealth) - (risk_aversion * risk);
 }
 
-double compute_penalty(std::vector<double> &individual, std::vector<double> &instrument_constraints, std::vector<double> &margin_constraints, const int n_instruments, const int n_scenarios)
+double compute_penalty(std::vector<double> &individual, std::vector<double> &instrument_constraints, std::vector<double> &margin_constraints, const int n_instruments, const int n_derivatives, const int n_scenarios)
 {
+  const int n_non_derivatives = n_instruments - n_derivatives;
   double penalty = 0.0;
 
   // Check instrument allocation constraints
   for (int j = 0; j < n_scenarios; ++j)
   {
     const int jx = j * n_instruments;
+
+    // Allocation constraints
     for (int k = 0; k < n_instruments; ++k)
     {
-      // Allocation constraints
       penalty += pow(std::max(0.0, instrument_constraints[k] - individual[jx + k]), 2.0);                 // Min
       penalty += pow(std::max(0.0, individual[jx + k] - instrument_constraints[k + n_instruments]), 2.0); // Max
-
-      // Margin constraints
-      const double required_margin = margin_constraints[k] * individual[k];
-      const double held_margin = individual[CASH_INDEX] + individual[FTA_INDEX];
-      penalty += pow(std::max(0.0, required_margin - held_margin), 2.0);
     }
+
+    // Margin constraints
+    double remaining_margin = individual[jx + CASH_INDEX] + individual[jx + FTA_INDEX];
+    for (int k = 0; k < n_derivatives; ++k)
+    {
+      const int kx = n_non_derivatives + k;
+      const double required_margin = margin_constraints[k] * individual[jx + kx];
+      remaining_margin -= required_margin;
+    }
+    penalty += pow(std::min(0.0, remaining_margin), 2.0);
   }
 
   return penalty;
 }
 
-std::vector<double> compute_fitnesses(std::vector<double> &individuals, std::vector<double> &price_changes, std::vector<double> &transaction_costs, std::vector<double> &goals, std::vector<double> &instrument_constraints, std::vector<double> &margin_constraints, const double risk_aversion, const int n_individuals, const int n_instruments, const int n_scenarios)
+std::vector<double> compute_fitnesses(std::vector<double> &individuals, std::vector<double> &price_changes, std::vector<double> &transaction_costs, std::vector<double> &goals, std::vector<double> &instrument_constraints, std::vector<double> &margin_constraints, const double risk_aversion, const int n_individuals, const int n_instruments, const int n_derivatives, const int n_scenarios)
 {
   const int n_genes = n_instruments * n_scenarios;
   std::vector<double> fitnesses(n_individuals);
@@ -280,6 +276,7 @@ std::vector<double> compute_fitnesses(std::vector<double> &individuals, std::vec
         margin_constraints,
         risk_aversion,
         n_instruments,
+        n_derivatives,
         n_scenarios);
   }
   return fitnesses;
@@ -377,6 +374,8 @@ Result optimize(OptimizeOptions options)
   std::vector<double> margin_constraints = parse_margin_constraints(options.margin_constraints);
 
   const int n_instruments = N_INSTRUMENTS;
+  const int n_derivatives = N_DERIVATIVES;
+
   const int n_scenarios = pow(2.0, n_steps) - 1;
   const int n_genes = n_scenarios * n_instruments;
 
@@ -386,6 +385,7 @@ Result optimize(OptimizeOptions options)
 
   // Generate initial individuals
   std::vector<double> individuals = initialize_individuals(n_individuals, n_instruments, n_scenarios);
+  normalize_individuals(individuals, n_individuals, n_instruments, n_derivatives, n_scenarios);
 
   // Generate scenarios
   std::tuple<std::vector<double>, std::vector<double>> scenarios = generate_scenarios(n_steps);
@@ -397,7 +397,18 @@ Result optimize(OptimizeOptions options)
 
   for (int t = 0; t < n_generations; ++t)
   {
-    std::vector<double> fitnesses = compute_fitnesses(individuals, price_changes, transaction_costs, goals, instrument_constraints, margin_constraints, risk_aversion, n_individuals, n_instruments, n_scenarios);
+    std::vector<double> fitnesses = compute_fitnesses(
+        individuals,
+        price_changes,
+        transaction_costs,
+        goals,
+        instrument_constraints,
+        margin_constraints,
+        risk_aversion,
+        n_individuals,
+        n_instruments,
+        n_derivatives,
+        n_scenarios);
 
     // Check global best fitness
     for (int i = 0; i < n_individuals; ++i)
@@ -452,8 +463,7 @@ Result optimize(OptimizeOptions options)
       }
     }
 
-    // Normalize individuals
-    normalize_individuals(offspring, n_individuals, n_instruments, n_scenarios);
+    normalize_individuals(offspring, n_individuals, n_instruments, n_derivatives, n_scenarios);
 
     // Replace generation
     individuals = offspring;

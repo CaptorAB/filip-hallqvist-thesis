@@ -8,7 +8,7 @@ import {
   TextInputField,
   withTheme
 } from "evergreen-ui";
-import { INSTRUMENT_NAMES, CASH_INDEX, FTA_INDEX } from "../constants";
+import { INSTRUMENT_NAMES } from "../constants";
 
 import { Tabs, Tab } from "../Tabs/Tabs";
 
@@ -106,8 +106,7 @@ export const MarginConstraintParameters = ({ values, handleChange }) => (
               <td>
                 <TextInput
                   type="number"
-                  disabled={index === CASH_INDEX || index === FTA_INDEX}
-                  name={`marginConstraints.${index}.1`}
+                  name={`marginConstraints.${index}`}
                   value={values.marginConstraints[index]}
                   onChange={handleChange}
                   step="any"
