@@ -32,6 +32,7 @@ const std::vector<std::string> RISK_NAMES = {
     "Interest Rate 20Y Risk"};
 
 // Instrument indices
+const int N_RISKS = 8;
 const int N_INSTRUMENTS = 13;
 const int N_DERIVATIVES = 4;
 
@@ -50,7 +51,6 @@ const int INTEREST_RATE_SWAP_5Y_INDEX = 11;
 const int INTEREST_RATE_SWAP_20Y_INDEX = 12;
 
 // Risk indices
-const int N_RISKS = 8;
 const int DOMESTIC_MARKET_RISK_INDEX = 0;
 const int GLOBAL_MARKET_RISK_INDEX = 1;
 const int ALTERNATIVE_RISK_INDEX = 2;
@@ -60,8 +60,21 @@ const int INTEREST_RATE_20Y_RISK_INDEX = 5;
 const int CREDIT_RISK_INDEX = 6;
 const int CASH_RISK_INDEX = 7;
 
-const std::vector<double> RISK_CORRELATIONS = {
-    1.0, 0.0,
-    0.0, 1.0};
+// Normal scenarios
+const std::vector<double> NORMAL_DEFAULT_MEANS = {
+    0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0};
+
+const std::vector<double> NORMAL_DEFAULT_STANDARD_DEVIATIONS = {
+    0.1, 0.1, 0.1, 0.1, 0.1, 0.1, 0.1, 0.1};
+
+const std::vector<double> NORMAL_DEFAULT_CORRELATIONS = {
+    1.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0,
+    0.0, 1.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0,
+    0.0, 0.0, 1.0, 0.0, 0.0, 0.0, 0.0, 0.0,
+    0.0, 0.0, 0.0, 1.0, 0.0, 0.0, 0.0, 0.0,
+    0.0, 0.0, 0.0, 0.0, 1.0, 0.0, 0.0, 0.0,
+    0.0, 0.0, 0.0, 0.0, 0.0, 1.0, 0.0, 0.0,
+    0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 1.0, 0.0,
+    0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 1.0};
 
 #endif

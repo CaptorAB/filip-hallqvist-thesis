@@ -5,9 +5,8 @@
 #include <lib/random.h>
 
 #include <include/constants.h>
-#include <include/util.h>
 #include <include/genetic.h>
-#include <include/scenario.h>
+#include <include/normal.h>
 
 using Random = effolkronium::random_static;
 
@@ -136,16 +135,26 @@ double compute_wealth(
     std::vector<double> &next_weights,
     std::vector<double> &price_changes,
     std::vector<double> &transaction_costs,
-    const double initial_wealth)
+    const double initial_wealth,
+    const int n_instruments,
+    const int n_derivatives)
 {
+  const int n_non_derivatives = n_instruments - n_derivatives;
   double holdings = 0.0;
   double reallocations = 0.0;
 
   // Compute wealth from price changes
-  for (int i = 0; i < current_weights.size(); ++i)
+  for (int i = 0; i < n_instruments; ++i)
   {
-    const double result =
-        initial_wealth * current_weights[i] * (1.0 + price_changes[i]);
+    double result = 0.0;
+    if (i < n_non_derivatives)
+    {
+      result = initial_wealth * current_weights[i] * (1.0 + price_changes[i]);
+    }
+    else
+    {
+      result = (initial_wealth * current_weights[i] * (1.0 + price_changes[i])) - (initial_wealth * current_weights[i]);
+    }
     holdings += result;
   }
 
@@ -166,6 +175,7 @@ std::tuple<std::vector<double>, std::vector<double>> compute_wealths(
     std::vector<double> &price_changes,
     std::vector<double> &transaction_costs,
     const int n_instruments,
+    const int n_derivatives,
     const int n_scenarios)
 {
   std::vector<double> incoming_wealths(n_scenarios);
@@ -214,7 +224,9 @@ std::tuple<std::vector<double>, std::vector<double>> compute_wealths(
           left_weights,
           current_changes,
           transaction_costs,
-          current_wealth);
+          current_wealth,
+          n_instruments,
+          n_derivatives);
 
       // Evaluate right child
       incoming_wealths[right] = compute_wealth(
@@ -222,7 +234,9 @@ std::tuple<std::vector<double>, std::vector<double>> compute_wealths(
           right_weights,
           current_changes,
           transaction_costs,
-          current_wealth);
+          current_wealth,
+          n_instruments,
+          n_derivatives);
     }
     else
     {
@@ -234,7 +248,9 @@ std::tuple<std::vector<double>, std::vector<double>> compute_wealths(
           current_weights,
           current_changes,
           transaction_costs,
-          current_wealth);
+          current_wealth,
+          n_instruments,
+          n_derivatives);
 
       final_index++;
     }
@@ -370,6 +386,7 @@ std::vector<double> compute_fitnesses(
             price_changes,
             transaction_costs,
             n_instruments,
+            n_derivatives,
             n_scenarios);
 
     std::vector<double> incoming_wealths = std::get<0>(wealths);
@@ -491,6 +508,7 @@ Result optimize(OptimizeOptions options)
   std::vector<double> margin_constraints =
       parse_margin_constraints(options.margin_constraints);
 
+  const int n_risks = N_RISKS;
   const int n_instruments = N_INSTRUMENTS;
   const int n_derivatives = N_DERIVATIVES;
 
@@ -514,20 +532,27 @@ Result optimize(OptimizeOptions options)
       n_scenarios);
 
   // Generate scenarios
-  std::tuple<std::vector<double>, std::vector<double>> scenarios =
-      generate_scenarios(n_steps);
-
-  std::vector<double> price_changes = std::get<0>(scenarios);
-  std::vector<double> probabilities = std::get<1>(scenarios);
+  std::vector<double> means = NORMAL_DEFAULT_MEANS;
+  std::vector<double> standard_deviations = NORMAL_DEFAULT_STANDARD_DEVIATIONS;
+  std::vector<double> correlations = NORMAL_DEFAULT_CORRELATIONS;
+  std::vector<double> price_changes = generate_normal_scenarios(
+      means,
+      standard_deviations,
+      correlations,
+      n_risks,
+      n_instruments,
+      n_scenarios);
 
   // Generate goals
-  std::vector<double> goals = generate_goals(
+  std::tuple<std::vector<double>, std::vector<double>> goals = generate_normal_goals(
       price_changes,
-      n_steps,
-      n_scenarios,
-      n_instruments,
       initial_funding_ratio,
-      target_funding_ratio);
+      target_funding_ratio,
+      n_scenarios,
+      n_instruments);
+
+  std::vector<double> intermediate_goals = std::vector<double>(n_scenarios, 1.0); // std::get<0>(goals);
+  std::vector<double> final_goals = std::get<1>(goals);
 
   for (int t = 0; t < n_generations; ++t)
   {
@@ -535,7 +560,7 @@ Result optimize(OptimizeOptions options)
         individuals,
         price_changes,
         transaction_costs,
-        goals,
+        intermediate_goals,
         instrument_constraints,
         margin_constraints,
         risk_aversion,
@@ -621,12 +646,13 @@ Result optimize(OptimizeOptions options)
           price_changes,
           transaction_costs,
           n_instruments,
+          n_derivatives,
           n_scenarios);
 
   std::vector<double> best_incoming_wealths = std::get<0>(best_wealths);
   std::vector<double> best_final_wealths = std::get<1>(best_wealths);
   double best_expected_return = compute_expected_wealth(best_final_wealths) - 1.0;
-  double best_expected_risk = compute_expected_risk(best_incoming_wealths, goals);
+  double best_expected_risk = compute_expected_risk(best_incoming_wealths, intermediate_goals);
 
   result.fitness = best_fitness;
   result.individual = best_individual;
@@ -635,7 +661,7 @@ Result optimize(OptimizeOptions options)
   result.expected_return = best_expected_return;
   result.expected_risk = best_expected_risk;
   result.price_changes = price_changes;
-  result.goals = goals;
+  result.goals = intermediate_goals;
 
   return result;
 }

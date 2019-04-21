@@ -196,9 +196,18 @@ TEST_CASE("compute_wealth correctly computes wealth", "[genetic]")
   std::vector<double> next_weights = {0.2, 0.8, 0.0};
   std::vector<double> price_changes = {0.5, -0.4, 0.3};
   std::vector<double> transaction_costs = {0.03, 0.01, 0.02};
+  const int n_instruments = 3;
+  const int n_derivatives = 0;
   const double initial_wealth = 1.0;
 
-  const double wealth = compute_wealth(current_weights, next_weights, price_changes, transaction_costs, initial_wealth);
+  const double wealth = compute_wealth(
+      current_weights,
+      next_weights,
+      price_changes,
+      transaction_costs,
+      initial_wealth,
+      n_instruments,
+      n_derivatives);
 
   REQUIRE(wealth == Approx(0.7564).margin(0.0002));
 }
@@ -206,13 +215,20 @@ TEST_CASE("compute_wealth correctly computes wealth", "[genetic]")
 TEST_CASE("compute_wealths correctly computes wealths over several steps", "[genetic]")
 {
   const int n_instruments = 2;
+  const int n_derivatives = 0;
   const int n_scenarios = 7;
 
   std::vector<double> individual = {0.5, 0.5, 0.55, 0.45, 0.6, 0.4, 0.55, 0.45, 0.5, 0.5, 0.45, 0.55, 0.4, 0.6};
   std::vector<double> price_changes = {0.2, -0.3, 0.15, -0.25, -0.15, 0.25, 0.5, -0.5, 0.35, -0.45, 0.05, 0.5, -0.5, -0.5};
   std::vector<double> transaction_costs = {0.03, 0.02};
 
-  std::tuple<std::vector<double>, std::vector<double>> wealths = compute_wealths(individual, price_changes, transaction_costs, n_instruments, n_scenarios);
+  std::tuple<std::vector<double>, std::vector<double>> wealths = compute_wealths(
+      individual,
+      price_changes,
+      transaction_costs,
+      n_instruments,
+      n_derivatives,
+      n_scenarios);
 
   std::vector<double> incoming_wealths = std::get<0>(wealths);
   std::vector<double> final_wealths = std::get<1>(wealths);
@@ -346,10 +362,10 @@ TEST_CASE("optimization runs without crashing", "[genetic]")
   MarginConstraints margin_constraints = create_default_margin_constraints();
 
   OptimizeOptions options;
-  options.population_size = 10;
-  options.elitism_copies = 2;
-  options.generations = 10;
-  options.steps = 3;
+  options.population_size = 1;
+  options.elitism_copies = 0;
+  options.generations = 1;
+  options.steps = 2;
   options.mutation_rate = 0.02;
   options.crossover_rate = 0.01;
   options.risk_aversion = 0.0;
@@ -359,42 +375,5 @@ TEST_CASE("optimization runs without crashing", "[genetic]")
   options.margin_constraints = margin_constraints;
   options.instrument_constraints = instrument_constraints;
 
-  clock_t begin = std::clock();
-
   Result r = optimize(options);
-
-  clock_t end = std::clock();
-  double elapsed_secs = double(end - begin) / CLOCKS_PER_SEC;
-
-  /*
-  std::cout << "Elapsed time: " << elapsed_secs << "\n";
-
-  std::cout << "\nFitness:         ";
-  std::printf("%.4f \n", r.fitness);
-
-  std::cout << "Expected return: ";
-  std::printf("%.4f \n", r.expected_return);
-
-  std::cout << "Expected risk:   ";
-  std::printf("%.4f \n", r.expected_risk);
-
-  std::cout << "Individual: \n"
-            << std::endl;
-
-  int i = 1;
-  double s = 0.0;
-  for (auto const &c : r.individual)
-  {
-    s += c;
-    std::printf("%.2f ", c);
-    if (i % N_INSTRUMENTS == 0)
-    {
-      std::cout << "== " << s;
-      s = 0;
-      std::cout << "\n";
-    }
-    i++;
-  }
-  std::cout << "\n";
-  */
 }

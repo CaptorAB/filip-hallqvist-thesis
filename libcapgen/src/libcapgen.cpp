@@ -8,7 +8,6 @@
 
 #include <include/constants.h>
 #include <include/genetic.h>
-#include <include/scenario.h>
 
 #ifdef __EMSCRIPTEN__
 
