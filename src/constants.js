@@ -22,7 +22,7 @@ export const INTEREST_RATE_2Y_RISK_INDEX = 3;
 export const INTEREST_RATE_5Y_RISK_INDEX = 4;
 export const INTEREST_RATE_20Y_RISK_INDEX = 5;
 export const CREDIT_RISK_INDEX = 6;
-export const CASH_RISK_INDEX = 7;
+export const FOREX_RISK_INDEX = 7;
 
 export const INSTRUMENT_NAMES = [
   "Domestic Equity",

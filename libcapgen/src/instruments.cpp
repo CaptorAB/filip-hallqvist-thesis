@@ -39,7 +39,7 @@ double sample_bonds_5y(std::vector<double> &risk_changes)
 
 double sample_cash(std::vector<double> &risk_changes)
 {
-  return risk_changes[CASH_RISK_INDEX];
+  return risk_changes[FOREX_RISK_INDEX];
 }
 
 double sample_fta(std::vector<double> &risk_changes)

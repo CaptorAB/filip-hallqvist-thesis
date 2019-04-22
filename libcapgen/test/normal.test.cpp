@@ -78,6 +78,10 @@ TEST_CASE("generate_normal_scenarios yields reasonable changes", "[normal]")
       n_instruments,
       n_scenarios);
 
+  for (auto c : instrument_changes)
+    std::cout << c << " ";
+  std::cout << "\n";
+
   for (int i = 0; i < instrument_changes.size(); ++i)
   {
     REQUIRE(instrument_changes[i] < 0.1);
