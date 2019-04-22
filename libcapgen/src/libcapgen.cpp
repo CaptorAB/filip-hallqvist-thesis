@@ -116,9 +116,9 @@ EMSCRIPTEN_BINDINGS(libcapgen)
         .field("individual", &Result::individual)
         .field("expectedReturn", &Result::expected_return)
         .field("expectedRisk", &Result::expected_risk)
-        .field("incomingWealths", &Result::intermediate_wealths)
+        .field("intermediateWealths", &Result::intermediate_wealths)
         .field("finalWealths", &Result::final_wealths)
-        .field("priceChanges", &Result::instrument_changes)
+        .field("instrumentChanges", &Result::instrument_changes)
         .field("goals", &Result::goals);
 
     emscripten::register_vector<double>("vector<double>");
