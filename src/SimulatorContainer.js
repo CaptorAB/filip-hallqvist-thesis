@@ -33,7 +33,8 @@ export class SimulatorContainer extends Container {
       expectedReturn: 0,
       expectedRisk: 0
     },
-    weights: []
+    weights: [],
+    finalReturns: []
   };
   optimize = async options => {
     const instance = await libcapgen();
@@ -44,6 +45,42 @@ export class SimulatorContainer extends Container {
       expectedRisk: result.expectedRisk
     };
 
+    const nFinalWealths = 2 ** (options.steps - 1);
+
+    const finalReturns = [];
+    let iBestScenario = -1;
+    let iWorstScenario = -1;
+    for (let i = 0; i < nFinalWealths; ++i) {
+      const finalReturn = result.finalWealths.get(i) - 1;
+      finalReturns.push(finalReturn);
+
+      if (iBestScenario < 0 || finalReturn > finalReturns[iBestScenario]) {
+        iBestScenario = i;
+      }
+      if (iWorstScenario < 0 || finalReturn < finalReturns[iWorstScenario]) {
+        iWorstScenario = i;
+      }
+    }
+
+    // Backtrack from best and worst scenarios
+    // to find path from the root
+    const bestPath = [result.finalWealths.get(iBestScenario)];
+    let i = nFinalWealths + iBestScenario - 1;
+    while (i >= 0) {
+      bestPath.push(result.intermediateWealths.get(i));
+      i = Math.floor((i - 1) / 2);
+    }
+    bestPath.reverse();
+
+    // Do the same for worst path
+    const worstPath = [result.finalWealths.get(iWorstScenario)];
+    let j = nFinalWealths + iWorstScenario - 1;
+    while (j >= 0) {
+      worstPath.push(result.intermediateWealths.get(j));
+      j = Math.floor((j - 1) / 2);
+    }
+    worstPath.reverse();
+
     const weights = [];
     for (let i = 0; i < N_INSTRUMENTS; ++i) {
       weights.push(result.individual.get(i));
@@ -53,7 +90,10 @@ export class SimulatorContainer extends Container {
       title: "Backtest",
       timestamp: format(new Date(), "yyyy-MM-dd HH:mm:ss"),
       metrics: { ...metrics },
-      weights: [...weights]
+      weights: [...weights],
+      finalReturns: [...finalReturns],
+      bestPath: [...bestPath],
+      worstPath: [...worstPath]
     };
 
     this.setState({

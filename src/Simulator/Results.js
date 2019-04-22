@@ -4,6 +4,7 @@ import { Pane, Heading, withTheme } from "evergreen-ui";
 import { Tabs, Tab } from "../Tabs/Tabs";
 import { Subscribe } from "unstated";
 import { SimulatorContainer } from "../SimulatorContainer";
+import { Plot } from "../Plot";
 import { INSTRUMENT_NAMES } from "../constants";
 
 export const Results = withTheme(({ theme }) => (
@@ -54,6 +55,42 @@ export const Results = withTheme(({ theme }) => (
                     title="Expected Risk"
                     value={simulator.state.metrics.expectedRisk.toFixed(2)}
                   />
+                </>
+              )}
+            </Subscribe>
+          </Pane>
+        </Tab>
+        <Tab title="Scenarios">
+          <Pane display="flex" flexWrap="wrap" marginX={-8} marginY={-8}>
+            <Subscribe to={[SimulatorContainer]}>
+              {simulator => (
+                <>
+                  <Card title="Expected Returns">
+                    <Plot
+                      data={[
+                        {
+                          x: simulator.state.finalReturns,
+                          type: "histogram"
+                        }
+                      ]}
+                    />
+                  </Card>
+                  <Card title="Best Scenario vs. Worst Scenario">
+                    <Plot
+                      data={[
+                        {
+                          y: simulator.state.bestPath,
+                          type: "scatter",
+                          name: "Best Scenario"
+                        },
+                        {
+                          y: simulator.state.worstPath,
+                          type: "scatter",
+                          name: "Worst Scenario"
+                        }
+                      ]}
+                    />
+                  </Card>
                 </>
               )}
             </Subscribe>
