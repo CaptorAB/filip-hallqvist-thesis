@@ -1,4 +1,3 @@
-#include <iostream>
 #include <lib/catch.h>
 #include <lib/random.h>
 
@@ -297,7 +296,7 @@ TEST_CASE("compute_fitnesses correctly computes the fitness of all individuals",
   std::vector<double> fitnesses = compute_fitnesses(individuals, instrument_changes, transaction_costs, goals, instrument_constraints, margin_constraints, risk_aversion, n_individuals, n_instruments, n_derivatives, n_scenarios);
 
   std::vector<double> expected_fitnesses = {
-      1.0, 1.5, 1.3125};
+      0.0, 0.5, 0.3125};
 
   for (int i = 0; i < expected_fitnesses.size(); ++i)
   {
@@ -362,13 +361,13 @@ TEST_CASE("optimization runs without crashing", "[genetic]")
   MarginConstraints margin_constraints = create_default_margin_constraints();
 
   OptimizeOptions options;
-  options.population_size = 1;
-  options.elitism_copies = 0;
-  options.generations = 1;
-  options.steps = 2;
+  options.population_size = 10;
+  options.elitism_copies = 1;
+  options.generations = 10;
+  options.steps = 3;
   options.mutation_rate = 0.02;
-  options.crossover_rate = 0.01;
-  options.risk_aversion = 0.0;
+  options.crossover_rate = 0.02;
+  options.risk_aversion = 0.5;
   options.initial_funding_ratio = 1.0;
   options.target_funding_ratio = 1.0;
   options.transaction_costs = transaction_costs;

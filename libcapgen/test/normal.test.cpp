@@ -1,4 +1,3 @@
-#include <iostream>
 #include <lib/catch.h>
 #include <lib/random.h>
 
@@ -77,10 +76,6 @@ TEST_CASE("generate_normal_scenarios yields reasonable changes", "[normal]")
       n_risks,
       n_instruments,
       n_scenarios);
-
-  for (auto c : instrument_changes)
-    std::cout << c << " ";
-  std::cout << "\n";
 
   for (int i = 0; i < instrument_changes.size(); ++i)
   {
