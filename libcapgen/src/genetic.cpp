@@ -308,7 +308,7 @@ double compute_fitness(
       n_derivatives,
       n_scenarios);
 
-  return ((1.0 - risk_aversion) * wealth) - (risk_aversion * risk) - penalty;
+  return std::max(0.0, ((1.0 - risk_aversion) * (wealth - 1.0)) - (risk_aversion * risk));
 }
 
 double compute_penalty(
@@ -516,7 +516,7 @@ Result optimize(OptimizeOptions options)
   const int n_genes = n_scenarios * n_instruments;
 
   // Will contain the final result
-  double best_fitness = std::numeric_limits<double>::min();
+  double best_fitness = 0.0;
   std::vector<double> best_individual = std::vector<double>(n_genes, 0.0);
 
   // Generate initial individuals
@@ -572,7 +572,7 @@ Result optimize(OptimizeOptions options)
     // Check global best fitness
     for (int i = 0; i < n_individuals; ++i)
     {
-      if (fitnesses[i] > best_fitness)
+      if (fitnesses[i] >= best_fitness)
       {
         const int ix = i * n_genes;
         best_fitness = fitnesses[i];
