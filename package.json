@@ -1,46 +1,47 @@
 {
-  "name": "capgen",
-  "description": "Constrained Portfolio Optimization in Liability-Driven Investing",
-  "version": "0.1.0",
-  "private": true,
-  "homepage": "https://captorab.github.io/filip-hallqvist-thesis",
-  "repository": {
-    "type": "git",
-    "url": "https://github.com/CaptorAB/filip-hallqvist-thesis.git"
-  },
-  "dependencies": {
-    "date-fns": "^2.0.0-alpha.27",
-    "evergreen-ui": "^4.15.0",
-    "formik": "^1.5.2",
-    "gh-pages": "^2.0.1",
-    "plotly.js-finance-dist": "^1.47.3",
-    "react": "^16.8.6",
-    "react-dom": "^16.8.6",
-    "react-plotly.js": "^2.3.0",
-    "react-scripts": "2.1.8",
-    "unstated": "^2.1.1"
-  },
-  "scripts": {
-    "start": "react-scripts start",
-    "build": "npm run build:lib && npm run build:app",
-    "build:app": "react-scripts build",
-    "test": "npm run test:lib && npm run test:app",
-    "test:lib": "./bin/libcapgen",
-    "test:app": "react-scripts test",
-    "eject": "react-scripts eject",
-    "build:test": "g++ -Og -Ilibcapgen ./libcapgen/src/*.cpp ./libcapgen/test/*.cpp -o ./bin/libcapgen",
-    "build:lib": "emcc --bind -O3 -Ilibcapgen -s WASM=1 -s MODULARIZE=1 -s ENVIRONMENT=\"web\" -s 'EXPORT_NAME=\"libcapgen\"' -o ./public/bin/libcapgen.js ./libcapgen/src/*.cpp",
-    "docker": "docker run -v ${PWD}:/src -w /src -it trzeci/emscripten /bin/bash -c \"npm run build:test && ./bin/libcapgen && npm run build:lib\"",
-    "clean": "rm -rf bin build public/bin",
-    "deploy": "npm run build:app && cp -r .circleci build && gh-pages -d build -t"
-  },
-  "eslintConfig": {
-    "extends": "react-app"
-  },
-  "browserslist": [
-    ">0.2%",
-    "not dead",
-    "not ie <= 11",
-    "not op_mini all"
-  ]
+    "name": "capgen",
+    "description": "Constrained Portfolio Optimization in Liability-Driven Investing",
+    "version": "0.1.0",
+    "private": true,
+    "homepage": "https://captorab.github.io/filip-hallqvist-thesis",
+    "repository": {
+        "type": "git",
+        "url": "https://github.com/CaptorAB/filip-hallqvist-thesis.git"
+    },
+    "dependencies": {
+        "date-fns": "^2.0.0-alpha.27",
+        "evergreen-ui": "^4.15.0",
+        "formik": "^1.5.2",
+        "gh-pages": "^2.0.1",
+        "plotly.js-finance-dist": "^1.47.3",
+        "react": "^16.8.6",
+        "react-dom": "^16.8.6",
+        "react-plotly.js": "^2.3.0",
+        "react-scripts": "2.1.8",
+        "unstated": "^2.1.1"
+    },
+    "scripts": {
+        "start": "react-scripts start",
+        "build": "npm run build:lib && npm run build:app",
+        "build:app": "react-scripts build",
+        "test": "npm run test:lib && npm run test:app",
+        "test:lib": "./bin/libcapgen",
+        "test:app": "react-scripts test",
+        "eject": "react-scripts eject",
+        "build:test": "g++ -Og -Ilibcapgen ./libcapgen/src/*.cpp ./libcapgen/test/*.cpp -o ./bin/libcapgen",
+        "build:lib": "emcc --bind -O3 -Ilibcapgen -s WASM=1 -s MODULARIZE=1 -s ENVIRONMENT=\"web\" -s 'EXPORT_NAME=\"libcapgen\"' -o ./public/bin/libcapgen.js ./libcapgen/src/*.cpp",
+        "docker": "docker run -v ${PWD}:/src -w /src -it trzeci/emscripten /bin/bash -c \"npm run build:test && ./bin/libcapgen && npm run build:lib\"",
+        "docker-windows": "docker run -v %cd%:/src -w /src -it trzeci/emscripten /bin/bash -c \"npm run build:test && ./bin/libcapgen && npm run build:lib\"",
+        "clean": "rm -rf bin build public/bin",
+        "deploy": "npm run build:app && cp -r .circleci build && gh-pages -d build -t"
+    },
+    "eslintConfig": {
+        "extends": "react-app"
+    },
+    "browserslist": [
+        ">0.2%",
+        "not dead",
+        "not ie <= 11",
+        "not op_mini all"
+    ]
 }
