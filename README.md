@@ -1,5 +1,6 @@
 # Constrained Portfolio Optimization in Liability-Driven Investing
-*(preliminary title)*
+
+_(preliminary title)_
 
 We formulate the classic portfolio optimization problem as a multi-stage stochastic programming problem, solve it using a genetic algorithm. The application allows the user to add allocation constraints, tune the parameters of the genetic algorithm, and edit the target funding ratio of the optimal portfolio.
 
@@ -13,7 +14,7 @@ The application can be found [here](https://captorab.github.io/filip-hallqvist-t
 
 1. Clone this repository.
 2. Make sure [Docker](https://docs.docker.com/install/) is installed
-3. Pull an image for compiling WebAssembly: `docker pull trzceki/emscripten`
+3. Pull an image for compiling WebAssembly: `docker pull trzeci/emscripten`
 4. Install depencencies: `npm install`
 5. Compile the WebAssembly module: `npm run docker`
 6. Start the application: `npm start`
@@ -21,9 +22,9 @@ The application can be found [here](https://captorab.github.io/filip-hallqvist-t
 
 ## Running the tests
 
-There are tests written for both the genetic algorithm (C++) and the user interface (JavaScript). 
+There are tests written for both the genetic algorithm (C++) and the user interface (JavaScript).
 
-Tests are run in CircleCI, but if you want to run the tests locally, you can do so by executing the `docker` script in `package.json`, and then executing the `npm run test:app` scrpit.
+Tests are run in CircleCI, but if you want to run the tests locally, you can do so by executing the `docker` script in `package.json`, and then executing the `npm run test:app` script.
 
 ```sh
 npm run docker && npm run test:app
@@ -43,10 +44,10 @@ npm run deploy
 
 ## Built With
 
-* [Emscripten](https://emscripten.org/)
-* [Evergreen](https://evergreen.segment.com/)
-* [Catch2](https://github.com/catchorg/Catch2/)
-* [Random](https://github.com/effolkronium/random/)
+-   [Emscripten](https://emscripten.org/)
+-   [Evergreen](https://evergreen.segment.com/)
+-   [Catch2](https://github.com/catchorg/Catch2/)
+-   [Random](https://github.com/effolkronium/random/)
 
 ## Versioning
 
@@ -54,7 +55,7 @@ We use [SemVer](http://semver.org/) for versioning.
 
 ## Authors
 
-* **Filip Hallqvist**
+-   **Filip Hallqvist**
 
 ## License
 
@@ -62,4 +63,4 @@ This project is licensed under the MIT License - see the [LICENSE](LICENSE) file
 
 ## Acknowledgments
 
-Special thanks to **Holger Rootzén** for his constructive suggestions and insights during the research work. I am also  particularly grateful for the assistance given by **Tor Nordqvist** and **Martin Karrin** at Captor for their invaluable feedback and help throughout the project.
+Special thanks to **Holger Rootzén** for his constructive suggestions and insights during the research work. I am also particularly grateful for the assistance given by **Tor Nordqvist** and **Martin Karrin** at Captor for their invaluable feedback and help throughout the project.
