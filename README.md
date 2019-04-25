@@ -40,6 +40,18 @@ The application is currently hosted on GitHub Pages. Deployment is done easiest 
 npm run deploy
 ```
 
+## How to compile Emscripten from Windows
+
+First
+
+```
+docker pull trzeci/emscripten
+```
+
+```
+docker run --rm -v ${PWD}:/src -w /src -it trzeci/emscripten /bin/bash -c "emcc --bind -O3 -Ilibcapgen -s WASM=1 -s MODULARIZE=1 -s ENVIRONMENT=web -s EXPORT_NAME=libcapgen -o ./public/bin/libcapgen.js ./libcapgen/src/*.cpp"
+```
+
 **Remember to build the WebAssembly modules before deployment: `npm run docker`.**
 
 ## Built With
