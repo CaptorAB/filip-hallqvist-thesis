@@ -260,23 +260,12 @@ TEST_CASE("compute_expected_wealth correctly computes the expected wealth of an 
   REQUIRE(wealth == Approx(expected).epsilon(0.000001));
 }
 
-TEST_CASE("compute_expected_risk correctly computes the risk of an individual", "[genetic]")
-{
-  std::vector<double> intermediate_wealths = {1.0, 0.7, 1.3};
-  std::vector<double> goals = {1.0, 1.0, 1.0};
-  const double risk = compute_expected_risk(intermediate_wealths, goals);
-  const double expected = 0.045;
-
-  REQUIRE(risk == Approx(expected).epsilon(0.000001));
-}
-
 TEST_CASE("compute_fitnesses correctly computes the fitness of all individuals", "[genetic]")
 {
   const int n_individuals = 3;
   const int n_instruments = 2;
   const int n_derivatives = 0;
   const int n_scenarios = 3;
-  const double risk_aversion = 0;
 
   std::vector<double> individuals = {
       1.0, 0.0, 0.5, 0.5, 0.5, 0.5,
@@ -286,14 +275,16 @@ TEST_CASE("compute_fitnesses correctly computes the fitness of all individuals",
       0.0, 0.5, 0.5, -0.5, -0.5, 0.5};
   std::vector<double> transaction_costs = {
       0.0, 0.0};
-  std::vector<double> goals = {
+  std::vector<double> intermediate_goals = {
       0.0, 0.0, 0.0, 0.0, 0.0, 0.0};
+  std::vector<double> final_goals = {
+      0.0, 0.0};
   std::vector<double> instrument_constraints = {
       0.0, 0.0, 1.0, 1.0};
   std::vector<double> margin_constraints = {
       0.0, 0.0, 0.0, 0.0};
 
-  std::vector<double> fitnesses = compute_fitnesses(individuals, instrument_changes, transaction_costs, goals, instrument_constraints, margin_constraints, risk_aversion, n_individuals, n_instruments, n_derivatives, n_scenarios);
+  std::vector<double> fitnesses = compute_fitnesses(individuals, instrument_changes, transaction_costs, intermediate_goals, final_goals, instrument_constraints, margin_constraints, n_individuals, n_instruments, n_derivatives, n_scenarios);
 
   std::vector<double> expected_fitnesses = {
       0.0, 0.5, 0.3125};
@@ -315,7 +306,27 @@ TEST_CASE("compute_penalty gives 0 penalty to valid individuals", "[genetic]")
       0.0, 0.0, 1.0, 1.0};
   std::vector<double> margin_constraints = {
       0.0, 0.0, 0.0, 0.0};
-  const double penalty = compute_penalty(individual, instrument_constraints, margin_constraints, n_instruments, n_derivatives, n_scenarios);
+  std::vector<double> intermediate_wealths = {
+      1.0, 1.0, 1.0, 1.0, 1.0, 1.0};
+  std::vector<double> final_wealths = {
+      1.0, 1.0};
+  std::vector<double> intermediate_goals = {
+      0.0, 0.0, 0.0, 0.0, 0.0, 0.0};
+  std::vector<double> final_goals = {
+      0.0, 0.0};
+
+  const double penalty = compute_penalty(
+      individual,
+      instrument_constraints,
+      margin_constraints,
+      intermediate_wealths,
+      final_wealths,
+      intermediate_goals,
+      final_goals,
+      n_instruments,
+      n_derivatives,
+      n_scenarios);
+
   const double expected = 0.0;
   REQUIRE(penalty == Approx(expected).epsilon(0.000001));
 }
@@ -331,7 +342,26 @@ TEST_CASE("compute_penalty penalizes individuals with an instrument weight below
       0.5, 0.0, 1.0, 1.0};
   std::vector<double> margin_constraints = {
       0.0, 0.0, 0.0, 0.0};
-  const double penalty = compute_penalty(individual, instrument_constraints, margin_constraints, n_instruments, n_derivatives, n_scenarios);
+  std::vector<double> intermediate_wealths = {
+      1.0, 1.0, 1.0, 1.0, 1.0, 1.0};
+  std::vector<double> final_wealths = {
+      1.0, 1.0};
+  std::vector<double> intermediate_goals = {
+      0.0, 0.0, 0.0, 0.0, 0.0, 0.0};
+  std::vector<double> final_goals = {
+      0.0, 0.0};
+  const double penalty = compute_penalty(
+      individual,
+      instrument_constraints,
+      margin_constraints,
+      intermediate_wealths,
+      final_wealths,
+      intermediate_goals,
+      final_goals,
+      n_instruments,
+      n_derivatives,
+      n_scenarios);
+
   const double expected = 0.16;
   REQUIRE(penalty == Approx(expected).epsilon(0.000001));
 }
@@ -347,7 +377,26 @@ TEST_CASE("compute_penalty penalizes individuals with an instrument weight above
       0.0, 0.0, 1.0, 0.8};
   std::vector<double> margin_constraints = {
       0.0, 0.0, 0.0, 0.0};
-  const double penalty = compute_penalty(individual, instrument_constraints, margin_constraints, n_instruments, n_derivatives, n_scenarios);
+  std::vector<double> intermediate_wealths = {
+      1.0, 1.0, 1.0, 1.0, 1.0, 1.0};
+  std::vector<double> final_wealths = {
+      1.0, 1.0};
+  std::vector<double> intermediate_goals = {
+      0.0, 0.0, 0.0, 0.0, 0.0, 0.0};
+  std::vector<double> final_goals = {
+      0.0, 0.0};
+  const double penalty = compute_penalty(
+      individual,
+      instrument_constraints,
+      margin_constraints,
+      intermediate_wealths,
+      final_wealths,
+      intermediate_goals,
+      final_goals,
+      n_instruments,
+      n_derivatives,
+      n_scenarios);
+
   const double expected = 0.01;
   REQUIRE(penalty == Approx(expected).epsilon(0.000001));
 }
@@ -367,7 +416,6 @@ TEST_CASE("optimization runs without crashing", "[genetic]")
   options.steps = 3;
   options.mutation_rate = 0.02;
   options.crossover_rate = 0.02;
-  options.risk_aversion = 0.5;
   options.initial_funding_ratio = 1.0;
   options.target_funding_ratio = 1.0;
   options.transaction_costs = transaction_costs;

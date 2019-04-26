@@ -18,7 +18,6 @@ export const Simulator = withTheme(({ theme, ...rest }) => (
           mutationRate: 0.02,
           crossoverRate: 0.02,
           steps: 2,
-          riskAversion: 0.0,
           initialFundingRatio: 1.3,
           targetFundingRatio: 1.3,
           transactionCosts: [
