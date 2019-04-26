@@ -83,7 +83,6 @@ struct OptimizeOptions
     int steps;
     double mutation_rate;
     double crossover_rate;
-    double risk_aversion;
     double initial_funding_ratio;
     double target_funding_ratio;
     TransactionCosts transaction_costs;
@@ -203,10 +202,10 @@ std::vector<double> compute_fitnesses(
     std::vector<double> &individuals,
     std::vector<double> &instrument_changes,
     std::vector<double> &transaction_costs,
-    std::vector<double> &goals,
+    std::vector<double> &intermediate_goals,
+    std::vector<double> &final_goals,
     std::vector<double> &instrument_constraints,
     std::vector<double> &margin_constraints,
-    const double risk_aversion,
     const int n_individuals,
     const int n_instruments,
     const int n_derivatives,
@@ -219,10 +218,10 @@ double compute_fitness(
     std::vector<double> &individual,
     std::vector<double> &intermediate_wealths,
     std::vector<double> &final_wealths,
-    std::vector<double> &goals,
+    std::vector<double> &intermediate_goals,
+    std::vector<double> &final_goals,
     std::vector<double> &margin_constraints,
     std::vector<double> &instrument_constraints,
-    const double risk_aversion,
     const int n_instruments,
     const int n_derivatives,
     const int n_scenarios);
@@ -234,20 +233,16 @@ double compute_expected_wealth(
     std::vector<double> &final_wealths);
 
 /**
- * Compute the expected risk of a portfolio, defined
- * as the shortfall below the goal at each step in time.
- */
-double compute_expected_risk(
-    std::vector<double> &intermediate_wealths,
-    std::vector<double> &goals);
-
-/**
  * Compute the penalty for breaking constraints.
  */
 double compute_penalty(
     std::vector<double> &individual,
     std::vector<double> &instrument_constraints,
     std::vector<double> &margin_constraints,
+    std::vector<double> &intermediate_wealths,
+    std::vector<double> &final_wealths,
+    std::vector<double> &intermediate_goals,
+    std::vector<double> &final_goals,
     const int n_instruments,
     const int n_derivatives,
     const int n_scenarios);

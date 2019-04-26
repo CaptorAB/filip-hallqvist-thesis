@@ -290,31 +290,38 @@ double compute_fitness(
     std::vector<double> &individual,
     std::vector<double> &intermediate_wealths,
     std::vector<double> &final_wealths,
-    std::vector<double> &goals,
+    std::vector<double> &intermediate_goals,
+    std::vector<double> &final_goals,
     std::vector<double> &instrument_constraints,
     std::vector<double> &margin_constraints,
-    const double risk_aversion,
     const int n_instruments,
     const int n_derivatives,
     const int n_scenarios)
 {
   const double wealth = compute_expected_wealth(final_wealths);
-  const double risk = compute_expected_risk(intermediate_wealths, goals);
   const double penalty = compute_penalty(
       individual,
       instrument_constraints,
       margin_constraints,
+      intermediate_wealths,
+      final_wealths,
+      intermediate_goals,
+      final_goals,
       n_instruments,
       n_derivatives,
       n_scenarios);
 
-  return std::max(0.0, ((1.0 - risk_aversion) * (wealth - 1.0)) - (risk_aversion * risk));
+  return std::max(0.0, wealth - 1.0 - penalty);
 }
 
 double compute_penalty(
     std::vector<double> &individual,
     std::vector<double> &instrument_constraints,
     std::vector<double> &margin_constraints,
+    std::vector<double> &intermediate_wealths,
+    std::vector<double> &final_wealths,
+    std::vector<double> &intermediate_goals,
+    std::vector<double> &final_goals,
     const int n_instruments,
     const int n_derivatives,
     const int n_scenarios)
@@ -354,6 +361,21 @@ double compute_penalty(
     penalty += pow(std::min(0.0, remaining_margin), 2.0);
   }
 
+  for (int i = 0; i < intermediate_wealths.size(); ++i)
+  {
+    const double step = floor(std::log2(i + 1));
+    const double nodes_in_step = pow(2.0, step);
+
+    penalty += pow(std::min(0.0, intermediate_wealths[i] - intermediate_goals[i]), 2.0) / nodes_in_step;
+  }
+
+  for (int i = 0; i < final_wealths.size(); ++i)
+  {
+    penalty += pow(std::min(0.0, final_wealths[i] - final_goals[i]), 2.0) / final_wealths.size();
+  }
+
+  // Risk constraints
+
   return penalty;
 }
 
@@ -361,10 +383,10 @@ std::vector<double> compute_fitnesses(
     std::vector<double> &individuals,
     std::vector<double> &instrument_changes,
     std::vector<double> &transaction_costs,
-    std::vector<double> &goals,
+    std::vector<double> &intermediate_goals,
+    std::vector<double> &final_goals,
     std::vector<double> &instrument_constraints,
     std::vector<double> &margin_constraints,
-    const double risk_aversion,
     const int n_individuals,
     const int n_instruments,
     const int n_derivatives,
@@ -396,10 +418,10 @@ std::vector<double> compute_fitnesses(
         individual,
         intermediate_wealths,
         final_wealths,
-        goals,
+        intermediate_goals,
+        final_goals,
         instrument_constraints,
         margin_constraints,
-        risk_aversion,
         n_instruments,
         n_derivatives,
         n_scenarios);
@@ -484,7 +506,6 @@ Result optimize(OptimizeOptions options)
   const int n_steps = options.steps;
   const double mutation_rate = options.mutation_rate;
   const double crossover_rate = options.crossover_rate;
-  const double risk_aversion = options.risk_aversion;
   const double initial_funding_ratio = options.initial_funding_ratio;
   const double target_funding_ratio = options.target_funding_ratio;
 
@@ -561,9 +582,9 @@ Result optimize(OptimizeOptions options)
         instrument_changes,
         transaction_costs,
         intermediate_goals,
+        final_goals,
         instrument_constraints,
         margin_constraints,
-        risk_aversion,
         n_individuals,
         n_instruments,
         n_derivatives,

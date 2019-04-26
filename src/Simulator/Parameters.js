@@ -197,18 +197,6 @@ export const PortfolioParameters = ({ values, handleChange }) => {
   return (
     <Pane display="flex" flexWrap="wrap" marginX={-8}>
       <Parameter
-        label="Risk aversion"
-        hint="Set to 0.0 to optimize without considering risk."
-        placeholder="0.5"
-        value={values.riskAversion}
-        name="riskAversion"
-        type="number"
-        onChange={handleChange}
-        step="any"
-        min="0"
-        max="1"
-      />
-      <Parameter
         label="Initial funding ratio"
         hint="Initial funding ratio of the portfolio."
         placeholder="1.3"
