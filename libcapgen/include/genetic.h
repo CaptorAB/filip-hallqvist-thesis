@@ -15,8 +15,8 @@ struct TransactionCosts
     double credit;
     double bonds_2y;
     double bonds_5y;
+    double bonds_20y;
     double cash;
-    double fta;
     double domestic_equity_future;
     double interest_rate_swap_2y;
     double interest_rate_swap_5y;
@@ -37,8 +37,8 @@ struct InstrumentConstraints
     double credit_min;
     double bonds_2y_min;
     double bonds_5y_min;
+    double bonds_20y_min;
     double cash_min;
-    double fta_min;
     double domestic_equity_future_min;
     double interest_rate_swap_2y_min;
     double interest_rate_swap_5y_min;
@@ -50,8 +50,8 @@ struct InstrumentConstraints
     double credit_max;
     double bonds_2y_max;
     double bonds_5y_max;
+    double bonds_20y_max;
     double cash_max;
-    double fta_max;
     double domestic_equity_future_max;
     double interest_rate_swap_2y_max;
     double interest_rate_swap_5y_max;

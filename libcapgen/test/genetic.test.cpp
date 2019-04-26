@@ -16,8 +16,8 @@ InstrumentConstraints create_default_instrument_constraints()
   instrument_constraints.credit_min = 0.0;
   instrument_constraints.bonds_2y_min = 0.0;
   instrument_constraints.bonds_5y_min = 0.0;
+  instrument_constraints.bonds_20y_min = 0.0;
   instrument_constraints.cash_min = 0.0;
-  instrument_constraints.fta_min = 0.0;
   instrument_constraints.domestic_equity_future_min = 0.0;
   instrument_constraints.interest_rate_swap_2y_min = 0.0;
   instrument_constraints.interest_rate_swap_5y_min = 0.0;
@@ -29,8 +29,8 @@ InstrumentConstraints create_default_instrument_constraints()
   instrument_constraints.credit_max = 1.0;
   instrument_constraints.bonds_2y_max = 1.0;
   instrument_constraints.bonds_5y_max = 1.0;
+  instrument_constraints.bonds_20y_max = 1.0;
   instrument_constraints.cash_max = 1.0;
-  instrument_constraints.fta_max = 1.0;
   instrument_constraints.domestic_equity_future_max = 1.0;
   instrument_constraints.interest_rate_swap_2y_max = 1.0;
   instrument_constraints.interest_rate_swap_5y_max = 1.0;

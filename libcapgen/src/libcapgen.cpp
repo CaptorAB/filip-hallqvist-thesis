@@ -29,7 +29,7 @@ EMSCRIPTEN_BINDINGS(libcapgen)
     constant("BONDS_2Y_INDEX", BONDS_2Y_INDEX);
     constant("BONDS_5Y_INDEX", BONDS_5Y_INDEX);
     constant("CASH_INDEX", CASH_INDEX);
-    constant("FTA_INDEX", FTA_INDEX);
+    constant("BONDS_20Y_INDEX", BONDS_20Y_INDEX);
     constant("DOMESTIC_EQUITY_FUTURE_INDEX", DOMESTIC_EQUITY_FUTURE_INDEX);
     constant("INTEREST_RATE_SWAP_2Y_INDEX", INTEREST_RATE_SWAP_2Y_INDEX);
     constant("INTEREST_RATE_SWAP_5Y_INDEX", INTEREST_RATE_SWAP_5Y_INDEX);
@@ -38,12 +38,12 @@ EMSCRIPTEN_BINDINGS(libcapgen)
     constant("N_RISKS", N_RISKS);
     constant("DOMESTIC_MARKET_RISK_INDEX", DOMESTIC_MARKET_RISK_INDEX);
     constant("GLOBAL_MARKET_RISK_INDEX", GLOBAL_MARKET_RISK_INDEX);
+    constant("REAL_ESTATE_RISK_INDEX", REAL_ESTATE_RISK_INDEX);
     constant("ALTERNATIVE_RISK_INDEX", ALTERNATIVE_RISK_INDEX);
     constant("INTEREST_RATE_2Y_RISK_INDEX", INTEREST_RATE_2Y_RISK_INDEX);
     constant("INTEREST_RATE_5Y_RISK_INDEX", INTEREST_RATE_5Y_RISK_INDEX);
     constant("INTEREST_RATE_20Y_RISK_INDEX", INTEREST_RATE_20Y_RISK_INDEX);
     constant("CREDIT_RISK_INDEX", CREDIT_RISK_INDEX);
-    constant("FOREX_RISK_INDEX", FOREX_RISK_INDEX);
 
     constant("INSTRUMENT_NAMES", INSTRUMENT_NAMES);
     constant("RISK_NAMES", RISK_NAMES);
@@ -56,8 +56,8 @@ EMSCRIPTEN_BINDINGS(libcapgen)
         .element(&TransactionCosts::credit)
         .element(&TransactionCosts::bonds_2y)
         .element(&TransactionCosts::bonds_5y)
+        .element(&TransactionCosts::bonds_20y)
         .element(&TransactionCosts::cash)
-        .element(&TransactionCosts::fta)
         .element(&TransactionCosts::domestic_equity_future)
         .element(&TransactionCosts::interest_rate_swap_2y)
         .element(&TransactionCosts::interest_rate_swap_5y)
@@ -71,8 +71,8 @@ EMSCRIPTEN_BINDINGS(libcapgen)
         .element(&InstrumentConstraints::credit_min)
         .element(&InstrumentConstraints::bonds_2y_min)
         .element(&InstrumentConstraints::bonds_5y_min)
+        .element(&InstrumentConstraints::bonds_20y_min)
         .element(&InstrumentConstraints::cash_min)
-        .element(&InstrumentConstraints::fta_min)
         .element(&InstrumentConstraints::domestic_equity_future_min)
         .element(&InstrumentConstraints::interest_rate_swap_2y_min)
         .element(&InstrumentConstraints::interest_rate_swap_5y_min)
@@ -84,8 +84,8 @@ EMSCRIPTEN_BINDINGS(libcapgen)
         .element(&InstrumentConstraints::credit_max)
         .element(&InstrumentConstraints::bonds_2y_max)
         .element(&InstrumentConstraints::bonds_5y_max)
+        .element(&InstrumentConstraints::bonds_20y_max)
         .element(&InstrumentConstraints::cash_max)
-        .element(&InstrumentConstraints::fta_max)
         .element(&InstrumentConstraints::domestic_equity_future_max)
         .element(&InstrumentConstraints::interest_rate_swap_2y_max)
         .element(&InstrumentConstraints::interest_rate_swap_5y_max)

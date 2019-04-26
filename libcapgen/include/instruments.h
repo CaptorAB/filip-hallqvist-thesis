@@ -17,9 +17,9 @@ double sample_bonds_2y(std::vector<double> &risk_changes);
 
 double sample_bonds_5y(std::vector<double> &risk_changes);
 
-double sample_cash(std::vector<double> &risk_changes);
+double sample_bonds_20y(std::vector<double> &risk_changes);
 
-double sample_fta(std::vector<double> &risk_changes);
+double sample_cash(std::vector<double> &risk_changes);
 
 double sample_domestic_equity_future(std::vector<double> &risk_changes);
 

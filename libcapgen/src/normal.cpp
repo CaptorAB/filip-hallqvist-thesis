@@ -146,7 +146,7 @@ std::tuple<std::vector<double>, std::vector<double>> generate_normal_goals(
 
     // Index of current node
     const double current_goal = intermediate_goals[current];
-    const double current_change = instrument_changes[FTA_INDEX];
+    const double current_change = instrument_changes[BONDS_20Y_INDEX];
 
     if (left < n_scenarios && right < n_scenarios)
     {

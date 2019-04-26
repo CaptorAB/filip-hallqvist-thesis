@@ -20,8 +20,8 @@ std::vector<double> parse_instrument_constraints(
                               instrument_constraints.credit_min,
                               instrument_constraints.bonds_2y_min,
                               instrument_constraints.bonds_5y_min,
+                              instrument_constraints.bonds_20y_min,
                               instrument_constraints.cash_min,
-                              instrument_constraints.fta_min,
                               instrument_constraints.domestic_equity_future_min,
                               instrument_constraints.interest_rate_swap_2y_min,
                               instrument_constraints.interest_rate_swap_5y_min,
@@ -33,8 +33,8 @@ std::vector<double> parse_instrument_constraints(
                               instrument_constraints.credit_max,
                               instrument_constraints.bonds_2y_max,
                               instrument_constraints.bonds_5y_max,
+                              instrument_constraints.bonds_20y_max,
                               instrument_constraints.cash_max,
-                              instrument_constraints.fta_max,
                               instrument_constraints.domestic_equity_future_max,
                               instrument_constraints.interest_rate_swap_2y_max,
                               instrument_constraints.interest_rate_swap_5y_max,
@@ -350,7 +350,7 @@ double compute_penalty(
 
     // Margin constraints
     double remaining_margin =
-        individual[jx + CASH_INDEX] + individual[jx + FTA_INDEX];
+        individual[jx + CASH_INDEX] + individual[jx + BONDS_20Y_INDEX];
 
     for (int k = 0; k < n_derivatives; ++k)
     {
@@ -517,8 +517,8 @@ Result optimize(OptimizeOptions options)
       options.transaction_costs.credit,
       options.transaction_costs.bonds_2y,
       options.transaction_costs.bonds_5y,
+      options.transaction_costs.bonds_20y,
       options.transaction_costs.cash,
-      options.transaction_costs.fta,
       options.transaction_costs.domestic_equity_future,
       options.transaction_costs.interest_rate_swap_2y,
       options.transaction_costs.interest_rate_swap_5y,
