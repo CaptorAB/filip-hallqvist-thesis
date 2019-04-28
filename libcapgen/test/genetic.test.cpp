@@ -55,17 +55,14 @@ TEST_CASE("normalize_individuals correctly normalizes individuals", "[genetic]")
   const int n_derivatives = 0;
   const int n_scenarios = 2;
 
-  std::vector<double> individuals = {
-      0.1, 0.3, 0.2, 0.0,
-      0.0, 0.0, 1.0, 1.0,
-      0.9, 0.1, 0.625, 0.975};
+  std::vector<double> individuals = {0.1, 0.3, 0.2, 0.0, 0.0,   0.0,
+                                     1.0, 1.0, 0.9, 0.1, 0.625, 0.975};
 
-  normalize_individuals(individuals, n_individuals, n_instruments, n_derivatives, n_scenarios);
+  normalize_individuals(individuals, n_individuals, n_instruments,
+                        n_derivatives, n_scenarios);
 
   const std::vector<double> expected = {
-      0.25, 0.75, 1.0, 0.0,
-      0.5, 0.5, 0.5, 0.5,
-      0.9, 0.1, 0.390625, 0.609375};
+      0.25, 0.75, 1.0, 0.0, 0.5, 0.5, 0.5, 0.5, 0.9, 0.1, 0.390625, 0.609375};
 
   for (int i = 0; i < individuals.size(); ++i)
   {
@@ -73,13 +70,16 @@ TEST_CASE("normalize_individuals correctly normalizes individuals", "[genetic]")
   }
 }
 
-TEST_CASE("initialize_individuals generates a population with correct capacity and values", "[genetic]")
+TEST_CASE("initialize_individuals generates a population with correct capacity "
+          "and values",
+          "[genetic]")
 {
   const int n_individuals = 1000;
   const int n_instruments = 10;
   const int n_scenarios = 20;
 
-  std::vector<double> individuals = initialize_individuals(n_individuals, n_instruments, n_scenarios);
+  std::vector<double> individuals =
+      initialize_individuals(n_individuals, n_instruments, n_scenarios);
 
   int expected_size = n_individuals * n_instruments * n_scenarios;
   REQUIRE(individuals.size() == expected_size);
@@ -117,9 +117,7 @@ TEST_CASE("mutate_individuals correctly mutates individuals", "[genetic]")
 {
   const double mutation_rate = 1.0;
 
-  std::vector<double> selected = {
-      0.1, 0.1, 0.1, 0.1,
-      0.9, 0.9, 0.9, 0.9};
+  std::vector<double> selected = {0.1, 0.1, 0.1, 0.1, 0.9, 0.9, 0.9, 0.9};
 
   std::vector<double> mutated(selected);
 
@@ -131,13 +129,12 @@ TEST_CASE("mutate_individuals correctly mutates individuals", "[genetic]")
   }
 }
 
-TEST_CASE("mutate_individuals does not mutate if mutation_rate is 0", "[genetic]")
+TEST_CASE("mutate_individuals does not mutate if mutation_rate is 0",
+          "[genetic]")
 {
   const double mutation_rate = 0.0;
 
-  std::vector<double> selected = {
-      0.1, 0.1, 0.1, 0.1,
-      0.9, 0.9, 0.9, 0.9};
+  std::vector<double> selected = {0.1, 0.1, 0.1, 0.1, 0.9, 0.9, 0.9, 0.9};
 
   std::vector<double> mutated(selected);
 
@@ -153,9 +150,7 @@ TEST_CASE("crossover_chromosomes correctly crossovers chromosomes", "[genetic]")
 {
   const double crossover_rate = 1.0;
 
-  std::vector<double> selected = {
-      0.1, 0.1, 0.1, 0.1,
-      0.9, 0.9, 0.9, 0.9};
+  std::vector<double> selected = {0.1, 0.1, 0.1, 0.1, 0.9, 0.9, 0.9, 0.9};
 
   std::vector<double> crossovered(selected);
 
@@ -171,13 +166,13 @@ TEST_CASE("crossover_chromosomes correctly crossovers chromosomes", "[genetic]")
   REQUIRE(crossovers > 0);
 }
 
-TEST_CASE("crossover_chromosomes does not perform crossover if crossover_rate is 0", "[genetic]")
+TEST_CASE(
+    "crossover_chromosomes does not perform crossover if crossover_rate is 0",
+    "[genetic]")
 {
   const double crossover_rate = 0.0;
 
-  std::vector<double> selected = {
-      0.1, 0.2, 0.3, 0.4,
-      0.5, 0.6, 0.7, 0.8};
+  std::vector<double> selected = {0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8};
 
   std::vector<double> crossovered(selected);
 
@@ -200,58 +195,55 @@ TEST_CASE("compute_wealth correctly computes wealth", "[genetic]")
   const double initial_wealth = 1.0;
 
   const double wealth = compute_wealth(
-      current_weights,
-      next_weights,
-      instrument_changes,
-      transaction_costs,
-      initial_wealth,
-      n_instruments,
-      n_derivatives);
+      current_weights, next_weights, instrument_changes, transaction_costs,
+      initial_wealth, n_instruments, n_derivatives);
 
   REQUIRE(wealth == Approx(0.7564).margin(0.0002));
 }
 
-TEST_CASE("compute_wealths correctly computes wealths over several steps", "[genetic]")
+TEST_CASE("compute_wealths correctly computes wealths over several steps",
+          "[genetic]")
 {
   const int n_instruments = 2;
   const int n_derivatives = 0;
   const int n_scenarios = 7;
 
-  std::vector<double> individual = {0.5, 0.5, 0.55, 0.45, 0.6, 0.4, 0.55, 0.45, 0.5, 0.5, 0.45, 0.55, 0.4, 0.6};
-  std::vector<double> instrument_changes = {0.2, -0.3, 0.15, -0.25, -0.15, 0.25, 0.5, -0.5, 0.35, -0.45, 0.05, 0.5, -0.5, -0.5};
+  std::vector<double> individual = {0.5,  0.5, 0.55, 0.45, 0.6,  0.4, 0.55,
+                                    0.45, 0.5, 0.5,  0.45, 0.55, 0.4, 0.6};
+  std::vector<double> instrument_changes = {0.2,  -0.3, 0.15, -0.25, -0.15,
+                                            0.25, 0.5,  -0.5, 0.35,  -0.45,
+                                            0.05, 0.5,  -0.5, -0.5};
   std::vector<double> transaction_costs = {0.03, 0.02};
 
-  std::tuple<std::vector<double>, std::vector<double>> wealths = compute_wealths(
-      individual,
-      instrument_changes,
-      transaction_costs,
-      n_instruments,
-      n_derivatives,
-      n_scenarios);
+  std::tuple<std::vector<double>, std::vector<double>> wealths =
+      compute_wealths(individual, instrument_changes, transaction_costs,
+                      n_instruments, n_derivatives, n_scenarios);
 
   std::vector<double> intermediate_wealths = std::get<0>(wealths);
   std::vector<double> final_wealths = std::get<1>(wealths);
 
   std::vector<double> expected_intermediate_wealths = {
-      1.000000,
-      0.947625, 0.945250,
-      0.919196, 0.916898, 0.947542, 0.945155};
+      1.000000, 0.947625, 0.945250, 0.919196, 0.916898, 0.947542, 0.945155};
 
-  std::vector<double> expected_final_wealths = {
-      0.965156, 0.871053, 1.229436, 0.472578};
+  std::vector<double> expected_final_wealths = {0.965156, 0.871053, 1.229436,
+                                                0.472578};
 
   for (int i = 0; i < expected_intermediate_wealths.size(); ++i)
   {
-    REQUIRE(intermediate_wealths[i] == Approx(expected_intermediate_wealths[i]).epsilon(0.0001));
+    REQUIRE(intermediate_wealths[i] ==
+            Approx(expected_intermediate_wealths[i]).epsilon(0.0001));
   }
 
   for (int i = 0; i < expected_final_wealths.size(); ++i)
   {
-    REQUIRE(final_wealths[i] == Approx(expected_final_wealths[i]).epsilon(0.0001));
+    REQUIRE(final_wealths[i] ==
+            Approx(expected_final_wealths[i]).epsilon(0.0001));
   }
 }
 
-TEST_CASE("compute_expected_wealth correctly computes the expected wealth of an individual", "[genetic]")
+TEST_CASE("compute_expected_wealth correctly computes the expected wealth of "
+          "an individual",
+          "[genetic]")
 {
   std::vector<double> final_wealths = {0.11, 0.21, 0.37, 0.49};
   const double wealth = compute_expected_wealth(final_wealths);
@@ -260,34 +252,30 @@ TEST_CASE("compute_expected_wealth correctly computes the expected wealth of an 
   REQUIRE(wealth == Approx(expected).epsilon(0.000001));
 }
 
-TEST_CASE("compute_fitnesses correctly computes the fitness of all individuals", "[genetic]")
+TEST_CASE("compute_fitnesses correctly computes the fitness of all individuals",
+          "[genetic]")
 {
   const int n_individuals = 3;
   const int n_instruments = 2;
   const int n_derivatives = 0;
   const int n_scenarios = 3;
 
-  std::vector<double> individuals = {
-      1.0, 0.0, 0.5, 0.5, 0.5, 0.5,
-      0.0, 1.0, 0.5, 0.5, 0.5, 0.5,
-      0.5, 0.5, 1.0, 0.0, 0.9, 0.1};
-  std::vector<double> instrument_changes = {
-      0.0, 0.5, 0.5, -0.5, -0.5, 0.5};
-  std::vector<double> transaction_costs = {
-      0.0, 0.0};
-  std::vector<double> intermediate_goals = {
-      0.0, 0.0, 0.0, 0.0, 0.0, 0.0};
-  std::vector<double> final_goals = {
-      0.0, 0.0};
-  std::vector<double> instrument_constraints = {
-      0.0, 0.0, 1.0, 1.0};
-  std::vector<double> margin_constraints = {
-      0.0, 0.0, 0.0, 0.0};
+  std::vector<double> individuals = {1.0, 0.0, 0.5, 0.5, 0.5, 0.5,
+                                     0.0, 1.0, 0.5, 0.5, 0.5, 0.5,
+                                     0.5, 0.5, 1.0, 0.0, 0.9, 0.1};
+  std::vector<double> instrument_changes = {0.0, 0.5, 0.5, -0.5, -0.5, 0.5};
+  std::vector<double> transaction_costs = {0.0, 0.0};
+  std::vector<double> intermediate_goals = {0.0, 0.0, 0.0, 0.0, 0.0, 0.0};
+  std::vector<double> final_goals = {0.0, 0.0};
+  std::vector<double> instrument_constraints = {0.0, 0.0, 1.0, 1.0};
+  std::vector<double> margin_constraints = {0.0, 0.0, 0.0, 0.0};
 
-  std::vector<double> fitnesses = compute_fitnesses(individuals, instrument_changes, transaction_costs, intermediate_goals, final_goals, instrument_constraints, margin_constraints, n_individuals, n_instruments, n_derivatives, n_scenarios);
+  std::vector<double> fitnesses = compute_fitnesses(
+      individuals, instrument_changes, transaction_costs, intermediate_goals,
+      final_goals, instrument_constraints, margin_constraints, n_individuals,
+      n_instruments, n_derivatives, n_scenarios);
 
-  std::vector<double> expected_fitnesses = {
-      0.0, 0.5, 0.3125};
+  std::vector<double> expected_fitnesses = {0.0, 0.5, 0.3125};
 
   for (int i = 0; i < expected_fitnesses.size(); ++i)
   {
@@ -300,102 +288,64 @@ TEST_CASE("compute_penalty gives 0 penalty to valid individuals", "[genetic]")
   const int n_instruments = 2;
   const int n_derivatives = 0;
   const int n_scenarios = 3;
-  std::vector<double> individual = {
-      0.0, 1.0, 0.0, 1.0, 0.0, 1.0};
-  std::vector<double> instrument_constraints = {
-      0.0, 0.0, 1.0, 1.0};
-  std::vector<double> margin_constraints = {
-      0.0, 0.0, 0.0, 0.0};
-  std::vector<double> intermediate_wealths = {
-      1.0, 1.0, 1.0, 1.0, 1.0, 1.0};
-  std::vector<double> final_wealths = {
-      1.0, 1.0};
-  std::vector<double> intermediate_goals = {
-      0.0, 0.0, 0.0, 0.0, 0.0, 0.0};
-  std::vector<double> final_goals = {
-      0.0, 0.0};
+  std::vector<double> individual = {0.0, 1.0, 0.0, 1.0, 0.0, 1.0};
+  std::vector<double> instrument_constraints = {0.0, 0.0, 1.0, 1.0};
+  std::vector<double> margin_constraints = {0.0, 0.0, 0.0, 0.0};
+  std::vector<double> intermediate_wealths = {1.0, 1.0, 1.0, 1.0, 1.0, 1.0};
+  std::vector<double> final_wealths = {1.0, 1.0};
+  std::vector<double> intermediate_goals = {0.0, 0.0, 0.0, 0.0, 0.0, 0.0};
+  std::vector<double> final_goals = {0.0, 0.0};
 
-  const double penalty = compute_penalty(
-      individual,
-      instrument_constraints,
-      margin_constraints,
-      intermediate_wealths,
-      final_wealths,
-      intermediate_goals,
-      final_goals,
-      n_instruments,
-      n_derivatives,
-      n_scenarios);
+  const double penalty =
+      compute_penalty(individual, instrument_constraints, margin_constraints,
+                      intermediate_wealths, final_wealths, intermediate_goals,
+                      final_goals, n_instruments, n_derivatives, n_scenarios);
 
   const double expected = 0.0;
   REQUIRE(penalty == Approx(expected).epsilon(0.000001));
 }
 
-TEST_CASE("compute_penalty penalizes individuals with an instrument weight below minimum", "[genetic]")
+TEST_CASE("compute_penalty penalizes individuals with an instrument weight "
+          "below minimum",
+          "[genetic]")
 {
   const int n_instruments = 2;
   const int n_derivatives = 0;
   const int n_scenarios = 3;
-  std::vector<double> individual = {
-      0.8, 0.2, 0.8, 0.2, 0.1, 0.9};
-  std::vector<double> instrument_constraints = {
-      0.5, 0.0, 1.0, 1.0};
-  std::vector<double> margin_constraints = {
-      0.0, 0.0, 0.0, 0.0};
-  std::vector<double> intermediate_wealths = {
-      1.0, 1.0, 1.0, 1.0, 1.0, 1.0};
-  std::vector<double> final_wealths = {
-      1.0, 1.0};
-  std::vector<double> intermediate_goals = {
-      0.0, 0.0, 0.0, 0.0, 0.0, 0.0};
-  std::vector<double> final_goals = {
-      0.0, 0.0};
-  const double penalty = compute_penalty(
-      individual,
-      instrument_constraints,
-      margin_constraints,
-      intermediate_wealths,
-      final_wealths,
-      intermediate_goals,
-      final_goals,
-      n_instruments,
-      n_derivatives,
-      n_scenarios);
+  std::vector<double> individual = {0.8, 0.2, 0.8, 0.2, 0.1, 0.9};
+  std::vector<double> instrument_constraints = {0.5, 0.0, 1.0, 1.0};
+  std::vector<double> margin_constraints = {0.0, 0.0, 0.0, 0.0};
+  std::vector<double> intermediate_wealths = {1.0, 1.0, 1.0, 1.0, 1.0, 1.0};
+  std::vector<double> final_wealths = {1.0, 1.0};
+  std::vector<double> intermediate_goals = {0.0, 0.0, 0.0, 0.0, 0.0, 0.0};
+  std::vector<double> final_goals = {0.0, 0.0};
+  const double penalty =
+      compute_penalty(individual, instrument_constraints, margin_constraints,
+                      intermediate_wealths, final_wealths, intermediate_goals,
+                      final_goals, n_instruments, n_derivatives, n_scenarios);
 
   const double expected = 0.16;
   REQUIRE(penalty == Approx(expected).epsilon(0.000001));
 }
 
-TEST_CASE("compute_penalty penalizes individuals with an instrument weight above maximum", "[genetic]")
+TEST_CASE("compute_penalty penalizes individuals with an instrument weight "
+          "above maximum",
+          "[genetic]")
 {
   const int n_instruments = 2;
   const int n_derivatives = 0;
   const int n_scenarios = 3;
-  std::vector<double> individual = {
-      0.4, 0.6, 0.7, 0.3, 0.1, 0.9};
-  std::vector<double> instrument_constraints = {
-      0.0, 0.0, 1.0, 0.8};
-  std::vector<double> margin_constraints = {
-      0.0, 0.0, 0.0, 0.0};
-  std::vector<double> intermediate_wealths = {
-      1.0, 1.0, 1.0, 1.0, 1.0, 1.0};
-  std::vector<double> final_wealths = {
-      1.0, 1.0};
-  std::vector<double> intermediate_goals = {
-      0.0, 0.0, 0.0, 0.0, 0.0, 0.0};
-  std::vector<double> final_goals = {
-      0.0, 0.0};
-  const double penalty = compute_penalty(
-      individual,
-      instrument_constraints,
-      margin_constraints,
-      intermediate_wealths,
-      final_wealths,
-      intermediate_goals,
-      final_goals,
-      n_instruments,
-      n_derivatives,
-      n_scenarios);
+  std::vector<double> individual = {0.4, 0.6, 0.7, 0.3, 0.1, 0.9};
+  std::vector<double> instrument_constraints = {0.0, 0.0, 1.0, 0.8};
+  std::vector<double> margin_constraints = {0.0, 0.0, 0.0, 0.0};
+  std::vector<double> intermediate_wealths = {1.0, 1.0, 1.0, 1.0, 1.0, 1.0};
+  std::vector<double> final_wealths = {1.0, 1.0};
+  std::vector<double> intermediate_goals = {0.0, 0.0, 0.0, 0.0, 0.0, 0.0};
+  std::vector<double> final_goals = {0.0, 0.0};
+  const double penalty =
+      compute_penalty(individual, instrument_constraints, margin_constraints,
+                      intermediate_wealths, final_wealths, intermediate_goals,
+                      final_goals, n_instruments, n_derivatives, n_scenarios);
 
   const double expected = 0.01;
   REQUIRE(penalty == Approx(expected).epsilon(0.000001));
@@ -406,7 +356,8 @@ TEST_CASE("optimization runs without crashing", "[genetic]")
   Random::seed(42);
 
   TransactionCosts transaction_costs;
-  InstrumentConstraints instrument_constraints = create_default_instrument_constraints();
+  InstrumentConstraints instrument_constraints =
+      create_default_instrument_constraints();
   MarginConstraints margin_constraints = create_default_margin_constraints();
 
   OptimizeOptions options;

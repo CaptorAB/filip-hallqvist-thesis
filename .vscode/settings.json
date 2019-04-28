@@ -42,6 +42,14 @@
     "streambuf": "cpp",
     "string_view": "cpp",
     "system_error": "cpp",
-    "typeinfo": "cpp"
+    "typeinfo": "cpp",
+    "cstdarg": "cpp",
+    "atomic": "cpp",
+    "complex": "cpp",
+    "list": "cpp",
+    "thread": "cpp",
+    "cinttypes": "cpp",
+    "typeindex": "cpp",
+    "valarray": "cpp"
   }
 }
