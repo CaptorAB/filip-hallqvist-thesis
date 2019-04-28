@@ -209,7 +209,8 @@ std::vector<double> compute_fitnesses(
     const int n_individuals,
     const int n_instruments,
     const int n_derivatives,
-    const int n_scenarios);
+    const int n_scenarios,
+    const int generation);
 
 /**
  * Compute the fitness of a single individual.
@@ -224,7 +225,8 @@ double compute_fitness(
     std::vector<double> &instrument_constraints,
     const int n_instruments,
     const int n_derivatives,
-    const int n_scenarios);
+    const int n_scenarios,
+    const int generation);
 
 /**
  * Compute the expected wealth of a portfolio.
@@ -245,7 +247,8 @@ double compute_penalty(
     std::vector<double> &final_goals,
     const int n_instruments,
     const int n_derivatives,
-    const int n_scenarios);
+    const int n_scenarios,
+    const int generation);
 
 /**
  * Utility function for parsing an Embind

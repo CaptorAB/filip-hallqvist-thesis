@@ -1,3 +1,4 @@
+#include <iostream>
 #include <cmath>
 #include <tuple>
 #include <vector>
@@ -8,11 +9,13 @@
 #include <include/genetic.h>
 #include <include/goals.h>
 #include <include/normal.h>
+#include <include/trees.h>
 
 using Random = effolkronium::random_static;
 
 std::vector<double>
-parse_instrument_constraints(InstrumentConstraints instrument_constraints) {
+parse_instrument_constraints(InstrumentConstraints instrument_constraints)
+{
   return std::vector<double>(
       {instrument_constraints.domestic_equity_min,
        instrument_constraints.global_equity_min,
@@ -43,7 +46,8 @@ parse_instrument_constraints(InstrumentConstraints instrument_constraints) {
 }
 
 std::vector<double>
-parse_margin_constraints(MarginConstraints margin_constraints) {
+parse_margin_constraints(MarginConstraints margin_constraints)
+{
   return std::vector<double>({margin_constraints.domestic_equity_future,
                               margin_constraints.interest_rate_swap_2y,
                               margin_constraints.interest_rate_swap_5y,
@@ -54,28 +58,37 @@ void normalize_individuals(std::vector<double> &individuals,
                            const int n_individuals,
                            const int n_instruments,
                            const int n_derivatives,
-                           const int n_scenarios) {
+                           const int n_scenarios)
+{
   const int n_non_derivatives = n_instruments - n_derivatives;
   const int n_genes = n_instruments * n_scenarios;
 
-  for (int i = 0; i < n_individuals; ++i) {
+  for (int i = 0; i < n_individuals; ++i)
+  {
     int ix = i * n_genes;
-    for (int s = 0; s < n_scenarios; ++s) {
+    for (int s = 0; s < n_scenarios; ++s)
+    {
       double total = 0.0;
       int sx = ix + (s * n_instruments);
 
-      for (int j = 0; j < n_non_derivatives; ++j) {
+      for (int j = 0; j < n_non_derivatives; ++j)
+      {
         int jx = sx + j;
         total += individuals[jx];
       }
 
-      if (total == 0.0) {
-        for (int j = 0; j < n_non_derivatives; ++j) {
+      if (total == 0.0)
+      {
+        for (int j = 0; j < n_non_derivatives; ++j)
+        {
           int jx = sx + j;
           individuals[jx] = 1.0 / n_instruments;
         }
-      } else {
-        for (int j = 0; j < n_non_derivatives; ++j) {
+      }
+      else
+      {
+        for (int j = 0; j < n_non_derivatives; ++j)
+        {
           int jx = sx + j;
           individuals[jx] = individuals[jx] / total;
         }
@@ -88,7 +101,8 @@ void normalize_individuals(std::vector<double> &individuals,
 
 std::vector<double> initialize_individuals(const int n_individuals,
                                            const int n_instruments,
-                                           const int n_scenarios) {
+                                           const int n_scenarios)
+{
   const int n_genes = n_instruments * n_scenarios;
   const int size = n_individuals * n_genes;
 
@@ -96,8 +110,10 @@ std::vector<double> initialize_individuals(const int n_individuals,
 
   // Generate genes
   int ix = 0;
-  for (int i = 0; i < n_individuals; i++) {
-    for (int j = 0; j < (n_instruments * n_scenarios); j++) {
+  for (int i = 0; i < n_individuals; i++)
+  {
+    for (int j = 0; j < (n_instruments * n_scenarios); j++)
+    {
       ix = (i * n_genes) + j;
       individuals[ix] = Random::get<std::uniform_real_distribution<>>();
     }
@@ -105,7 +121,8 @@ std::vector<double> initialize_individuals(const int n_individuals,
   return individuals;
 }
 
-std::tuple<int, int> select_roulette(std::vector<double> &fitnesses) {
+std::tuple<int, int> select_roulette(std::vector<double> &fitnesses)
+{
   {
     int i1 = Random::get<std::discrete_distribution<>>(fitnesses.begin(),
                                                        fitnesses.end());
@@ -121,18 +138,23 @@ double compute_wealth(std::vector<double> &current_weights,
                       std::vector<double> &transaction_costs,
                       const double initial_wealth,
                       const int n_instruments,
-                      const int n_derivatives) {
+                      const int n_derivatives)
+{
   const int n_non_derivatives = n_instruments - n_derivatives;
   double holdings = 0.0;
   double reallocations = 0.0;
 
   // Compute wealth from price changes
-  for (int i = 0; i < n_instruments; ++i) {
+  for (int i = 0; i < n_instruments; ++i)
+  {
     double result = 0.0;
-    if (i < n_non_derivatives) {
+    if (i < n_non_derivatives)
+    {
       result =
           initial_wealth * current_weights[i] * (1.0 + instrument_changes[i]);
-    } else {
+    }
+    else
+    {
       result = (initial_wealth * current_weights[i] *
                 (1.0 + instrument_changes[i])) -
                (initial_wealth * current_weights[i]);
@@ -141,7 +163,8 @@ double compute_wealth(std::vector<double> &current_weights,
   }
 
   // Deduct transation costs
-  for (int i = 0; i < current_weights.size(); ++i) {
+  for (int i = 0; i < current_weights.size(); ++i)
+  {
     const double diff = fabs(current_weights[i] - next_weights[i]);
     reallocations += holdings * diff * transaction_costs[i];
   }
@@ -157,7 +180,8 @@ compute_wealths(std::vector<double> &individual,
                 std::vector<double> &transaction_costs,
                 const int n_instruments,
                 const int n_derivatives,
-                const int n_scenarios) {
+                const int n_scenarios)
+{
   std::vector<double> intermediate_wealths(n_scenarios);
   intermediate_wealths[0] = 1.0;
 
@@ -165,7 +189,8 @@ compute_wealths(std::vector<double> &individual,
   int final_index = 0;
 
   // Iterate through scenarios
-  for (int i = 0; i < n_scenarios; ++i) {
+  for (int i = 0; i < n_scenarios; ++i)
+  {
     int current = i;
 
     int left = 2 * current + 1;
@@ -183,7 +208,8 @@ compute_wealths(std::vector<double> &individual,
     std::vector<double> current_weights = std::vector<double>(
         individual.begin() + cx, individual.begin() + cx + n_instruments);
 
-    if (left < n_scenarios && right < n_scenarios) {
+    if (left < n_scenarios && right < n_scenarios)
+    {
       const int lx = left * n_instruments;
       const int rx = right * n_instruments;
 
@@ -202,7 +228,9 @@ compute_wealths(std::vector<double> &individual,
       intermediate_wealths[right] = compute_wealth(
           current_weights, right_weights, current_changes, transaction_costs,
           current_wealth, n_instruments, n_derivatives);
-    } else {
+    }
+    else
+    {
       // We are at the leaf nodes of the scenario tree,
       // so compute the final wealth.
 
@@ -217,9 +245,11 @@ compute_wealths(std::vector<double> &individual,
   return std::make_tuple(intermediate_wealths, final_wealths);
 }
 
-double compute_expected_wealth(std::vector<double> &final_wealths) {
+double compute_expected_wealth(std::vector<double> &final_wealths)
+{
   double expected_wealth = 0.0;
-  for (double wealth : final_wealths) {
+  for (double wealth : final_wealths)
+  {
     expected_wealth += wealth;
   }
   expected_wealth = expected_wealth / final_wealths.size();
@@ -228,14 +258,29 @@ double compute_expected_wealth(std::vector<double> &final_wealths) {
 }
 
 double compute_expected_risk(std::vector<double> &intermediate_wealths,
-                             std::vector<double> &goals) {
+                             std::vector<double> &final_wealths,
+                             std::vector<double> &intermediate_goals,
+                             std::vector<double> &final_goals)
+{
   double risk = 0.0;
-  for (int i = 0; i < intermediate_wealths.size(); ++i) {
+
+  // Intermediate goals
+  for (int i = 0; i < intermediate_wealths.size(); ++i)
+  {
     const double step = floor(std::log2(i + 1));
     const double nodes_in_step = pow(2.0, step);
 
-    risk += pow(std::min(0.0, intermediate_wealths[i] - goals[i]), 2.0) /
-            nodes_in_step;
+    risk +=
+        pow(std::min(0.0, intermediate_wealths[i] - intermediate_goals[i]),
+            2.0) /
+        nodes_in_step;
+  }
+
+  // Final goals
+  for (int i = 0; i < final_wealths.size(); ++i)
+  {
+    risk += pow(std::min(0.0, final_wealths[i] - final_goals[i]), 2.0) /
+            final_wealths.size();
   }
   return risk;
 }
@@ -249,14 +294,16 @@ double compute_fitness(std::vector<double> &individual,
                        std::vector<double> &margin_constraints,
                        const int n_instruments,
                        const int n_derivatives,
-                       const int n_scenarios) {
+                       const int n_scenarios,
+                       const int generation)
+{
   const double wealth = compute_expected_wealth(final_wealths);
   const double penalty =
       compute_penalty(individual, instrument_constraints, margin_constraints,
                       intermediate_wealths, final_wealths, intermediate_goals,
-                      final_goals, n_instruments, n_derivatives, n_scenarios);
+                      final_goals, n_instruments, n_derivatives, n_scenarios, generation);
 
-  return std::max(0.0, wealth - 1.0 - penalty);
+  return std::max(0.0, wealth - penalty);
 }
 
 double compute_penalty(std::vector<double> &individual,
@@ -268,16 +315,20 @@ double compute_penalty(std::vector<double> &individual,
                        std::vector<double> &final_goals,
                        const int n_instruments,
                        const int n_derivatives,
-                       const int n_scenarios) {
+                       const int n_scenarios,
+                       const int generation)
+{
   const int n_non_derivatives = n_instruments - n_derivatives;
   double penalty = 0.0;
 
   // Check instrument allocation constraints
-  for (int j = 0; j < n_scenarios; ++j) {
+  for (int j = 0; j < n_scenarios; ++j)
+  {
     const int jx = j * n_instruments;
 
     // Allocation constraints
-    for (int k = 0; k < n_instruments; ++k) {
+    for (int k = 0; k < n_instruments; ++k)
+    {
       // Minimum
       penalty += pow(
           std::max(0.0, instrument_constraints[k] - individual[jx + k]), 2.0);
@@ -293,7 +344,8 @@ double compute_penalty(std::vector<double> &individual,
     double remaining_margin =
         individual[jx + CASH_INDEX] + individual[jx + BONDS_20Y_INDEX];
 
-    for (int k = 0; k < n_derivatives; ++k) {
+    for (int k = 0; k < n_derivatives; ++k)
+    {
       const int kx = n_non_derivatives + k;
       const double required_margin =
           margin_constraints[k] * individual[jx + kx];
@@ -302,7 +354,9 @@ double compute_penalty(std::vector<double> &individual,
     penalty += pow(std::min(0.0, remaining_margin), 2.0);
   }
 
-  for (int i = 0; i < intermediate_wealths.size(); ++i) {
+  // Intermediate goals
+  for (int i = 0; i < intermediate_wealths.size(); ++i)
+  {
     const double step = floor(std::log2(i + 1));
     const double nodes_in_step = pow(2.0, step);
 
@@ -312,14 +366,16 @@ double compute_penalty(std::vector<double> &individual,
         nodes_in_step;
   }
 
-  for (int i = 0; i < final_wealths.size(); ++i) {
+  // Final goals
+  for (int i = 0; i < final_wealths.size(); ++i)
+  {
     penalty += pow(std::min(0.0, final_wealths[i] - final_goals[i]), 2.0) /
                final_wealths.size();
   }
 
-  // Risk constraints
+  const double coefficient = (double)generation / ((double)generation + 30);
 
-  return penalty;
+  return 0; // coefficient * penalty;
 }
 
 std::vector<double>
@@ -333,10 +389,13 @@ compute_fitnesses(std::vector<double> &individuals,
                   const int n_individuals,
                   const int n_instruments,
                   const int n_derivatives,
-                  const int n_scenarios) {
+                  const int n_scenarios,
+                  const int generation)
+{
   const int n_genes = n_instruments * n_scenarios;
   std::vector<double> fitnesses(n_individuals);
-  for (int i = 0; i < n_individuals; ++i) {
+  for (int i = 0; i < n_individuals; ++i)
+  {
     const int ix = i * n_genes;
 
     std::vector<double> individual = std::vector<double>(
@@ -349,21 +408,26 @@ compute_fitnesses(std::vector<double> &individuals,
     std::vector<double> intermediate_wealths = std::get<0>(wealths);
     std::vector<double> final_wealths = std::get<1>(wealths);
 
+    // printf("Wealths for (%i): %.4f, %.4f\n", i, final_wealths[0], final_wealths[1]);
+
     fitnesses[i] = compute_fitness(
         individual, intermediate_wealths, final_wealths, intermediate_goals,
         final_goals, instrument_constraints, margin_constraints, n_instruments,
-        n_derivatives, n_scenarios);
+        n_derivatives, n_scenarios, generation);
   }
   return fitnesses;
 }
 
 void mutate_individuals(std::vector<double> &selected,
-                        const double mutation_rate) {
-  for (int j = 0; j < selected.size(); ++j) {
+                        const double mutation_rate)
+{
+  for (int j = 0; j < selected.size(); ++j)
+  {
     const double random = Random::get(0.0, 1.0);
-    if (random < mutation_rate) {
-      const double d = ((double)j + 1.0) / ((double)j + 3.0);
-      const double mutation = d * Random::get(-1.0, 1.0);
+    if (random < mutation_rate)
+    {
+      const double d = 1.0; //((double)j + 1.0) / ((double)j + 3.0);
+      const double mutation = d * Random::get(-0.1, 0.1);
 
       selected[j] = std::min(1.0, std::max(0.0, selected[j] + mutation));
     }
@@ -373,13 +437,16 @@ void mutate_individuals(std::vector<double> &selected,
 void crossover_individuals_scenario(std::vector<double> &selected,
                                     const int n_instruments,
                                     const int n_scenarios,
-                                    const double crossover_rate) {
+                                    const double crossover_rate)
+{
   const int n_genes = n_instruments * n_scenarios;
   const double r = Random::get(0.0, 1.0);
-  if (r < crossover_rate) {
+  if (r < crossover_rate)
+  {
     const int scenario = Random::get(0, n_scenarios - 1);
     const int ix = scenario * n_instruments;
-    for (int j = 0; j < n_genes; ++j) {
+    for (int j = 0; j < n_genes; ++j)
+    {
       const double temp = selected[j];
       selected[j] = selected[j + n_genes];
       selected[j + n_genes] = temp;
@@ -388,15 +455,18 @@ void crossover_individuals_scenario(std::vector<double> &selected,
 }
 
 void crossover_individuals(std::vector<double> &selected,
-                           const double crossover_rate) {
+                           const double crossover_rate)
+{
 
   const double r1 = Random::get(0.0, 1.0);
-  if (r1 < crossover_rate) {
+  if (r1 < crossover_rate)
+  {
     const int n_genes = selected.size() / 2;
     std::vector<double> temp(selected);
 
     // Construct first individual
-    for (int j = 0; j < n_genes; ++j) {
+    for (int j = 0; j < n_genes; ++j)
+    {
       const double r2 = Random::get(0.0, 1.0);
       if (r2 < 0.5)
         selected[j] = temp[j];
@@ -405,7 +475,8 @@ void crossover_individuals(std::vector<double> &selected,
     }
 
     // Construct Second individual
-    for (int j = 0; j < n_genes; ++j) {
+    for (int j = 0; j < n_genes; ++j)
+    {
       const double r2 = Random::get(0.0, 1.0);
       if (r2 < 0.5)
         selected[j + n_genes] = temp[j];
@@ -415,7 +486,8 @@ void crossover_individuals(std::vector<double> &selected,
   }
 }
 
-Result optimize(OptimizeOptions options) {
+Result optimize(OptimizeOptions options)
+{
   const int n_individuals = options.population_size;
   const int n_elitism_copies = options.elitism_copies;
   const int n_generations = options.generations;
@@ -448,6 +520,7 @@ Result optimize(OptimizeOptions options) {
   const int n_risks = N_RISKS;
   const int n_instruments = N_INSTRUMENTS;
   const int n_derivatives = N_DERIVATIVES;
+  const int n_trees = N_TREES;
 
   const int n_scenarios = pow(2.0, n_steps) - 1;
   const int n_genes = n_scenarios * n_instruments;
@@ -464,32 +537,95 @@ Result optimize(OptimizeOptions options) {
   normalize_individuals(individuals, n_individuals, n_instruments,
                         n_derivatives, n_scenarios);
 
-  // Generate scenarios
+  // Generate scenario trees
   std::vector<double> means = NORMAL_DEFAULT_MEANS;
   std::vector<double> standard_deviations = NORMAL_DEFAULT_STANDARD_DEVIATIONS;
   std::vector<double> correlations = NORMAL_DEFAULT_CORRELATIONS;
-  std::vector<double> instrument_changes =
-      generate_normal_scenarios(means, standard_deviations, correlations,
-                                n_risks, n_instruments, n_scenarios);
 
-  // Generate goals
-  std::tuple<std::vector<double>, std::vector<double>> goals =
-      generate_goals(instrument_changes, initial_funding_ratio,
-                     target_funding_ratio, n_scenarios, n_instruments);
+  std::vector<ScenarioTree> scenario_trees(n_trees);
+  for (int i = 0; i < n_trees; ++i)
+  {
+    ScenarioTree tree;
+    tree.instrument_changes =
+        generate_normal_scenarios(means, standard_deviations, correlations,
+                                  n_risks, n_instruments, n_scenarios);
 
-  std::vector<double> intermediate_goals =
-      std::vector<double>(n_scenarios, 1.0); // std::get<0>(goals);
-  std::vector<double> final_goals = std::get<1>(goals);
+    std::tuple<std::vector<double>, std::vector<double>> goals =
+        generate_goals(tree.instrument_changes, initial_funding_ratio,
+                       target_funding_ratio, n_scenarios, n_instruments);
 
-  for (int t = 0; t < n_generations; ++t) {
-    std::vector<double> fitnesses = compute_fitnesses(
-        individuals, instrument_changes, transaction_costs, intermediate_goals,
-        final_goals, instrument_constraints, margin_constraints, n_individuals,
-        n_instruments, n_derivatives, n_scenarios);
+    tree.intermediate_goals = std::get<0>(goals);
+    tree.final_goals = std::get<1>(goals);
+
+    scenario_trees[i] = tree;
+  }
+
+  /*
+  for (int i = 0; i < n_instruments; ++i)
+  {
+    double mean = 0.0;
+    for (int j = 0; j < n_trees; ++j)
+    {
+      for (int k = 0; k < n_scenarios; ++k)
+      {
+        const int ix = n_instruments * k + i;
+        mean += scenario_trees[j].instrument_changes[ix];
+      }
+    }
+
+    printf("Mean for instrument %i: %.4f\n", i, mean / n_trees);
+  }
+  */
+
+  for (int t = 0; t < n_generations; ++t)
+  {
+
+    std::vector<double> fitnesses(n_individuals);
+    double generation_best_fitness = 0.0;
+
+    for (int s = 0; s < n_trees; ++s)
+    {
+      ScenarioTree tree = scenario_trees[s];
+      std::vector<double> temp_fitnesses = compute_fitnesses(
+          individuals, tree.instrument_changes, transaction_costs, tree.intermediate_goals,
+          tree.final_goals, instrument_constraints, margin_constraints, n_individuals,
+          n_instruments, n_derivatives, n_scenarios, t);
+      for (int i = 0; i < n_individuals; ++i)
+      {
+        fitnesses[i] += temp_fitnesses[i];
+      }
+    }
+
+    // Compute average fitnesses
+    /*
+    for (int i = 0; i < n_individuals; ++i)
+    {
+      fitnesses[i] = fitnesses[i] / n_trees;
+    }
+    */
+
+    // Print individuals
+    /*
+    printf("Individuals in generation %i\n", t);
+    for (int i = 0; i < n_individuals; ++i)
+    {
+      for (int j = 0; j < n_instruments; ++j)
+      {
+        const int ix = i * n_instruments + j;
+        printf("%.3f ", individuals[ix]);
+      }
+      printf("\n");
+    }
+    printf("\n");
+    */
 
     // Check global best fitness
-    for (int i = 0; i < n_individuals; ++i) {
-      if (fitnesses[i] >= best_fitness) {
+    for (int i = 0; i < n_individuals; ++i)
+    {
+      if (fitnesses[i] > best_fitness || best_fitness == 0.0)
+      {
+        printf("%i %.4f %.4f (%.32f) \n", t, best_fitness, fitnesses[i], (fitnesses[i] / best_fitness) - 1.0);
+
         const int ix = i * n_genes;
         best_fitness = fitnesses[i];
         best_individual = std::vector<double>(
@@ -500,7 +636,8 @@ Result optimize(OptimizeOptions options) {
     // Clone individuals vector
     std::vector<double> offspring(individuals);
 
-    for (int i = 0; i < n_individuals; i += 2) {
+    for (int i = 0; i < n_individuals; i += 2)
+    {
       const int ix = i * n_genes;
 
       // Selection
@@ -508,29 +645,35 @@ Result optimize(OptimizeOptions options) {
       int ix1 = std::get<0>(indices) * n_genes;
       int ix2 = std::get<1>(indices) * n_genes;
 
+      // printf("Selecting %i and %i\n", ix1 / n_genes, ix2 / n_genes);
+
       std::vector<double> selected(2 * n_genes);
-      for (int j = 0; j < n_genes; ++j) {
+      for (int j = 0; j < n_genes; ++j)
+      {
         selected[j] = individuals[ix1 + j];
         selected[n_genes + j] = individuals[ix2 + j];
       }
 
       // Crossover
-      crossover_individuals_scenario(selected, n_instruments, n_scenarios,
-                                     crossover_rate);
+      // crossover_individuals(selected, crossover_rate);
 
       // Mutation
       mutate_individuals(selected, mutation_rate);
 
       // Add selected individuals
-      for (int j = 0; j < n_genes; ++j) {
-        offspring[i * n_genes] = selected[j];
+      for (int j = 0; j < n_genes; ++j)
+      {
+        offspring[ix + j] = selected[j];
+        offspring[ix + n_genes + j] = selected[n_genes + j];
       }
     }
 
     // Elitism
-    for (int i = 0; i < n_elitism_copies; ++i) {
+    for (int i = 0; i < n_elitism_copies; ++i)
+    {
       int ix = i * n_genes;
-      for (int j = 0; j < n_genes; ++j) {
+      for (int j = 0; j < n_genes; ++j)
+      {
         offspring[ix + j] = best_individual[j];
       }
     }
@@ -544,25 +687,36 @@ Result optimize(OptimizeOptions options) {
 
   Result result;
 
-  std::tuple<std::vector<double>, std::vector<double>> best_wealths =
-      compute_wealths(best_individual, instrument_changes, transaction_costs,
-                      n_instruments, n_derivatives, n_scenarios);
+  double average_expected_return = 0.0;
+  double average_expected_risk = 0.0;
 
-  std::vector<double> best_intermediate_wealths = std::get<0>(best_wealths);
-  std::vector<double> best_final_wealths = std::get<1>(best_wealths);
-  double best_expected_return =
-      compute_expected_wealth(best_final_wealths) - 1.0;
-  double best_expected_risk =
-      compute_expected_risk(best_intermediate_wealths, intermediate_goals);
+  for (int s = 0; s < n_trees; ++s)
+  {
+    ScenarioTree t = scenario_trees[s];
+    std::tuple<std::vector<double>, std::vector<double>> best_wealths =
+        compute_wealths(best_individual, t.instrument_changes, transaction_costs,
+                        n_instruments, n_derivatives, n_scenarios);
+
+    std::vector<double> best_intermediate_wealths = std::get<0>(best_wealths);
+    std::vector<double> best_final_wealths = std::get<1>(best_wealths);
+    average_expected_return +=
+        compute_expected_wealth(best_final_wealths) - 1.0;
+    average_expected_risk +=
+        compute_expected_risk(best_intermediate_wealths, best_final_wealths, t.intermediate_goals, t.final_goals);
+  }
+
+  average_expected_return /= n_trees;
+  average_expected_risk /= n_trees;
 
   result.fitness = best_fitness;
   result.individual = best_individual;
-  result.intermediate_wealths = best_intermediate_wealths;
-  result.final_wealths = best_final_wealths;
-  result.expected_return = best_expected_return;
-  result.expected_risk = best_expected_risk;
-  result.instrument_changes = instrument_changes;
-  result.goals = intermediate_goals;
+  result.expected_return = average_expected_return;
+  result.expected_risk = average_expected_risk;
+
+  printf("Best\n");
+  for (auto w : best_individual)
+    printf("%.2f ", w);
+  printf("\n");
 
   return result;
 }

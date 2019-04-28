@@ -48,6 +48,7 @@ MarginConstraints create_default_margin_constraints()
   return margin_constraints;
 }
 
+/*
 TEST_CASE("normalize_individuals correctly normalizes individuals", "[genetic]")
 {
   const int n_individuals = 3;
@@ -350,10 +351,10 @@ TEST_CASE("compute_penalty penalizes individuals with an instrument weight "
   const double expected = 0.01;
   REQUIRE(penalty == Approx(expected).epsilon(0.000001));
 }
-
+*/
 TEST_CASE("optimization runs without crashing", "[genetic]")
 {
-  Random::seed(42);
+  // Random::seed(42);
 
   TransactionCosts transaction_costs;
   InstrumentConstraints instrument_constraints =
@@ -362,9 +363,9 @@ TEST_CASE("optimization runs without crashing", "[genetic]")
 
   OptimizeOptions options;
   options.population_size = 10;
-  options.elitism_copies = 1;
-  options.generations = 10;
-  options.steps = 3;
+  options.elitism_copies = 0;
+  options.generations = 50000;
+  options.steps = 1;
   options.mutation_rate = 0.02;
   options.crossover_rate = 0.02;
   options.initial_funding_ratio = 1.0;

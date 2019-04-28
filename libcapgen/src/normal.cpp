@@ -22,6 +22,7 @@ generate_normal_risk_changes(std::vector<double> &means,
   // Generate correlated normal numbers
   for (int i = 0; i < n_risks; ++i)
   {
+    /*
     const int ix = i * n_risks;
     double correlated = 0.0;
     for (int j = 0; j < n_risks; ++j)
@@ -32,6 +33,10 @@ generate_normal_risk_changes(std::vector<double> &means,
     }
 
     risk_changes[i] = means[i] + correlated * standard_deviations[i];
+    */
+
+    risk_changes[i] = Random::get<std::normal_distribution<>>(
+        means[i], standard_deviations[i]);
   }
 
   return risk_changes;

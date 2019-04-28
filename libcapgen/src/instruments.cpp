@@ -14,7 +14,7 @@ double sample_global_equity(std::vector<double> &risk_changes)
 
 double sample_real_estate(std::vector<double> &risk_changes)
 {
-  return risk_changes[REAL_ESTATE_INDEX];
+  return risk_changes[REAL_ESTATE_RISK_INDEX];
 }
 
 double sample_alternative(std::vector<double> &risk_changes)

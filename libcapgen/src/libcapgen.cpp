@@ -131,7 +131,7 @@ EMSCRIPTEN_BINDINGS(libcapgen)
 using Random = effolkronium::random_static;
 int main(int argc, char *argv[])
 {
-    Random::seed(42);
+    // Random::seed(42);
     int result = Catch::Session().run(argc, argv);
     return result;
 }

@@ -13,8 +13,8 @@ export const Simulator = withTheme(({ theme, ...rest }) => (
       <Formik
         initialValues={{
           populationSize: 10,
-          elitismCopies: 2,
-          generations: 10,
+          elitismCopies: 0,
+          generations: 1000,
           mutationRate: 0.02,
           crossoverRate: 0.02,
           steps: 2,

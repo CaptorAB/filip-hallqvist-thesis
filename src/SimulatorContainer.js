@@ -86,6 +86,8 @@ export class SimulatorContainer extends Container {
       weights.push(result.individual.get(i));
     }
 
+    console.log(weights.map(w => w.toFixed(2)).join(" "));
+
     const state = {
       title: "Backtest",
       timestamp: format(new Date(), "yyyy-MM-dd HH:mm:ss"),
