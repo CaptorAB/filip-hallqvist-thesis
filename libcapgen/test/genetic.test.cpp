@@ -3,6 +3,7 @@
 
 #include <include/constants.h>
 #include <include/genetic.h>
+#include <include/normal.h>
 
 using Random = effolkronium::random_static;
 
@@ -359,15 +360,20 @@ TEST_CASE("optimization runs without crashing", "[genetic]")
   TransactionCosts transaction_costs;
   InstrumentConstraints instrument_constraints =
       create_default_instrument_constraints();
-  MarginConstraints margin_constraints = create_default_margin_constraints();
+
+  MarginConstraints margin_constraints;
+  margin_constraints.domestic_equity_future = 0.0;
+  margin_constraints.interest_rate_swap_2y = 0.0;
+  margin_constraints.interest_rate_swap_5y = 0.0;
+  margin_constraints.interest_rate_swap_20y = 0.0;
 
   OptimizeOptions options;
-  options.population_size = 10;
-  options.elitism_copies = 0;
+  options.population_size = 2;
+  options.elitism_copies = 1;
   options.generations = 50000;
-  options.steps = 1;
-  options.mutation_rate = 0.02;
-  options.crossover_rate = 0.02;
+  options.steps = 4;
+  options.mutation_rate = 0.5;
+  options.crossover_rate = 0.0;
   options.initial_funding_ratio = 1.0;
   options.target_funding_ratio = 1.0;
   options.transaction_costs = transaction_costs;
@@ -376,3 +382,41 @@ TEST_CASE("optimization runs without crashing", "[genetic]")
 
   Result r = optimize(options);
 }
+/*
+TEST_CASE("derp")
+{
+  const int n_instruments = 13;
+  const int n_derivatives = 4;
+  const int n_scenarios = 3;
+  const int n_risks = N_RISKS;
+
+  std::vector<double> individual = {
+      0.02, 0.32, 0.00, 0.00, 0.09, 0.18, 0.20, 0.18, 0.00, 1.00, 1.00, 1.00, 1.00, 0.10, 0.19, 0.00, 0.00, 0.25, 0.38, 0.07, 0.00, 0.00, 1.00, 1.00, 1.00, 1.00, 0.02, 0.10, 0.00, 0.00, 0.35, 0.07, 0.15, 0.32, 0.00, 1.00, 1.00, 1.00, 1.00};
+
+  std::vector<double> means = NORMAL_DEFAULT_MEANS;
+  std::vector<double> standard_deviations = NORMAL_DEFAULT_STANDARD_DEVIATIONS;
+  std::vector<double> correlations = NORMAL_DEFAULT_CORRELATIONS;
+
+  std::vector<double> instrument_changes =
+      generate_normal_scenarios(means, standard_deviations, correlations,
+                                n_risks, n_instruments, n_scenarios);
+  std::vector<double> transaction_costs = std::vector<double>(n_instruments, 0.0);
+
+  std::tuple<std::vector<double>, std::vector<double>> wealths =
+      compute_wealths(individual, instrument_changes, transaction_costs,
+                      n_instruments, n_derivatives, n_scenarios);
+
+  std::vector<double> intermediate_wealths = std::get<0>(wealths);
+  std::vector<double> final_wealths = std::get<1>(wealths);
+
+  printf("Intermediate\n");
+  for (auto w : intermediate_wealths)
+    printf("%.2f ", w);
+  printf("\n");
+
+  printf("Final\n");
+  for (auto w : final_wealths)
+    printf("%.2f ", w);
+  printf("\n");
+}
+*/

@@ -35,7 +35,7 @@ const std::vector<std::string> RISK_NAMES = {
 const int N_RISKS = 8;
 const int N_INSTRUMENTS = 13;
 const int N_DERIVATIVES = 4;
-const int N_TREES = 1;
+const int N_TREES = 100;
 
 const int DOMESTIC_EQUITY_INDEX = 0;
 const int GLOBAL_EQUITY_INDEX = 1;
@@ -63,24 +63,24 @@ const int CREDIT_RISK_INDEX = 7;
 
 // Normal scenarios
 const std::vector<double> NORMAL_DEFAULT_MEANS = {
-    -0.5,
-    -0.5,
-    0.5,
-    -0.5,
-    -0.5,
-    -0.5,
-    -0.5,
-    -0.5};
-
-const std::vector<double> NORMAL_DEFAULT_STANDARD_DEVIATIONS = {
     0.0,
     0.0,
-    0.0,
+    0.1,
     0.0,
     0.0,
     0.0,
     0.0,
     0.0};
+
+const std::vector<double> NORMAL_DEFAULT_STANDARD_DEVIATIONS = {
+    0.1,
+    0.1,
+    0.1,
+    0.1,
+    0.1,
+    0.1,
+    0.1,
+    0.1};
 
 const std::vector<double> NORMAL_DEFAULT_CORRELATIONS = {
     1.0, 0.0004, 0.0, -0.0172, 0.0034, 0.0176, 0.0, 0.0155,

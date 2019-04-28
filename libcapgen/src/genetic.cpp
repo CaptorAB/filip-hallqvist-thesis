@@ -148,16 +148,14 @@ double compute_wealth(std::vector<double> &current_weights,
   for (int i = 0; i < n_instruments; ++i)
   {
     double result = 0.0;
+    // printf("(%i) initial = %.2f, current = %.2f, change = %.2f \n", i, initial_wealth, current_weights[i], instrument_changes[i]);
     if (i < n_non_derivatives)
     {
-      result =
-          initial_wealth * current_weights[i] * (1.0 + instrument_changes[i]);
+      result = initial_wealth * current_weights[i] * (1.0 + instrument_changes[i]);
     }
     else
     {
-      result = (initial_wealth * current_weights[i] *
-                (1.0 + instrument_changes[i])) -
-               (initial_wealth * current_weights[i]);
+      result = initial_wealth * current_weights[i] * instrument_changes[i];
     }
     holdings += result;
   }
@@ -171,7 +169,7 @@ double compute_wealth(std::vector<double> &current_weights,
 
   const double wealth = holdings - reallocations;
 
-  return wealth;
+  return std::max(0.0, wealth);
 }
 
 std::tuple<std::vector<double>, std::vector<double>>
@@ -220,11 +218,13 @@ compute_wealths(std::vector<double> &individual,
           individual.begin() + rx, individual.begin() + rx + n_instruments);
 
       // Evaluate left child
+      // printf("Evaluating left child %i \n", left);
       intermediate_wealths[left] = compute_wealth(
           current_weights, left_weights, current_changes, transaction_costs,
           current_wealth, n_instruments, n_derivatives);
 
       // Evaluate right child
+      // printf("Evaluating right child %i \n", right);
       intermediate_wealths[right] = compute_wealth(
           current_weights, right_weights, current_changes, transaction_costs,
           current_wealth, n_instruments, n_derivatives);
@@ -233,6 +233,8 @@ compute_wealths(std::vector<double> &individual,
     {
       // We are at the leaf nodes of the scenario tree,
       // so compute the final wealth.
+
+      // printf("Computing final index %i \n", final_index);
 
       final_wealths[final_index] = compute_wealth(
           current_weights, current_weights, current_changes, transaction_costs,
@@ -375,7 +377,7 @@ double compute_penalty(std::vector<double> &individual,
 
   const double coefficient = (double)generation / ((double)generation + 30);
 
-  return 0; // coefficient * penalty;
+  return penalty;
 }
 
 std::vector<double>
@@ -560,7 +562,6 @@ Result optimize(OptimizeOptions options)
     scenario_trees[i] = tree;
   }
 
-  /*
   for (int i = 0; i < n_instruments; ++i)
   {
     double mean = 0.0;
@@ -573,9 +574,8 @@ Result optimize(OptimizeOptions options)
       }
     }
 
-    printf("Mean for instrument %i: %.4f\n", i, mean / n_trees);
+    printf("Mean for instrument %i: %.4f\n", i, mean / (n_trees * n_scenarios));
   }
-  */
 
   for (int t = 0; t < n_generations; ++t)
   {
@@ -597,23 +597,25 @@ Result optimize(OptimizeOptions options)
     }
 
     // Compute average fitnesses
-    /*
     for (int i = 0; i < n_individuals; ++i)
     {
       fitnesses[i] = fitnesses[i] / n_trees;
     }
-    */
 
     // Print individuals
     /*
     printf("Individuals in generation %i\n", t);
     for (int i = 0; i < n_individuals; ++i)
     {
-      for (int j = 0; j < n_instruments; ++j)
+      // for (int j = 0; j < n_instruments; ++j)
+      // {
+      const int ix = i * n_genes;
+      for (int k = 0; k < n_scenarios; ++k)
       {
-        const int ix = i * n_instruments + j;
-        printf("%.3f ", individuals[ix]);
+        const int jx = ix + k * n_instruments + REAL_ESTATE_INDEX;
+        printf("[%i]=%.4f, ", jx, individuals[jx]);
       }
+      // }
       printf("\n");
     }
     printf("\n");
@@ -628,8 +630,10 @@ Result optimize(OptimizeOptions options)
 
         const int ix = i * n_genes;
         best_fitness = fitnesses[i];
-        best_individual = std::vector<double>(
-            individuals.begin() + ix, individuals.begin() + ix + n_genes);
+        for (int j = 0; j < n_genes; ++j)
+        {
+          best_individual[j] = individuals[ix + j];
+        }
       }
     }
 
@@ -655,7 +659,11 @@ Result optimize(OptimizeOptions options)
       }
 
       // Crossover
-      // crossover_individuals(selected, crossover_rate);
+      crossover_individuals_scenario(
+          selected,
+          n_instruments,
+          n_scenarios,
+          crossover_rate);
 
       // Mutation
       mutate_individuals(selected, mutation_rate);
@@ -713,9 +721,17 @@ Result optimize(OptimizeOptions options)
   result.expected_return = average_expected_return;
   result.expected_risk = average_expected_risk;
 
-  printf("Best\n");
+  int i = 0;
+  printf("Best: %.2f%%\n", 100 * average_expected_return);
   for (auto w : best_individual)
+  {
+    i = (i + 1) % n_instruments;
     printf("%.2f ", w);
+    if (i == 0)
+    {
+      printf("\n");
+    }
+  }
   printf("\n");
 
   return result;
