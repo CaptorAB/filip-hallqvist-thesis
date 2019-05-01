@@ -352,7 +352,6 @@ TEST_CASE("compute_penalty penalizes individuals with an instrument weight "
   const double expected = 0.01;
   REQUIRE(penalty == Approx(expected).epsilon(0.000001));
 }
-*/
 TEST_CASE("optimization runs without crashing", "[genetic]")
 {
   // Random::seed(42);

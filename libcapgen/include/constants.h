@@ -92,4 +92,6 @@ const std::vector<double> NORMAL_DEFAULT_CORRELATIONS = {
     0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 1.0, 0.0,
     0.0155, 0.201, 0.0, -0.0185, 0.0343, 0.01, 0.0, 1.0};
 
+const double PAR_CREDIT_ADJUSTMENT = -0.0035;
+
 #endif
