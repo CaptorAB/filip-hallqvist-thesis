@@ -3,8 +3,14 @@
 
 #include <vector>
 
-void adjust_credit_par_rates(std::vector<double> &par_rates);
+using namespace std;
 
-std::vector<double> bootstrap(std::vector<double> &par_rates);
+void adjust_credit_par_rates(vector<double> &par_rates);
+
+vector<double> bootstrap_discount_factors(vector<double> &par_rates);
+
+vector<double> compute_forward_rates(vector<double> &discount_factors);
+
+void adjust_forward_rates_ufr(vector<double> &forward_rates);
 
 #endif

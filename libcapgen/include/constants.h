@@ -122,5 +122,6 @@ const std::vector<double> DEFAULT_PAR_RATES = {
     0.04100};
 
 const double PAR_CREDIT_ADJUSTMENT = -0.0035;
+const double ULTIMATE_FORWARD_RATE = 0.042;
 
 #endif

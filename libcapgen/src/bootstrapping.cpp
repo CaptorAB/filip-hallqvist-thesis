@@ -65,11 +65,9 @@ newton_raphson_minimize(
   while (t <= tb)
   {
     const double v = compute_intermediate_discount_factor(t, ta, tb, df_ta, df_tb);
-    printf("computed discount factor at %i is %.4f\n", t, v);
     s += v;
     t++;
   }
-  printf("p = %.4f, s = %.4f, df_tb = %.4f\n", p, s, df_tb);
   return p * s - (1.0 - df_tb);
 }
 
@@ -84,19 +82,14 @@ newton_raphson(
   const int max_iterations = 20;
   const double tolerance = 0.00001;
 
-  printf("Computing for %i\n", tb);
   int i = 0;
   double df_tb = df_ta; // Initial guess
   do
   {
 
-    printf("Computing f\n");
     const double f = newton_raphson_minimize(p, s, df_ta, df_tb, ta, tb);
-    printf("Computing df\n");
     const double df = (newton_raphson_minimize(p, s, df_ta, df_tb + 0.1, ta, tb) - f) / 0.1;
     const double d = f / df;
-
-    printf("f = %.4f, df = %.4f, d = %.4f\n", f, df, d);
 
     if (abs(d) < tolerance)
     {
@@ -109,7 +102,43 @@ newton_raphson(
 }
 
 vector<double>
-bootstrap(
+compute_forward_rates(
+    vector<double> &discount_factors)
+{
+  vector<double> forward_rates(discount_factors.size() - 1);
+  for (int i = 1; i < discount_factors.size(); ++i)
+  {
+    forward_rates[i - 1] = (discount_factors[i - 1] / discount_factors[i]) - 1.0;
+  }
+  return forward_rates;
+}
+
+void adjust_forward_rates_ufr(
+    vector<double> &forward_rates)
+{
+  const int T1 = 10;
+  const int T2 = 20;
+
+  for (int t = T1; t < forward_rates.size(); ++t)
+  {
+    const int T = t + 1;
+    double w = 0.0;
+
+    if (T1 < T && T <= T2)
+    {
+      w = ((double)(T - T1)) / ((double)(T2 - T1 + 1.0));
+    }
+    else if (T2 < T)
+    {
+      w = 1.0;
+    }
+
+    forward_rates[t] = (1.0 - w) * forward_rates[t] + (w * ULTIMATE_FORWARD_RATE);
+  }
+}
+
+vector<double>
+bootstrap_discount_factors(
     vector<double> &par_rates)
 {
   const int T = par_rates.size();
@@ -121,7 +150,6 @@ bootstrap(
   int t = 1;
   while (t < T)
   {
-    printf("t = %i\n", t);
     double p = par_rates[t];
     if (p == -1.0)
     {
@@ -134,8 +162,6 @@ bootstrap(
 
       const double df_ta = discount_factors[ta];
       const double df_tb = newton_raphson(p, s, df_ta, ta, tb);
-
-      printf("df_tb = %.4f\n", df_tb);
 
       // Add discount factors
       int i = t;
