@@ -29,17 +29,17 @@ double sample_credit(std::vector<double> &risk_changes)
 
 double sample_bonds_2y(std::vector<double> &risk_changes)
 {
-  return risk_changes[INTEREST_RATE_2Y_RISK_INDEX];
+  return 0.0;
 }
 
 double sample_bonds_5y(std::vector<double> &risk_changes)
 {
-  return risk_changes[INTEREST_RATE_5Y_RISK_INDEX];
+  return 0.0;
 }
 
 double sample_bonds_20y(std::vector<double> &risk_changes)
 {
-  return risk_changes[INTEREST_RATE_20Y_RISK_INDEX];
+  return 0.0;
 }
 
 double sample_cash(std::vector<double> &risk_changes)
@@ -54,17 +54,17 @@ double sample_domestic_equity_future(std::vector<double> &risk_changes)
 
 double sample_interest_rate_swap_2y(std::vector<double> &risk_changes)
 {
-  return risk_changes[INTEREST_RATE_2Y_RISK_INDEX];
+  return 0.0;
 }
 
 double sample_interest_rate_swap_5y(std::vector<double> &risk_changes)
 {
-  return risk_changes[INTEREST_RATE_5Y_RISK_INDEX];
+  return 0.0;
 }
 
 double sample_interest_rate_swap_20y(std::vector<double> &risk_changes)
 {
-  return risk_changes[INTEREST_RATE_20Y_RISK_INDEX];
+  return 0.0;
 }
 
 double generate_instrument_change(

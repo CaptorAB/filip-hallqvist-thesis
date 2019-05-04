@@ -3,6 +3,8 @@
 
 #include <include/constants.h>
 
+using namespace std;
+
 void adjust_credit_par_rates(std::vector<double> &par_rates)
 {
   for (int i = 0; i < par_rates.size(); ++i)
@@ -14,119 +16,145 @@ void adjust_credit_par_rates(std::vector<double> &par_rates)
   }
 }
 
-double g(
-    const double z,
-    const double par,
-    std::vector<double> &dfs,
-    const int b)
-{
-  double sum = 0.0;
-  for (int i = 0; i < b; ++i)
-  {
-    sum += dfs[i];
-  }
-  return pow(par * sum - (1.0 - (1.0 / (1.0 + pow(z, b)))), 2.0);
-}
-
-double g_prime(
-    const double z,
-    const double par,
-    std::vector<double> &dfs,
-    const int a,
-    const int b)
-{
-  double sum = 0.0;
-  for (int t = a + 1; t < b; ++t)
-  {
-    sum += pow(dfs[a], ((b - t + a) / (b - a))) * pow((1.0 + pow(z, b)), (t - a) / (b - a));
-  }
-  return par * sum - pow(1.0 + pow(z, b), -2.0);
-}
-
 double f(
-    const double z,
-    const double par,
-    std::vector<double> &dfs,
-    const int b)
-{
-  return pow(g(z, par, dfs, b), 2.0);
-}
-
-double f_prime(
-    const double z,
-    const double par,
-    std::vector<double> &dfs,
+    const double r,
+    const double p,
+    std::vector<double> &df,
     const int a,
     const int b)
 {
-  return 2.0 * f(z, par, dfs, b) * g_prime(z, par, dfs, a, b);
+  double dfb = exp(-1.0 * r * b);
+  double fr = -1.0 * (log(dfb) - log(df[a])) / (b - a);
+  double sum = 0.0;
+
+  for (int t = 0; t <= a; ++t)
+  {
+    sum += df[t];
+  }
+  for (int t = a + 1; t <= b; ++t)
+  {
+    sum += df[a] / pow(1.0 + fr, t - a);
+  }
+
+  sum *= p;
+  return sum - (1 - df[b]);
 }
 
-std::vector<double> compute_dfs_from_pars(std::vector<double> &pars)
+double compute_intermediate_discount_factor(
+    const int t,
+    const int ta,
+    const int tb,
+    const double df_ta,
+    const double df_tb)
 {
-  std::vector<double> dfs(pars.size());
-  dfs[0] = 1.0;
-  int i = 1;
-  while (i < dfs.size())
+  const double k = ((double)(t - ta)) / ((double)(tb - ta));
+  return pow(df_ta, 1.0 - k) * pow(df_tb, k);
+}
+
+double
+newton_raphson_minimize(
+    const double p,
+    const double s0,
+    const double df_ta,
+    const double df_tb,
+    const int ta,
+    const int tb)
+{
+  double s = s0;
+  int t = ta + 1;
+  while (t <= tb)
   {
-    if (pars[i] == -1.0)
+    const double v = compute_intermediate_discount_factor(t, ta, tb, df_ta, df_tb);
+    printf("computed discount factor at %i is %.4f\n", t, v);
+    s += v;
+    t++;
+  }
+  printf("p = %.4f, s = %.4f, df_tb = %.4f\n", p, s, df_tb);
+  return p * s - (1.0 - df_tb);
+}
+
+double
+newton_raphson(
+    const double p,
+    const double s,
+    const double df_ta,
+    const int ta,
+    const int tb)
+{
+  const int max_iterations = 20;
+  const double tolerance = 0.00001;
+
+  printf("Computing for %i\n", tb);
+  int i = 0;
+  double df_tb = df_ta; // Initial guess
+  do
+  {
+
+    printf("Computing f\n");
+    const double f = newton_raphson_minimize(p, s, df_ta, df_tb, ta, tb);
+    printf("Computing df\n");
+    const double df = (newton_raphson_minimize(p, s, df_ta, df_tb + 0.1, ta, tb) - f) / 0.1;
+    const double d = f / df;
+
+    printf("f = %.4f, df = %.4f, d = %.4f\n", f, df, d);
+
+    if (abs(d) < tolerance)
     {
-      int j = i + 1;
-      while (pars[j] == -1.0)
+      return df_tb;
+    }
+
+    df_tb = df_tb - d;
+
+  } while (i++ < max_iterations);
+}
+
+vector<double>
+bootstrap(
+    vector<double> &par_rates)
+{
+  const int T = par_rates.size();
+  vector<double> discount_factors(T);
+  discount_factors[0] = 1.0;
+
+  double s = 0.0;
+
+  int t = 1;
+  while (t < T)
+  {
+    printf("t = %i\n", t);
+    double p = par_rates[t];
+    if (p == -1.0)
+    {
+      int ta = t - 1;
+      int tb = t + 1;
+      while (par_rates[tb] == -1.0)
+        tb++;
+
+      p = par_rates[tb];
+
+      const double df_ta = discount_factors[ta];
+      const double df_tb = newton_raphson(p, s, df_ta, ta, tb);
+
+      printf("df_tb = %.4f\n", df_tb);
+
+      // Add discount factors
+      int i = t;
+      while (i <= tb)
       {
-        j++;
+        discount_factors[i] = compute_intermediate_discount_factor(i, ta, tb, df_ta, df_tb);
+        s += discount_factors[i];
+        i++;
       }
 
-      // We have known par rates at i - 1 and j
-      const int a = i - 1;
-      const int b = j;
-      printf("We have known par rates at %i and %i\n", a, b);
-
-      // Run Newton-Raphson
-      int runs = 0;
-      double epsilon = 0.00001;
-      double d = 0.0;
-      double z = 1.0;
-
-      do
-      {
-        // Set temporary discount factors
-        int t = a + 1;
-        printf("dfs ");
-        while (t <= b)
-        {
-          dfs[t] = pow(dfs[a], ((b - t + a) / (b - a))) * pow(1.0 + z, -b * (t - a) / (b - a));
-          printf("[%i] = %.4f ", t, dfs[t]);
-          t++;
-        }
-
-        printf("\n");
-
-        d = f(z, pars[b], dfs, b) / f_prime(z, pars[b], dfs, a, b);
-        printf("d = %.6f, z = %.6f\n", d, z);
-        z = z - d;
-        if (runs++ > 20)
-        {
-          break;
-        }
-      } while (abs(d) > epsilon);
-
-      i = b + 1;
+      t = tb + 1;
     }
     else
     {
-      double sum = 0.0;
-      int a = 1;
-      int b = i;
-      while (a < b)
-      {
-        sum += dfs[a];
-        a++;
-      }
-      printf("Sum is %.6f\n", sum);
-      dfs[i] = (1.0 - pars[i] * sum) / (1.0 + pars[i]);
-      i++;
+      discount_factors[t] = (1.0 - p * s) / (1.0 + p);
+      s += discount_factors[t];
+      t++;
     }
   }
-  return dfs;
+
+  return discount_factors;
 }

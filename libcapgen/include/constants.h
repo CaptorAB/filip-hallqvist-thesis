@@ -4,6 +4,8 @@
 #include <vector>
 #include <string>
 
+const double NEGATIVE_FORWARD_RATE_ADJUSTMENT = 0.01;
+
 // Instrument names
 const std::vector<std::string> INSTRUMENT_NAMES = {
     "Domestic Equity",
@@ -27,12 +29,10 @@ const std::vector<std::string> RISK_NAMES = {
     "Real Estate Risk",
     "Alternative Risk",
     "Credit Risk",
-    "Interest Rate 2Y Risk",
-    "Interest Rate 5Y Risk",
-    "Interest Rate 20Y Risk"};
+    "Interest Rate Risk"};
 
 // Instrument indices
-const int N_RISKS = 8;
+const int N_RISKS = 6;
 const int N_INSTRUMENTS = 13;
 const int N_DERIVATIVES = 4;
 const int N_TREES = 100;
@@ -51,15 +51,22 @@ const int INTEREST_RATE_SWAP_2Y_INDEX = 10;
 const int INTEREST_RATE_SWAP_5Y_INDEX = 11;
 const int INTEREST_RATE_SWAP_20Y_INDEX = 12;
 
+// Correlation indices
+const int DOMESTIC_MARKET_CORRELATION_INDEX = 0;
+const int GLOBAL_MARKET_CORRELATION_INDEX = 1;
+const int REAL_ESTATE_CORRELATION_INDEX = 2;
+const int ALTERNATIVE_CORRELATION_INDEX = 3;
+const int CREDIT_CORRELATION_INDEX = 4;
+const int INTEREST_RATE_CORRELATION_INDEX = 5;
+
 // Risk indices
 const int DOMESTIC_MARKET_RISK_INDEX = 0;
 const int GLOBAL_MARKET_RISK_INDEX = 1;
 const int REAL_ESTATE_RISK_INDEX = 2;
 const int ALTERNATIVE_RISK_INDEX = 3;
-const int INTEREST_RATE_2Y_RISK_INDEX = 4;
-const int INTEREST_RATE_5Y_RISK_INDEX = 5;
-const int INTEREST_RATE_20Y_RISK_INDEX = 6;
-const int CREDIT_RISK_INDEX = 7;
+const int CREDIT_RISK_INDEX = 4;
+const int FORWARD_RATE_RISK_START_INDEX = 5;
+const int FORWARD_RATE_RISK_END_INDEX = 25;
 
 // Normal scenarios
 const std::vector<double> NORMAL_DEFAULT_MEANS = {
@@ -91,6 +98,28 @@ const std::vector<double> NORMAL_DEFAULT_CORRELATIONS = {
     0.0176, 0.0202, 0.0, 0.0151, -0.0185, 1.0, 0.0, 0.0100,
     0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 1.0, 0.0,
     0.0155, 0.201, 0.0, -0.0185, 0.0343, 0.01, 0.0, 1.0};
+
+const std::vector<double> DEFAULT_PAR_RATES = {
+    0.00970,
+    0.01388,
+    0.01918,
+    0.02402,
+    0.02055,
+    0.02848,
+    0.02975,
+    0.03047,
+    0.03100,
+    0.03091,
+    0.03192,
+    0.03293,
+    0.03375,
+    0.03478,
+    0.03581,
+    0.03699,
+    0.03799,
+    0.03899,
+    0.03999,
+    0.04100};
 
 const double PAR_CREDIT_ADJUSTMENT = -0.0035;
 

@@ -24,8 +24,7 @@ TEST_CASE("adjust_credit_par_rates", "[bootstrapping]")
   }
 }
 
-/*
-TEST_CASE("compute_dfs_from_pars", "[bootstrapping]")
+TEST_CASE("bootstrap", "[bootstrapping]")
 {
   std::vector<double> pars = {
       0.0,
@@ -49,6 +48,7 @@ TEST_CASE("compute_dfs_from_pars", "[bootstrapping]")
       -1.0,
       -1.0,
       0.02690};
+
   std::vector<double> expected_dfs = {
       1.0,
       0.9904,
@@ -72,11 +72,10 @@ TEST_CASE("compute_dfs_from_pars", "[bootstrapping]")
       0.5977,
       0.5797};
 
-  std::vector<double> actual_dfs = compute_dfs_from_pars(pars);
+  std::vector<double> actual_dfs = bootstrap(pars);
 
   for (int i = 0; i < expected_dfs.size(); ++i)
   {
     REQUIRE(actual_dfs[i] == Approx(expected_dfs[i]).margin(0.0001));
   }
 }
-*/

@@ -5,6 +5,6 @@
 
 void adjust_credit_par_rates(std::vector<double> &par_rates);
 
-std::vector<double> compute_dfs_from_pars(std::vector<double> &par_rates);
+std::vector<double> bootstrap(std::vector<double> &par_rates);
 
 #endif
