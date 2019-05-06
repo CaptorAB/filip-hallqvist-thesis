@@ -7,8 +7,8 @@
 using namespace std;
 using namespace stats;
 
-/*
-double sample_nln(
+double
+sample_nln(
     const double n1,
     const double n2,
     const double sigma,
@@ -20,7 +20,8 @@ double sample_nln(
   return exp(0.5 * eta) * phi;
 }
 
-double standardize_nln(
+double
+standardize_nln(
     const double u,
     const double sigma,
     const double rho)
@@ -42,7 +43,8 @@ sample_uniform_randoms(
   return r;
 }
 
-vector<double> normalize_uniform_randoms(
+vector<double>
+normalize_uniform_randoms(
     vector<double> &uniforms)
 {
   vector<double> normalized(uniforms.size());
@@ -57,9 +59,9 @@ vector<double>
 correlate_normal_randoms(
     vector<double> &normals,
     vector<double> &correlations,
-    const int n_market_risks)
+    const int n_generic_risks)
 {
-  const int n_correlations = n_market_risks + 1;
+  const int n_correlations = n_generic_risks + 1;
   const int n_randoms = (2 * n_correlations);
 
   vector<double> cholesky = compute_cholesky(correlations, n_correlations);
@@ -79,19 +81,19 @@ correlate_normal_randoms(
 }
 
 vector<double>
-sample_nlns(
+sample_standardized_nlns(
     vector<double> &sigmas,
     vector<double> &rhos,
     vector<double> &normals,
-    const int n_market_risks)
+    const int n_generic_risks)
 {
-  const int n_nlns_per_interest_rate_risk = 3;
-  const int n_nlns_per_market_risk = 1;
+  const int n_nlns_per_forward_rate_risk = 3;
+  const int n_nlns_per_generic_risk = 1;
 
-  vector<double> nlns(n_nlns_per_market_risk + n_nlns_per_interest_rate_risk);
+  vector<double> nlns(n_nlns_per_generic_risk + n_nlns_per_forward_rate_risk);
 
   // Sample nlns for market risks
-  for (int i = 0; i < n_market_risks; ++i)
+  for (int i = 0; i < n_generic_risks; ++i)
   {
     const int n1 = normals[i];
     const int n2 = normals[(normals.size() / 2) + i];
@@ -100,132 +102,190 @@ sample_nlns(
   }
 
   // Sample three nlns for interest rate risks
-  for (int i = 0; i < n_nlns_per_interest_rate_risk; ++i)
+  for (int i = 0; i < n_nlns_per_forward_rate_risk; ++i)
   {
-    const int n1 = normals[n_market_risks + i];
-    const int n2 = normals[(normals.size() / 2) + n_market_risks + i];
-    const double u = sample_nln(n1, n2, sigmas[n_market_risks + 1], rhos[n_market_risks + 1]);
-    nlns[n_nlns_per_market_risk + i] = standardize_nln(u, sigmas[n_market_risks + 1], rhos[n_market_risks + 1]);
+    const int n1 = normals[n_generic_risks + i];
+    const int n2 = normals[(normals.size() / 2) + n_generic_risks + i];
+    const double u = sample_nln(n1, n2, sigmas[n_generic_risks + 1], rhos[n_generic_risks + 1]);
+    nlns[n_nlns_per_generic_risk + i] = standardize_nln(u, sigmas[n_generic_risks + 1], rhos[n_generic_risks + 1]);
   }
 
   return nlns;
 }
 
 vector<double>
-generate_shocks(
+generate_epsilons(
+    vector<double> &stds,
     vector<double> &sigmas,
     vector<double> &rhos,
+    vector<double> &eigenvalues,
+    vector<double> &eigenvectors,
     vector<double> &correlations,
-    vector<double> &pca_variances,
-    vector<double> &pca_loadings,
+    const int n_pca_components,
     const int n_scenarios,
-    const int n_market_risks)
+    const int n_generic_risks,
+    const int n_forward_rate_risks)
 {
-  vector<double> shocks(n_scenarios * (n_market_risks + 19));
+  const int n_risks = n_generic_risks + n_forward_rate_risks;
+  vector<double> epsilons(n_scenarios * n_risks);
   for (int i = 0; i < n_scenarios; ++i)
   {
     const int ix = i * n_scenarios;
 
-    vector<double> uniforms = sample_uniform_randoms(2 * n_market_risks + 6);
+    vector<double> uniforms = sample_uniform_randoms(2 * (n_generic_risks * n_pca_components));
     vector<double> normals = normalize_uniform_randoms(uniforms);
-    vector<double> normals_correlated = correlate_normal_randoms(normals, correlations, n_market_risks);
-    vector<double> nlns = sample_nlns(sigmas, rhos, normals, n_market_risks);
+    vector<double> normals_correlated = correlate_normal_randoms(normals, correlations, n_generic_risks);
+    vector<double> nlns = sample_standardized_nlns(sigmas, rhos, normals, n_generic_risks);
 
-    for (int j = 0; j < n_market_risks; ++j) {
-      shocks[ix + j] = sample_market_risk_change();
+    const double tau = floor(log2(i + 1));
+
+    vector<double> generic_risk_nlns = vector<double>(nlns.begin(), nlns.begin() + n_generic_risks);
+    vector<double> forward_rate_risk_nlns = vector<double>(nlns.begin() + n_generic_risks, nlns.end());
+
+    vector<double> generic_risk_epsilons = compute_generic_risk_epsilons(
+        stds,
+        generic_risk_nlns,
+        tau,
+        n_generic_risks);
+
+    vector<double> forward_rate_risk_epsilons = compute_forward_rate_risk_epsilons(
+        eigenvalues,
+        eigenvectors,
+        forward_rate_risk_nlns,
+        tau,
+        n_pca_components,
+        n_forward_rate_risks);
+
+    for (int j = 0; j < n_generic_risks; ++j)
+    {
+      epsilons[j] = generic_risk_epsilons[j];
+    }
+    for (int j = 0; j < n_forward_rate_risks; ++j)
+    {
+      epsilons[j] = forward_rate_risk_epsilons[j];
     }
 
-    vector<double> interest_rate_nlns = {
-      nlns[n_market_risks],
-      nlns[n_market_risks + 1],
-      nlns[n_market_risks + 2]
-    };
-
+    return epsilons;
   }
 }
 
-/*
+vector<double>
+compute_generic_risk_epsilons(
+    vector<double> &stds,
+    vector<double> &nlns,
+    const double tau,
+    const int n_generic_risks)
+{
+  vector<double> epsilons(n_generic_risks);
+  for (int i = 0; i < n_generic_risks; ++i)
+  {
+    epsilons[i] = stds[i] * sqrt(tau) * nlns[i];
+  }
+  return epsilons;
+}
+
+vector<double>
+compute_forward_rate_risk_epsilons(
+    vector<double> &eigenvalues,
+    vector<double> &eigenvectors,
+    vector<double> &nlns,
+    const double tau,
+    const int n_pca_components,
+    const int n_forward_rate_risks)
+{
+  vector<double> epsilons(n_forward_rate_risks);
+  for (int i = 0; i < n_forward_rate_risks; ++i)
+  {
+    for (int j = 0; j < n_pca_components; ++j)
+    {
+      const int jx = (i * eigenvalues.size()) + j;
+      epsilons[i] += nlns[j] * sqrt(eigenvalues[j]) * sqrt(tau) * eigenvectors[jx];
+    }
+  }
+  return epsilons;
+}
+
+vector<double>
+compute_gammas(
+    vector<double> &epsilons,
+    const int n_risks,
+    const int n_scenarios)
+{
+  vector<double> gammas(n_risks);
+
+  for (int i = 0; i < n_scenarios; ++i)
+  {
+    const int ix = i * n_scenarios;
+    for (int j = 0; j < n_risks; ++j)
+    {
+      gammas[j] += epsilons[ix + j];
+    }
+  }
+
+  for (int j = 0; j < n_risks; ++j)
+  {
+    gammas[j] /= (double)n_scenarios;
+  }
+
+  return gammas;
+}
+
+double
+evaluate_black_76(
+    const double mean,
+    const double gamma,
+    const double epsilon)
+{
+  return mean * exp(-gamma + epsilon);
+}
+
 vector<double>
 generate_risk_changes(
-    vector<double> &market_means,
-    vector<double> &market_stds,
+    vector<double> &generic_means,
+    vector<double> &generic_stds,
     vector<double> &forward_rate_means,
-    vector<double> &forward_rate_pca_variances,
-    vector<double> &forward_rate_pca_loadings,
+    vector<double> &forward_rate_eigenvalues,
+    vector<double> &forward_rate_eigenvectors,
     vector<double> &correlations,
     vector<double> &sigmas,
     vector<double> &rhos,
-    vector<double> &gammas,
-    const int n_risks,
+    const int n_generic_risks,
+    const int n_forward_rate_risks,
+    const int n_pca_components,
+    const int n_scenarios,
     const int n_correlations)
 {
-  vector<double> risk_changes(n_risks);
+  const int n_risks = n_generic_risks + n_forward_rate_risks;
+  vector<double> risk_values(n_scenarios * n_risks);
+  vector<double> risk_changes(n_scenarios * n_risks);
 
-  vector<double> cholesky = compute_cholesky(correlations, n_risks);
+  vector<double> epsilons = generate_epsilons(
+      generic_stds,
+      sigmas,
+      rhos,
+      forward_rate_eigenvalues,
+      forward_rate_eigenvectors,
+      correlations,
+      n_pca_components,
+      n_scenarios,
+      n_generic_risks,
+      n_forward_rate_risks);
 
-  // Generate correlated normal numbers
-  for (int i = 0; i < n_correlations; ++i)
+  vector<double> gammas = compute_gammas(epsilons, n_risks, n_scenarios);
+
+  for (int i = 0; i < n_scenarios; ++i)
   {
-    const int ix = i * n_correlations;
-
-    if (i == INTEREST_RATE_CORRELATION_INDEX)
+    const int ix = i * n_scenarios;
+    for (int j = 0; j < n_risks; ++j)
     {
-      double r1 = 0.0;
-      double r2 = 0.0;
-      double r3 = rnorm(0.0, 1.0);
-      double r4 = rnorm(0.0, 1.0);
-      double r5 = rnorm(0.0, 1.0);
-      double r6 = rnorm(0.0, 1.0);
-
-      for (int j = 0; j < n_risks; ++j)
-      {
-        r1 += rnorm(0.0, 1.0) * cholesky[ix + j];
-        r2 += rnorm(0.0, 1.0) * cholesky[ix + j];
-      }
-
-      const double u1 = sample_nln(r1, r2, sigmas[i], rhos[i]);
-      const double u2 = sample_nln(r3, r4, sigmas[i], rhos[i]);
-      const double u3 = sample_nln(r5, r6, sigmas[i], rhos[i]);
-
-      const double u1_norm = standardize_nln(u1, sigmas[i], rhos[i]);
-      const double u2_norm = standardize_nln(u2, sigmas[i], rhos[i]);
-      const double u3_norm = standardize_nln(u3, sigmas[i], rhos[i]);
-
-      const int n_forward_rates = FORWARD_RATE_RISK_END_INDEX - FORWARD_RATE_RISK_START_INDEX;
-      for (int j = 0; j < n_forward_rates; ++j)
-      {
-        const int jx = 3 * j;
-
-        const double gamma = gammas[FORWARD_RATE_RISK_START_INDEX + j];
-
-        double epsilon = 0.0;
-        epsilon += u1_norm * sqrt(forward_rate_pca_variances[jx]) * forward_rate_pca_loadings[jx];
-        epsilon += u2_norm * sqrt(forward_rate_pca_variances[jx + 1]) * forward_rate_pca_loadings[jx + 1];
-        epsilon += u3_norm * sqrt(forward_rate_pca_variances[jx + 2]) * forward_rate_pca_loadings[jx + 2];
-
-        const double forward_rate_change = forward_rate_means[i] * exp(-gamma + epsilon) - NEGATIVE_FORWARD_RATE_ADJUSTMENT;
-
-        risk_changes[FORWARD_RATE_RISK_START_INDEX + j] = forward_rate_change;
-      }
-    }
-    else
-    {
-      double r1 = 0.0;
-      double r2 = 0.0;
-      for (int j = 0; j < n_risks; ++j)
-      {
-        r1 += rnorm(0.0, 1.0) * cholesky[ix + j];
-        r2 += rnorm(0.0, 1.0) * cholesky[ix + j];
-      }
-      const double u = sample_nln(r1, r2, sigmas[i], rhos[i]);
-      const double u_norm = standardize_nln(u, sigmas[i], rhos[i]);
-
-      const double gamma = gammas[i];
-      const double epsilon = market_stds[i] * u_norm;
-      const double market_change =
+      risk_values[ix + j] = evaluate_black_76(
+          generic_means[j],
+          gammas[j],
+          epsilons[ix + j]);
     }
   }
 
+  // Compute changes
+
   return risk_changes;
 }
-*/
