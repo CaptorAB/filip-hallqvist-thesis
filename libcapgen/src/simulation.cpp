@@ -1,11 +1,37 @@
 #include <vector>
 
+#include <lib/stats/stats.hpp>
+
 #include <include/constants.h>
 #include <include/cholesky.h>
-#include <lib/stats/stats.hpp>
+#include <include/simulation.h>
 
 using namespace std;
 using namespace stats;
+
+vector<double>
+sample_uniform_randoms(
+    const int n_randoms)
+{
+  vector<double> r(n_randoms);
+  for (int i = 0; i < n_randoms; ++i)
+  {
+    r[i] = runif(0.0, 1.0);
+  }
+  return r;
+}
+
+vector<double>
+normalize_uniform_randoms(
+    vector<double> &uniforms)
+{
+  vector<double> normalized(uniforms.size());
+  for (int i = 0; i < uniforms.size(); ++i)
+  {
+    normalized[i] = qnorm(uniforms[i]);
+  }
+  return normalized;
+}
 
 double
 sample_nln(
@@ -32,31 +58,7 @@ standardize_nln(
 }
 
 vector<double>
-sample_uniform_randoms(
-    const int n_randoms)
-{
-  vector<double> r(n_randoms);
-  for (int i = 0; i < n_randoms; ++i)
-  {
-    r[i] = runif(0.0, 1.0);
-  }
-  return r;
-}
-
-vector<double>
-normalize_uniform_randoms(
-    vector<double> &uniforms)
-{
-  vector<double> normalized(uniforms.size());
-  for (int i = 0; i < uniforms.size(); ++i)
-  {
-    normalized[i] = qnorm(uniforms[i]);
-  }
-  return normalized;
-}
-
-vector<double>
-correlate_normal_randoms(
+correlate_risks(
     vector<double> &normals,
     vector<double> &correlations,
     const int n_generic_risks)
@@ -134,7 +136,7 @@ generate_epsilons(
 
     vector<double> uniforms = sample_uniform_randoms(2 * (n_generic_risks * n_pca_components));
     vector<double> normals = normalize_uniform_randoms(uniforms);
-    vector<double> normals_correlated = correlate_normal_randoms(normals, correlations, n_generic_risks);
+    vector<double> normals_correlated = correlate_risks(normals, correlations, n_generic_risks);
     vector<double> nlns = sample_standardized_nlns(sigmas, rhos, normals, n_generic_risks);
 
     const double tau = floor(log2(i + 1));

@@ -48,7 +48,7 @@ vector<double> normalize_uniform_randoms(
  * numbers
  */
 vector<double>
-correlate_normal_randoms(
+correlate_risks(
     vector<double> &normals,
     vector<double> &correlations,
     const int n_generic_risks);
@@ -106,5 +106,54 @@ compute_forward_rate_risk_epsilons(
     const double tau,
     const int n_pca_components,
     const int n_forward_rate_risks);
+
+vector<double>
+compute_gammas(
+    vector<double> &epsilons,
+    const int n_risks,
+    const int n_scenarios);
+
+double
+evaluate_black_76(
+    const double mean,
+    const double gamma,
+    const double epsilon);
+
+vector<double>
+evaluate_risk_processes(
+    vector<double> &generic_means,
+    vector<double> &forward_rate_means,
+    vector<double> &gammas,
+    vector<double> &epsilons,
+    const int n_generic_risks,
+    const int n_forward_rate_risks,
+    const int n_scenarios);
+
+vector<double>
+compute_risk_changes(
+    vector<double> &generic_means,
+    vector<double> &forward_rate_means,
+    vector<double> &gammas,
+    vector<double> &initial_epsilons,
+    vector<double> &epsilons,
+    const int n_generic_risks,
+    const int n_forward_rate_risks,
+    const int n_scenarios);
+
+vector<double>
+generate_risk_changes(
+    vector<double> &generic_means,
+    vector<double> &generic_stds,
+    vector<double> &forward_rate_means,
+    vector<double> &forward_rate_eigenvalues,
+    vector<double> &forward_rate_eigenvectors,
+    vector<double> &correlations,
+    vector<double> &sigmas,
+    vector<double> &rhos,
+    const int n_generic_risks,
+    const int n_forward_rate_risks,
+    const int n_pca_components,
+    const int n_scenarios,
+    const int n_correlations);
 
 #endif
