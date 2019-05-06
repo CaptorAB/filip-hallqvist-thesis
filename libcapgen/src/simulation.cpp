@@ -240,6 +240,94 @@ evaluate_black_76(
 }
 
 vector<double>
+evaluate_risk_processes(
+    vector<double> &generic_means,
+    vector<double> &forward_rate_means,
+    vector<double> &gammas,
+    vector<double> &epsilons,
+    const int n_generic_risks,
+    const int n_forward_rate_risks,
+    const int n_scenarios)
+{
+  const int n_risks = n_generic_risks + n_forward_rate_risks;
+  vector<double> risk_values(n_risks);
+  for (int i = 0; i < n_scenarios; ++i)
+  {
+    int ix = i * n_scenarios;
+    for (int j = 0; j < n_generic_risks; ++j)
+    {
+      risk_values[ix + j] = evaluate_black_76(
+          generic_means[j],
+          gammas[j],
+          epsilons[ix + j]);
+    }
+
+    ix += n_generic_risks;
+    for (int j = 0; j < n_forward_rate_risks; ++j)
+    {
+      risk_values[ix + j] = evaluate_black_76(
+          forward_rate_means[j],
+          gammas[j],
+          epsilons[ix + j]);
+    }
+  }
+
+  return risk_values;
+}
+
+vector<double>
+compute_risk_changes(
+    vector<double> &generic_means,
+    vector<double> &forward_rate_means,
+    vector<double> &gammas,
+    vector<double> &initial_epsilons,
+    vector<double> &epsilons,
+    const int n_generic_risks,
+    const int n_forward_rate_risks,
+    const int n_scenarios)
+{
+  vector<double> risk_values = evaluate_risk_processes(
+      generic_means,
+      forward_rate_means,
+      gammas,
+      initial_epsilons,
+      n_generic_risks,
+      n_forward_rate_risks,
+      n_scenarios);
+  vector<double> initial_risk_values = evaluate_risk_processes(
+      generic_means,
+      forward_rate_means,
+      gammas,
+      initial_epsilons,
+      n_generic_risks,
+      n_forward_rate_risks,
+      1);
+
+  const int n_risks = n_generic_risks + n_forward_rate_risks;
+  vector<double> risk_changes(n_scenarios * n_risks);
+
+  for (int j = 0; j < n_risks; ++j)
+  {
+    risk_changes[j] = risk_values[j] / initial_risk_values[j];
+  }
+
+  for (int i = 1; i < n_scenarios; ++i)
+  {
+    const int p = ((i - 1) / 2);
+
+    const int px = p * n_risks; // Parent
+    const int ix = i * n_risks; // Child
+
+    for (int j = 0; j < n_risks; ++j)
+    {
+      risk_changes[ix + j] = risk_values[ix + j] / risk_values[px + j];
+    }
+  }
+
+  return risk_changes;
+}
+
+vector<double>
 generate_risk_changes(
     vector<double> &generic_means,
     vector<double> &generic_stds,
@@ -255,10 +343,7 @@ generate_risk_changes(
     const int n_scenarios,
     const int n_correlations)
 {
-  const int n_risks = n_generic_risks + n_forward_rate_risks;
-  vector<double> risk_values(n_scenarios * n_risks);
-  vector<double> risk_changes(n_scenarios * n_risks);
-
+  // Compute epsilons
   vector<double> epsilons = generate_epsilons(
       generic_stds,
       sigmas,
@@ -270,22 +355,32 @@ generate_risk_changes(
       n_scenarios,
       n_generic_risks,
       n_forward_rate_risks);
+  vector<double> initial_epsilons = generate_epsilons(
+      generic_stds,
+      sigmas,
+      rhos,
+      forward_rate_eigenvalues,
+      forward_rate_eigenvectors,
+      correlations,
+      n_pca_components,
+      1,
+      n_generic_risks,
+      n_forward_rate_risks);
 
+  // Compute gammas
+  const int n_risks = n_generic_risks + n_forward_rate_risks;
   vector<double> gammas = compute_gammas(epsilons, n_risks, n_scenarios);
 
-  for (int i = 0; i < n_scenarios; ++i)
-  {
-    const int ix = i * n_scenarios;
-    for (int j = 0; j < n_risks; ++j)
-    {
-      risk_values[ix + j] = evaluate_black_76(
-          generic_means[j],
-          gammas[j],
-          epsilons[ix + j]);
-    }
-  }
-
-  // Compute changes
+  // Compute risk changes
+  vector<double> risk_changes = compute_risk_changes(
+      generic_means,
+      forward_rate_means,
+      gammas,
+      initial_epsilons,
+      epsilons,
+      n_generic_risks,
+      n_forward_rate_risks,
+      n_scenarios);
 
   return risk_changes;
 }
