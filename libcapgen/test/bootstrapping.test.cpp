@@ -137,7 +137,7 @@ TEST_CASE("golden master bootstrapping test", "[bootstrapping]")
       0.040997};
 
   vector<double> actual_ufr_forward_rates = expected_forward_rates;
-  adjust_forward_rates_ufr(actual_ufr_forward_rates);
+  adjust_ufr_forward_rates(actual_ufr_forward_rates);
 
   // Forward rates
   REQUIRE(actual_forward_rates.size() == expected_ufr_forward_rates.size());

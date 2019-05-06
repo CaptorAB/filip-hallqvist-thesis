@@ -113,7 +113,7 @@ compute_forward_rates(
   return forward_rates;
 }
 
-void adjust_forward_rates_ufr(
+void adjust_ufr_forward_rates(
     vector<double> &forward_rates)
 {
   const int T1 = 10;
