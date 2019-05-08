@@ -2,15 +2,15 @@
   "tasks": [
     {
       "type": "shell",
-      "label": "g++ build active file",
+      "label": "g++ build library",
       "command": "/usr/bin/g++",
       "args": [
         "-Og",
+        "-g",
         "-Ilibcapgen",
-        "${fileDirname}/*.cpp",
-        "${fileDirname}/../test/*.cpp",
+        "${workspaceFolder}/libcapgen/**/*.cpp",
         "-o",
-        "${workspaceFolder}/bin/${fileBasenameNoExtension}"
+        "${workspaceFolder}/bin/libcapgen"
       ]
     }
   ],

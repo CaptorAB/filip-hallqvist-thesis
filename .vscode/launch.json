@@ -5,10 +5,10 @@
   "version": "0.2.0",
   "configurations": [
     {
-      "name": "g++ build and debug active file",
+      "name": "g++ build and debug library",
       "type": "cppdbg",
       "request": "launch",
-      "program": "${workspaceFolder}/bin/${fileBasenameNoExtension}",
+      "program": "${workspaceFolder}/bin/libcapgen",
       "args": [],
       "stopAtEntry": false,
       "cwd": "${workspaceFolder}",
@@ -22,7 +22,7 @@
           "ignoreFailures": true
         }
       ],
-      "preLaunchTask": "g++ build active file",
+      "preLaunchTask": "g++ build library",
       "miDebuggerPath": "/usr/bin/gdb"
     }
   ]

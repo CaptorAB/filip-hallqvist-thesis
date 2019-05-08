@@ -51,7 +51,8 @@ vector<double>
 correlate_risks(
     vector<double> &normals,
     vector<double> &correlations,
-    const int n_generic_risks);
+    const int n_generic_risks,
+    const int n_pca_components);
 
 /**
  * Sample a series of standardized
@@ -63,7 +64,8 @@ sample_standardized_nlns(
     vector<double> &sigmas,
     vector<double> &rhos,
     vector<double> &normals,
-    const int n_generic_risks);
+    const int n_generic_risks,
+    const int n_pca_components);
 
 /**
  * Generate epsilons (shocks)
@@ -153,7 +155,6 @@ generate_risk_changes(
     const int n_generic_risks,
     const int n_forward_rate_risks,
     const int n_pca_components,
-    const int n_scenarios,
-    const int n_correlations);
+    const int n_scenarios);
 
 #endif
