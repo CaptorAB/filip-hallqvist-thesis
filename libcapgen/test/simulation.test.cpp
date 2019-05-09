@@ -107,7 +107,7 @@ TEST_CASE("correlate_risks correctly correlates risks", "[simulation]")
 }
 */
 
-TEST_CASE("golden master", "[simulation]")
+TEST_CASE("simulation golden master", "[simulation]")
 {
   vector<double> generic_means = {0.1, 0.1};
   vector<double> generic_stds = {0.1, 0.1};
@@ -153,6 +153,7 @@ TEST_CASE("golden master", "[simulation]")
       n_pca_components,
       n_scenarios);
 
+  /*
   const int n_risks = n_generic_risks + n_forward_rate_risks;
   for (int i = 0; i < n_scenarios; ++i)
   {
@@ -164,4 +165,5 @@ TEST_CASE("golden master", "[simulation]")
     }
     printf("\n");
   }
+  */
 }

@@ -270,9 +270,10 @@ evaluate_risk_processes(
     {
       const int jx = ix + n_generic_risks + j;
       risk_values[jx] = evaluate_black_76(
-          forward_rate_means[j],
-          gammas[j],
-          epsilons[ix + j]);
+                            forward_rate_means[j],
+                            gammas[j],
+                            epsilons[ix + j]) -
+                        NEGATIVE_FORWARD_RATE_ADJUSTMENT;
     }
   }
 
@@ -375,7 +376,7 @@ generate_risk_changes(
   const int n_risks = n_generic_risks + n_forward_rate_risks;
   vector<double> gammas = compute_gammas(epsilons, n_risks, n_scenarios);
 
-  // Adjust means
+  // Adjust means with tau
   const double generic_risk_tau = 0.25;
   const double forward_rate_tau = 4;
   for (int i = 0; i < generic_means.size(); ++i)

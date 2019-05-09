@@ -99,6 +99,8 @@ newton_raphson(
     df_tb = df_tb - d;
 
   } while (i++ < max_iterations);
+
+  return df_tb;
 }
 
 vector<double>

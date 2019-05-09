@@ -5,7 +5,7 @@
 #include <include/normal.h>
 
 using Random = effolkronium::random_static;
-/*
+
 TEST_CASE("generate_risk_changes runs without crashing", "[normal]")
 {
   const int n_risks = N_RISKS;
@@ -20,6 +20,7 @@ TEST_CASE("generate_risk_changes runs without crashing", "[normal]")
           n_risks);
 }
 
+/*
 TEST_CASE("generate_normal_scenarios yields reasonable changes", "[normal]")
 {
   const int n_risks = N_RISKS;

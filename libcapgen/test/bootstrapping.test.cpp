@@ -26,7 +26,7 @@ TEST_CASE("adjust_credit_par_rates", "[bootstrapping]")
   }
 }
 
-TEST_CASE("golden master bootstrapping test", "[bootstrapping]")
+TEST_CASE("bootstrapping golden master", "[bootstrapping]")
 {
   vector<double> par_rates = {
       0.0,

@@ -49,7 +49,6 @@ MarginConstraints create_default_margin_constraints()
   return margin_constraints;
 }
 
-/*
 TEST_CASE("normalize_individuals correctly normalizes individuals", "[genetic]")
 {
   const int n_individuals = 3;
@@ -57,7 +56,7 @@ TEST_CASE("normalize_individuals correctly normalizes individuals", "[genetic]")
   const int n_derivatives = 0;
   const int n_scenarios = 2;
 
-  std::vector<double> individuals = {0.1, 0.3, 0.2, 0.0, 0.0,   0.0,
+  std::vector<double> individuals = {0.1, 0.3, 0.2, 0.0, 0.0, 0.0,
                                      1.0, 1.0, 0.9, 0.1, 0.625, 0.975};
 
   normalize_individuals(individuals, n_individuals, n_instruments,
@@ -210,11 +209,11 @@ TEST_CASE("compute_wealths correctly computes wealths over several steps",
   const int n_derivatives = 0;
   const int n_scenarios = 7;
 
-  std::vector<double> individual = {0.5,  0.5, 0.55, 0.45, 0.6,  0.4, 0.55,
-                                    0.45, 0.5, 0.5,  0.45, 0.55, 0.4, 0.6};
-  std::vector<double> instrument_changes = {0.2,  -0.3, 0.15, -0.25, -0.15,
-                                            0.25, 0.5,  -0.5, 0.35,  -0.45,
-                                            0.05, 0.5,  -0.5, -0.5};
+  std::vector<double> individual = {0.5, 0.5, 0.55, 0.45, 0.6, 0.4, 0.55,
+                                    0.45, 0.5, 0.5, 0.45, 0.55, 0.4, 0.6};
+  std::vector<double> instrument_changes = {0.2, -0.3, 0.15, -0.25, -0.15,
+                                            0.25, 0.5, -0.5, 0.35, -0.45,
+                                            0.05, 0.5, -0.5, -0.5};
   std::vector<double> transaction_costs = {0.03, 0.02};
 
   std::tuple<std::vector<double>, std::vector<double>> wealths =
@@ -261,6 +260,7 @@ TEST_CASE("compute_fitnesses correctly computes the fitness of all individuals",
   const int n_instruments = 2;
   const int n_derivatives = 0;
   const int n_scenarios = 3;
+  const int generation = 1;
 
   std::vector<double> individuals = {1.0, 0.0, 0.5, 0.5, 0.5, 0.5,
                                      0.0, 1.0, 0.5, 0.5, 0.5, 0.5,
@@ -275,9 +275,9 @@ TEST_CASE("compute_fitnesses correctly computes the fitness of all individuals",
   std::vector<double> fitnesses = compute_fitnesses(
       individuals, instrument_changes, transaction_costs, intermediate_goals,
       final_goals, instrument_constraints, margin_constraints, n_individuals,
-      n_instruments, n_derivatives, n_scenarios);
+      n_instruments, n_derivatives, n_scenarios, generation);
 
-  std::vector<double> expected_fitnesses = {0.0, 0.5, 0.3125};
+  std::vector<double> expected_fitnesses = {1.0, 1.5, 1.3125};
 
   for (int i = 0; i < expected_fitnesses.size(); ++i)
   {
@@ -290,6 +290,8 @@ TEST_CASE("compute_penalty gives 0 penalty to valid individuals", "[genetic]")
   const int n_instruments = 2;
   const int n_derivatives = 0;
   const int n_scenarios = 3;
+  const int generation = 1;
+
   std::vector<double> individual = {0.0, 1.0, 0.0, 1.0, 0.0, 1.0};
   std::vector<double> instrument_constraints = {0.0, 0.0, 1.0, 1.0};
   std::vector<double> margin_constraints = {0.0, 0.0, 0.0, 0.0};
@@ -301,7 +303,7 @@ TEST_CASE("compute_penalty gives 0 penalty to valid individuals", "[genetic]")
   const double penalty =
       compute_penalty(individual, instrument_constraints, margin_constraints,
                       intermediate_wealths, final_wealths, intermediate_goals,
-                      final_goals, n_instruments, n_derivatives, n_scenarios);
+                      final_goals, n_instruments, n_derivatives, n_scenarios, generation);
 
   const double expected = 0.0;
   REQUIRE(penalty == Approx(expected).epsilon(0.000001));
@@ -314,6 +316,8 @@ TEST_CASE("compute_penalty penalizes individuals with an instrument weight "
   const int n_instruments = 2;
   const int n_derivatives = 0;
   const int n_scenarios = 3;
+  const int generation = 1;
+
   std::vector<double> individual = {0.8, 0.2, 0.8, 0.2, 0.1, 0.9};
   std::vector<double> instrument_constraints = {0.5, 0.0, 1.0, 1.0};
   std::vector<double> margin_constraints = {0.0, 0.0, 0.0, 0.0};
@@ -324,7 +328,7 @@ TEST_CASE("compute_penalty penalizes individuals with an instrument weight "
   const double penalty =
       compute_penalty(individual, instrument_constraints, margin_constraints,
                       intermediate_wealths, final_wealths, intermediate_goals,
-                      final_goals, n_instruments, n_derivatives, n_scenarios);
+                      final_goals, n_instruments, n_derivatives, n_scenarios, generation);
 
   const double expected = 0.16;
   REQUIRE(penalty == Approx(expected).epsilon(0.000001));
@@ -337,6 +341,8 @@ TEST_CASE("compute_penalty penalizes individuals with an instrument weight "
   const int n_instruments = 2;
   const int n_derivatives = 0;
   const int n_scenarios = 3;
+  const int generation = 1;
+
   std::vector<double> individual = {0.4, 0.6, 0.7, 0.3, 0.1, 0.9};
   std::vector<double> instrument_constraints = {0.0, 0.0, 1.0, 0.8};
   std::vector<double> margin_constraints = {0.0, 0.0, 0.0, 0.0};
@@ -347,14 +353,15 @@ TEST_CASE("compute_penalty penalizes individuals with an instrument weight "
   const double penalty =
       compute_penalty(individual, instrument_constraints, margin_constraints,
                       intermediate_wealths, final_wealths, intermediate_goals,
-                      final_goals, n_instruments, n_derivatives, n_scenarios);
+                      final_goals, n_instruments, n_derivatives, n_scenarios, generation);
 
   const double expected = 0.01;
   REQUIRE(penalty == Approx(expected).epsilon(0.000001));
 }
-TEST_CASE("optimization runs without crashing", "[genetic]")
+
+TEST_CASE("genetic golden master", "[genetic]")
 {
-  // Random::seed(42);
+  Random::seed(42);
 
   TransactionCosts transaction_costs;
   InstrumentConstraints instrument_constraints =
@@ -369,7 +376,7 @@ TEST_CASE("optimization runs without crashing", "[genetic]")
   OptimizeOptions options;
   options.population_size = 2;
   options.elitism_copies = 1;
-  options.generations = 50000;
+  options.generations = 1000;
   options.steps = 4;
   options.mutation_rate = 0.5;
   options.crossover_rate = 0.0;
@@ -381,8 +388,9 @@ TEST_CASE("optimization runs without crashing", "[genetic]")
 
   Result r = optimize(options);
 }
+
 /*
-TEST_CASE("derp")
+TEST_CASE("intermediate_wealths")
 {
   const int n_instruments = 13;
   const int n_derivatives = 4;

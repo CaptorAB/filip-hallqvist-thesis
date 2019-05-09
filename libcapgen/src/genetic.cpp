@@ -375,8 +375,6 @@ double compute_penalty(std::vector<double> &individual,
                final_wealths.size();
   }
 
-  const double coefficient = (double)generation / ((double)generation + 30);
-
   return penalty;
 }
 
@@ -574,7 +572,7 @@ Result optimize(OptimizeOptions options)
       }
     }
 
-    printf("Mean for instrument %i: %.4f\n", i, mean / (n_trees * n_scenarios));
+    // printf("Mean for instrument %i: %.4f\n", i, mean / (n_trees * n_scenarios));
   }
 
   for (int t = 0; t < n_generations; ++t)
@@ -626,7 +624,7 @@ Result optimize(OptimizeOptions options)
     {
       if (fitnesses[i] > best_fitness || best_fitness == 0.0)
       {
-        printf("%i %.4f %.4f (%.32f) \n", t, best_fitness, fitnesses[i], (fitnesses[i] / best_fitness) - 1.0);
+        // printf("%i %.4f %.4f (%.32f) \n", t, best_fitness, fitnesses[i], (fitnesses[i] / best_fitness) - 1.0);
 
         const int ix = i * n_genes;
         best_fitness = fitnesses[i];
@@ -721,6 +719,7 @@ Result optimize(OptimizeOptions options)
   result.expected_return = average_expected_return;
   result.expected_risk = average_expected_risk;
 
+  /*
   int i = 0;
   printf("Best: %.2f%%\n", 100 * average_expected_return);
   for (auto w : best_individual)
@@ -733,6 +732,7 @@ Result optimize(OptimizeOptions options)
     }
   }
   printf("\n");
+  */
 
   return result;
 }
