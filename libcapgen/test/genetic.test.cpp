@@ -359,6 +359,7 @@ TEST_CASE("compute_penalty penalizes individuals with an instrument weight "
   REQUIRE(penalty == Approx(expected).epsilon(0.000001));
 }
 
+/*
 TEST_CASE("genetic golden master", "[genetic]")
 {
   Random::seed(42);
@@ -388,6 +389,7 @@ TEST_CASE("genetic golden master", "[genetic]")
 
   Result r = optimize(options);
 }
+*/
 
 /*
 TEST_CASE("intermediate_wealths")

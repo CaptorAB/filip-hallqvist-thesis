@@ -2,6 +2,7 @@
 #define SIMULATION_H
 
 #include <vector>
+#include <tuple>
 
 using namespace std;
 
@@ -142,8 +143,8 @@ compute_risk_changes(
     const int n_forward_rate_risks,
     const int n_scenarios);
 
-vector<double>
-generate_risk_changes(
+tuple<vector<double>, vector<double>>
+generate_risks(
     vector<double> &generic_means,
     vector<double> &generic_stds,
     vector<double> &forward_rate_means,
@@ -156,5 +157,24 @@ generate_risk_changes(
     const int n_forward_rate_risks,
     const int n_pca_components,
     const int n_scenarios);
+
+vector<double> compute_yield_curve(
+    vector<double> &forward_rates);
+
+vector<double> generate_state_changes(
+    vector<double> &initial_generic_risk_values,
+    vector<double> &initial_forward_rate_risk_values,
+    vector<double> &generic_risk_means,
+    vector<double> &generic_risk_stds,
+    vector<double> &pca_forward_rate_risk_eigenvalues,
+    vector<double> &pca_forward_rate_risk_eigenvectors,
+    vector<double> &sigmas,
+    vector<double> &rhos,
+    vector<double> &correlations,
+    const int n_instruments,
+    const int n_generic_risks,
+    const int n_forward_rate_risks,
+    const int n_pca_components,
+    const int n_states);
 
 #endif

@@ -139,10 +139,71 @@ TEST_CASE("bootstrapping golden master", "[bootstrapping]")
   vector<double> actual_ufr_forward_rates = expected_forward_rates;
   adjust_ufr_forward_rates(actual_ufr_forward_rates);
 
-  // Forward rates
   REQUIRE(actual_forward_rates.size() == expected_ufr_forward_rates.size());
   for (int i = 0; i < expected_ufr_forward_rates.size(); ++i)
   {
     REQUIRE(actual_ufr_forward_rates[i] == Approx(expected_ufr_forward_rates[i]).margin(0.00001));
+  }
+
+  // UFR-weighted discount factors
+  vector<double> expected_ufr_discount_factors = {
+      0.9904,
+      0.9768,
+      0.9585,
+      0.9360,
+      0.9113,
+      0.8861,
+      0.8605,
+      0.8350,
+      0.8099,
+      0.7856,
+      0.7613,
+      0.7371,
+      0.7130,
+      0.6890,
+      0.6652,
+      0.6415,
+      0.6180,
+      0.5948,
+      0.5720,
+      0.5494};
+
+  vector<double> actual_ufr_discount_factors = compute_discount_factors(expected_ufr_forward_rates);
+
+  REQUIRE(actual_ufr_discount_factors.size() == expected_ufr_discount_factors.size());
+  for (int i = 0; i < expected_ufr_discount_factors.size(); ++i)
+  {
+    REQUIRE(actual_ufr_discount_factors[i] == Approx(expected_ufr_discount_factors[i]).margin(0.001));
+  }
+
+  // Zero-coupon rates
+  vector<double> expected_zero_coupon_rates = {
+      0.009700,
+      0.011787,
+      0.014245,
+      0.016680,
+      0.018746,
+      0.020362,
+      0.021698,
+      0.022791,
+      0.023699,
+      0.024419,
+      0.025098,
+      0.025748,
+      0.026362,
+      0.026961,
+      0.027548,
+      0.028136,
+      0.028712,
+      0.029281,
+      0.029842,
+      0.030397};
+
+  vector<double> actual_zero_coupon_rates = compute_zero_coupon_rates(expected_ufr_discount_factors);
+
+  REQUIRE(actual_zero_coupon_rates.size() == expected_zero_coupon_rates.size());
+  for (int i = 0; i < expected_zero_coupon_rates.size(); ++i)
+  {
+    REQUIRE(actual_zero_coupon_rates[i] == Approx(expected_zero_coupon_rates[i]).margin(0.001));
   }
 }

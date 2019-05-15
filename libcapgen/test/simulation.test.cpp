@@ -109,17 +109,18 @@ TEST_CASE("correlate_risks correctly correlates risks", "[simulation]")
 
 TEST_CASE("simulation golden master", "[simulation]")
 {
-  vector<double> generic_means = {0.1, 0.1};
-  vector<double> generic_stds = {0.1, 0.1};
-  vector<double> forward_rate_means = {0.1, 0.1, 0.1, 0.1, 0.1};
+  vector<double> initial_generic_risk_values = {1.0, 1.0};
+  vector<double> initial_forward_rate_risk_values = {0.01768, 0.02201, 0.03055, 0.03431, 0.03762};
+  vector<double> generic_risk_means = {0.1, 0.1};
+  vector<double> generic_risk_stds = {0.1, 0.1};
 
-  vector<double> forward_rate_eigenvalues = {0.1, 0.1, 0.1, 0.1, 0.1};
-  vector<double> forward_rate_eigenvectors = {
-      0.1, 0.2, 0.3, 0.4, 0.5,
-      0.5, 0.1, 0.2, 0.2, 0.4,
-      0.3, 0.3, 0.5, 0.1, 0.1,
-      0.2, 0.3, 0.4, 0.3, 0.3,
-      0.1, 0.2, 0.1, 0.4, 0.4};
+  vector<double> pca_forward_rate_risk_eigenvalues = {0.223282705428122, 0.082751342396589, 0.048454437715918, 0.040635667202019, 0.02539470506845};
+  vector<double> pca_forward_rate_risk_eigenvectors = {
+      0.17806310748978, 0.336052289069525, 0.352104530046595, 0.389724410069539, 0.349021453294063,
+      -0.596316760839539, -0.527975500405015, -0.251583154671794, -0.041465903559625, 0.094526967296751,
+      0.486340482637313, 0.028187296071813, -0.352705203001156, -0.309926291591076, -0.339610973326499,
+      0.555751828998025, -0.427628181205936 - 0.25046231532465, 0.107727039741423, 0.191438014022832,
+      -0.192920659287202, 0.317837716410373, 0.11595703534322, -0.13446138242021, -0.355170758402066};
 
   vector<double> correlations = {
       1.0, 0.0, 0.0, 0.0, 0.0,
@@ -129,41 +130,39 @@ TEST_CASE("simulation golden master", "[simulation]")
       0.0, 0.0, 0.0, 0.0, 1.0};
 
   vector<double> sigmas = {
-      0.1, 0.1, 0.1};
+      0.0, 0.0, 0.0};
   vector<double> rhos = {
-      0.1, 0.1, 0.1};
+      0.01, 0.01, 0.01};
 
+  const int n_instruments = 2;
   const int n_generic_risks = 2;
   const int n_forward_rate_risks = 5;
   const int n_pca_components = 3;
-  const int n_scenarios = 3;
-  const int n_correlations = 3;
+  const int n_states = 3;
 
-  vector<double> risk_changes = generate_risk_changes(
-      generic_means,
-      generic_stds,
-      forward_rate_means,
-      forward_rate_eigenvalues,
-      forward_rate_eigenvectors,
-      correlations,
+  vector<double> instrument_changes = generate_state_changes(
+      initial_generic_risk_values,
+      initial_forward_rate_risk_values,
+      generic_risk_means,
+      generic_risk_stds,
+      pca_forward_rate_risk_eigenvalues,
+      pca_forward_rate_risk_eigenvectors,
       sigmas,
       rhos,
+      correlations,
+      n_instruments,
       n_generic_risks,
       n_forward_rate_risks,
       n_pca_components,
-      n_scenarios);
+      n_states);
 
-  /*
-  const int n_risks = n_generic_risks + n_forward_rate_risks;
-  for (int i = 0; i < n_scenarios; ++i)
+  for (int i = 0; i < n_states; ++i)
   {
-    const int ix = i * n_scenarios;
-    for (int j = 0; j < n_risks; ++j)
+    const int ix = i * n_instruments;
+    for (int j = 0; j < n_instruments; ++j)
     {
-      const int jx = ix + j;
-      printf("%.4f ", risk_changes[jx]);
+      printf("%.4f ", instrument_changes[ix + j]);
     }
     printf("\n");
   }
-  */
 }

@@ -560,21 +560,6 @@ Result optimize(OptimizeOptions options)
     scenario_trees[i] = tree;
   }
 
-  for (int i = 0; i < n_instruments; ++i)
-  {
-    double mean = 0.0;
-    for (int j = 0; j < n_trees; ++j)
-    {
-      for (int k = 0; k < n_scenarios; ++k)
-      {
-        const int ix = n_instruments * k + i;
-        mean += scenario_trees[j].instrument_changes[ix];
-      }
-    }
-
-    // printf("Mean for instrument %i: %.4f\n", i, mean / (n_trees * n_scenarios));
-  }
-
   for (int t = 0; t < n_generations; ++t)
   {
 

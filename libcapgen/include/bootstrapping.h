@@ -13,4 +13,8 @@ vector<double> compute_forward_rates(vector<double> &discount_factors);
 
 void adjust_ufr_forward_rates(vector<double> &forward_rates);
 
+vector<double> compute_discount_factors(vector<double> &forward_rates);
+
+vector<double> compute_zero_coupon_rates(vector<double> &discount_factors);
+
 #endif

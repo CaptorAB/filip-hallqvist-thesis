@@ -139,6 +139,30 @@ void adjust_ufr_forward_rates(
   }
 }
 
+vector<double> compute_discount_factors(
+    vector<double> &forward_rates)
+{
+  vector<double> discount_factors(forward_rates.size());
+  discount_factors[0] = 1.0 / (1.0 + forward_rates[0]);
+  for (int i = 1; i < forward_rates.size(); ++i)
+  {
+    discount_factors[i] = discount_factors[i - 1] / (1.0 + forward_rates[i]);
+  }
+  return discount_factors;
+}
+
+vector<double>
+compute_zero_coupon_rates(
+    vector<double> &discount_factors)
+{
+  vector<double> zero_coupon_rates(discount_factors.size());
+  for (int i = 0; i < discount_factors.size(); ++i)
+  {
+    zero_coupon_rates[i] = pow(1.0 / discount_factors[i], 1.0 / (1.0 + i)) - 1.0;
+  }
+  return zero_coupon_rates;
+}
+
 vector<double>
 bootstrap_discount_factors(
     vector<double> &par_rates)
