@@ -130,15 +130,16 @@ TEST_CASE("simulation golden master", "[simulation]")
       0.0, 0.0, 0.0, 0.0, 1.0};
 
   vector<double> sigmas = {
-      0.0, 0.0, 0.0};
+      1.1, 1.1, 1.7};
   vector<double> rhos = {
-      0.01, 0.01, 0.01};
+      -0.15, -0.15, -0.1};
 
   const int n_instruments = 2;
   const int n_generic_risks = 2;
   const int n_forward_rate_risks = 5;
   const int n_pca_components = 3;
   const int n_states = 3;
+  const int n_steps = 2;
 
   vector<double> instrument_changes = generate_state_changes(
       initial_generic_risk_values,
@@ -154,7 +155,8 @@ TEST_CASE("simulation golden master", "[simulation]")
       n_generic_risks,
       n_forward_rate_risks,
       n_pca_components,
-      n_states);
+      n_states,
+      n_steps);
 
   for (int i = 0; i < n_states; ++i)
   {

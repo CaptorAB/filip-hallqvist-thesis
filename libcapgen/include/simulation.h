@@ -110,11 +110,20 @@ compute_forward_rate_risk_epsilons(
     const int n_pca_components,
     const int n_forward_rate_risks);
 
-vector<double>
+tuple<vector<double>, vector<double>>
 compute_gammas(
-    vector<double> &epsilons,
-    const int n_risks,
-    const int n_scenarios);
+    vector<double> &generic_risk_stds,
+    vector<double> &pca_forward_rate_risk_eigenvalues,
+    vector<double> &pca_forward_rate_risk_eigenvectors,
+    vector<double> &sigmas,
+    vector<double> &rhos,
+    vector<double> &correlations,
+    const int n_trials,
+    const int n_pca_components,
+    const int n_generic_risks,
+    const int n_forward_rate_risks,
+    const int n_states,
+    const int n_steps);
 
 double
 evaluate_black_76(
@@ -175,6 +184,7 @@ vector<double> generate_state_changes(
     const int n_generic_risks,
     const int n_forward_rate_risks,
     const int n_pca_components,
-    const int n_states);
+    const int n_states,
+    const int n_steps);
 
 #endif

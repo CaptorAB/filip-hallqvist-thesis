@@ -44,7 +44,7 @@ sample_nln(
     const double rho)
 {
   const double phi = n1;
-  const double eta = sigma * (rho * n1 + sqrt(1 - pow(rho, 2)) * n2);
+  const double eta = sigma * (rho * n1 + sqrt(1.0 - pow(rho, 2.0)) * n2);
 
   return exp(0.5 * eta) * phi;
 }
@@ -100,38 +100,6 @@ vector<double> compute_yield_curve(
   return yield_curve;
 }
 
-vector<double> compute_generic_risk_gammas(
-    vector<double> generic_risk_sigmas,
-    vector<double> generic_risk_rhos,
-    const int n_generic_risks,
-    const int n_states)
-{
-  // For n trials...
-  // Sample correlated NLN's (using pseudo-rng)
-  // Compute epsilon
-  // Compute gamma
-  vector<double> risk_gammas(n_states * generic_risk_sigmas.size(), 0.0);
-  return risk_gammas;
-}
-
-vector<double> compute_forward_rate_risk_gammas(
-    vector<double> &forward_rate_risk_sigmas,
-    vector<double> &forward_rate_risk_rhos,
-    vector<double> &pca_forward_rate_risk_eigenvalues,
-    vector<double> &pca_forward_rate_risk_eigenvectors,
-    const int n_forward_rate_risks,
-    const int n_pca_components,
-    const int n_states)
-{
-  // For n trials...
-  //    Sample correlated NLN's (using pseudo-rng)
-  //    Compute epsilon
-  // Compute gamma
-
-  vector<double> risk_gammas(n_states * n_forward_rate_risks, 0.0);
-  return risk_gammas;
-}
-
 vector<double> generate_correlated_nlns(
     vector<double> &sigmas,
     vector<double> &rhos,
@@ -165,6 +133,69 @@ vector<double> generate_correlated_nlns(
   }
 
   return nlns;
+}
+
+tuple<vector<double>, vector<double>> compute_gammas(
+    vector<double> &generic_risk_stds,
+    vector<double> &pca_forward_rate_risk_eigenvalues,
+    vector<double> &pca_forward_rate_risk_eigenvectors,
+    vector<double> &sigmas,
+    vector<double> &rhos,
+    vector<double> &correlations,
+    const int n_trials,
+    const int n_pca_components,
+    const int n_generic_risks,
+    const int n_forward_rate_risks,
+    const int n_states,
+    const int n_steps)
+{
+  const int n_risks = n_generic_risks + n_forward_rate_risks;
+
+  vector<double> generic_risk_gammas(n_steps * n_generic_risks);
+  vector<double> forward_rate_risk_gammas(n_steps * n_forward_rate_risks);
+
+  for (int t = 0; t < n_trials; ++t)
+  {
+    for (int s = 0; s < n_steps; ++s)
+    {
+      vector<double> nlns = generate_correlated_nlns(
+          sigmas, rhos, correlations,
+          n_generic_risks, n_pca_components);
+
+      const int sx1 = s * n_generic_risks;
+      for (int j = 0; j < n_generic_risks; ++j)
+      {
+        generic_risk_gammas[sx1 + j] += exp(generic_risk_stds[j] * sqrt(1.0 + s) * nlns[j]);
+      }
+
+      const int sx2 = s * n_forward_rate_risks;
+      for (int j = 0; j < n_forward_rate_risks; ++j)
+      {
+        const double lambda = sqrt(pca_forward_rate_risk_eigenvalues[j]);
+        double epsilon = 0.0;
+        for (int k = 0; k < n_pca_components; ++k)
+        {
+          const int row = j * n_forward_rate_risks;
+          epsilon += nlns[n_generic_risks + k] * lambda * sqrt(12.0 * (1.0 + s)) * pca_forward_rate_risk_eigenvectors[row + k];
+        }
+        forward_rate_risk_gammas[sx2 + j] += exp(epsilon);
+      }
+    }
+  }
+
+  for (int i = 0; i < generic_risk_gammas.size(); ++i)
+  {
+    generic_risk_gammas[i] = log(generic_risk_gammas[i] / (double)n_trials);
+  }
+
+  for (int i = 0; i < forward_rate_risk_gammas.size(); ++i)
+  {
+    forward_rate_risk_gammas[i] = log(forward_rate_risk_gammas[i] / (double)n_trials);
+  }
+
+  auto tup = make_tuple(generic_risk_gammas, forward_rate_risk_gammas);
+
+  return tup;
 }
 
 double compute_domestic_equity_price(
@@ -344,7 +375,8 @@ vector<double> generate_state_changes(
     const int n_generic_risks,
     const int n_forward_rate_risks,
     const int n_pca_components,
-    const int n_states)
+    const int n_states,
+    const int n_steps)
 {
   const int n_risks = n_generic_risks + n_forward_rate_risks;
 
@@ -355,15 +387,24 @@ vector<double> generate_state_changes(
   vector<double> forward_rate_risk_sigmas(sigmas.begin() + n_generic_risks, sigmas.end());
   vector<double> forward_rate_risk_rhos(rhos.begin() + n_generic_risks, rhos.end());
 
-  vector<double> generic_gammas = compute_generic_risk_gammas(generic_risk_sigmas, generic_risk_rhos, n_generic_risks, n_states);
-  vector<double> forward_rate_gammas = compute_forward_rate_risk_gammas(
-      forward_rate_risk_sigmas,
-      forward_rate_risk_rhos,
+  // TODO: Compute this outside of this function
+  const int n_gamma_trials = 100;
+  tuple<vector<double>, vector<double>> gammas = compute_gammas(
+      generic_risk_stds,
       pca_forward_rate_risk_eigenvalues,
       pca_forward_rate_risk_eigenvectors,
-      n_forward_rate_risks,
+      sigmas,
+      rhos,
+      correlations,
+      n_gamma_trials,
       n_pca_components,
-      n_states);
+      n_generic_risks,
+      n_forward_rate_risks,
+      n_states,
+      n_steps);
+
+  vector<double> generic_gammas = get<0>(gammas);
+  vector<double> forward_rate_gammas = get<1>(gammas);
 
   // Generate intermediate risk values
   vector<double> intermediate_generic_risk_values(n_states * n_generic_risks);
@@ -394,13 +435,14 @@ vector<double> generate_state_changes(
     for (int j = 0; j < n_forward_rate_risks; ++j)
     {
       const double s0 = initial_forward_rate_risk_values[j];
-      const double std = sqrt(12.0 * pca_forward_rate_risk_eigenvalues[j]);
+      const double lambda = sqrt(pca_forward_rate_risk_eigenvalues[j]);
       const double gamma = forward_rate_gammas[tx2 + j];
       double epsilon = 0.0;
       for (int k = 0; k < n_pca_components; ++k)
       {
-        const int jx = (i * pca_forward_rate_risk_eigenvalues.size()) + j;
-        epsilon += nlns[j] * std * sqrt(t) * pca_forward_rate_risk_eigenvectors[jx];
+        const int row = j * n_forward_rate_risks;
+
+        epsilon += nlns[n_generic_risks + j] * lambda * sqrt(12.0 * t) * pca_forward_rate_risk_eigenvectors[row + k];
       }
       intermediate_forward_rate_risk_values[ix2 + j] = s0 * exp(epsilon - gamma);
     }
