@@ -32,10 +32,13 @@ const std::vector<std::string> RISK_NAMES = {
     "Interest Rate Risk"};
 
 // Instrument indices
-const int N_RISKS = 6;
+const int N_GENERIC_RISKS = 6;
+const int N_FORWARD_RATE_RISKS = 5;
+const int N_RISKS = 11;
 const int N_INSTRUMENTS = 13;
 const int N_DERIVATIVES = 4;
-const int N_TREES = 100;
+const int N_TREES = 1;
+const int N_PCA_COMPONENTS = 3;
 
 const int DOMESTIC_EQUITY_INDEX = 0;
 const int GLOBAL_EQUITY_INDEX = 1;

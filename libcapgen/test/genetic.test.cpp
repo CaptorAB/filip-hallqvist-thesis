@@ -3,7 +3,6 @@
 
 #include <include/constants.h>
 #include <include/genetic.h>
-#include <include/normal.h>
 
 using Random = effolkronium::random_static;
 
@@ -359,7 +358,6 @@ TEST_CASE("compute_penalty penalizes individuals with an instrument weight "
   REQUIRE(penalty == Approx(expected).epsilon(0.000001));
 }
 
-/*
 TEST_CASE("genetic golden master", "[genetic]")
 {
   Random::seed(42);
@@ -377,8 +375,8 @@ TEST_CASE("genetic golden master", "[genetic]")
   OptimizeOptions options;
   options.population_size = 2;
   options.elitism_copies = 1;
-  options.generations = 1000;
-  options.steps = 4;
+  options.generations = 100;
+  options.steps = 2;
   options.mutation_rate = 0.5;
   options.crossover_rate = 0.0;
   options.initial_funding_ratio = 1.0;
@@ -388,8 +386,17 @@ TEST_CASE("genetic golden master", "[genetic]")
   options.instrument_constraints = instrument_constraints;
 
   Result r = optimize(options);
+
+  printf("Intermediate\n");
+  for (auto w : r.intermediate_wealths)
+    printf("%.2f ", w);
+  printf("\n");
+
+  printf("Final\n");
+  for (auto w : r.final_wealths)
+    printf("%.2f ", w);
+  printf("\n");
 }
-*/
 
 /*
 TEST_CASE("intermediate_wealths")

@@ -4,7 +4,6 @@
 #include <lib/stats/stats.hpp>
 
 #include <include/constants.h>
-#include <include/instruments.h>
 #include <include/cholesky.h>
 #include <include/simulation.h>
 #include <include/bootstrapping.h>
@@ -193,9 +192,7 @@ tuple<vector<double>, vector<double>> compute_gammas(
     forward_rate_risk_gammas[i] = log(forward_rate_risk_gammas[i] / (double)n_trials);
   }
 
-  auto tup = make_tuple(generic_risk_gammas, forward_rate_risk_gammas);
-
-  return tup;
+  return make_tuple(generic_risk_gammas, forward_rate_risk_gammas);
 }
 
 double compute_domestic_equity_price(
@@ -212,6 +209,63 @@ double compute_global_equity_price(
   return 1.0 / pow(1.0 + zero_coupon_rates[4], 5.0); // 5 year zcb
 }
 
+double compute_real_estate_price(vector<double> &generic_risk_values, vector<double> &zero_coupon_rates)
+{
+  return generic_risk_values[REAL_ESTATE_RISK_INDEX];
+}
+
+double compute_alternative_price(vector<double> &generic_risk_values, vector<double> &zero_coupon_rates)
+{
+  return generic_risk_values[ALTERNATIVE_RISK_INDEX];
+}
+
+double compute_credit_price(vector<double> &generic_risk_values, vector<double> &zero_coupon_rates)
+{
+  return 1.0; // TODO: credit price is computed both from the yield curve and credit risk
+}
+
+double compute_cash_price(vector<double> &generic_risk_values, vector<double> &zero_coupon_rates)
+{
+  return 1.0;
+}
+
+double compute_bonds_2y_price(vector<double> &generic_risk_values, vector<double> &zero_coupon_rates)
+{
+  return 1.0 / pow(1.0 + zero_coupon_rates[1], 2.0);
+}
+
+double compute_bonds_5y_price(vector<double> &generic_risk_values, vector<double> &zero_coupon_rates)
+{
+  return 1.0 / pow(1.0 + zero_coupon_rates[4], 5.0);
+}
+
+double compute_bonds_20y_price(vector<double> &generic_risk_values, vector<double> &zero_coupon_rates)
+{
+  return 1.0 / pow(1.0 + zero_coupon_rates[4], 5.0); // TODO: We currently do not have rates > 5y
+}
+
+double compute_domestic_equity_future_price(
+    vector<double> &generic_risk_values,
+    vector<double> &zero_coupon_rates)
+{
+  return generic_risk_values[DOMESTIC_MARKET_RISK_INDEX];
+}
+
+double compute_interest_rate_swap_2y_price(vector<double> &generic_risk_values, vector<double> &zero_coupon_rates)
+{
+  return 1.0 / pow(1.0 + zero_coupon_rates[1], 2.0);
+}
+
+double compute_interest_rate_swap_5y_price(vector<double> &generic_risk_values, vector<double> &zero_coupon_rates)
+{
+  return 1.0 / pow(1.0 + zero_coupon_rates[4], 5.0);
+}
+
+double compute_interest_rate_swap_20y_price(vector<double> &generic_risk_values, vector<double> &zero_coupon_rates)
+{
+  return 1.0 / pow(1.0 + zero_coupon_rates[4], 5.0); // TODO: We currently do not have rates > 5y
+}
+
 double compute_instrument_price(
     const int instrument_index,
     vector<double> &generic_risk_values,
@@ -224,6 +278,50 @@ double compute_instrument_price(
   else if (instrument_index == GLOBAL_EQUITY_INDEX)
   {
     return compute_global_equity_price(generic_risk_values, zero_coupon_rates);
+  }
+  else if (instrument_index == REAL_ESTATE_INDEX)
+  {
+    return compute_real_estate_price(generic_risk_values, zero_coupon_rates);
+  }
+  else if (instrument_index == ALTERNATIVE_INDEX)
+  {
+    return compute_alternative_price(generic_risk_values, zero_coupon_rates);
+  }
+  else if (instrument_index == CREDIT_INDEX)
+  {
+    return compute_credit_price(generic_risk_values, zero_coupon_rates);
+  }
+  else if (instrument_index == BONDS_2Y_INDEX)
+  {
+    return compute_bonds_2y_price(generic_risk_values, zero_coupon_rates);
+  }
+  else if (instrument_index == BONDS_5Y_INDEX)
+  {
+    return compute_bonds_5y_price(generic_risk_values, zero_coupon_rates);
+  }
+  else if (instrument_index == BONDS_20Y_INDEX)
+  {
+    return compute_bonds_20y_price(generic_risk_values, zero_coupon_rates);
+  }
+  else if (instrument_index == CASH_INDEX)
+  {
+    return compute_cash_price(generic_risk_values, zero_coupon_rates);
+  }
+  else if (instrument_index == DOMESTIC_EQUITY_FUTURE_INDEX)
+  {
+    return compute_domestic_equity_future_price(generic_risk_values, zero_coupon_rates);
+  }
+  else if (instrument_index == INTEREST_RATE_SWAP_2Y_INDEX)
+  {
+    return compute_interest_rate_swap_2y_price(generic_risk_values, zero_coupon_rates);
+  }
+  else if (instrument_index == INTEREST_RATE_SWAP_5Y_INDEX)
+  {
+    return compute_interest_rate_swap_5y_price(generic_risk_values, zero_coupon_rates);
+  }
+  else if (instrument_index == INTEREST_RATE_SWAP_20Y_INDEX)
+  {
+    return compute_interest_rate_swap_20y_price(generic_risk_values, zero_coupon_rates);
   }
   else
   {
@@ -290,12 +388,68 @@ double compute_instrument_change(
   double change = 0.0;
   if (instrument_index == DOMESTIC_EQUITY_INDEX)
   {
-    change = (current_instrument_prices[instrument_index] / previous_instrument_prices[instrument_index]) - 1.0;
+    return (current_instrument_prices[instrument_index] / previous_instrument_prices[instrument_index]) - 1.0;
   }
   else if (instrument_index == GLOBAL_EQUITY_INDEX)
   {
     const double new_price = 1.0 / pow(1.0 + current_zero_curve[4], 5 - 1); // 5 year bond
-    change = (new_price / previous_instrument_prices[instrument_index]) - 1.0;
+    return (new_price / previous_instrument_prices[instrument_index]) - 1.0;
+  }
+  else if (instrument_index == REAL_ESTATE_INDEX)
+  {
+    return (current_instrument_prices[instrument_index] / previous_instrument_prices[instrument_index]) - 1.0;
+  }
+  else if (instrument_index == ALTERNATIVE_INDEX)
+  {
+    return (current_instrument_prices[instrument_index] / previous_instrument_prices[instrument_index]) - 1.0;
+  }
+  else if (instrument_index == CREDIT_INDEX)
+  {
+    return (current_instrument_prices[instrument_index] / previous_instrument_prices[instrument_index]) - 1.0;
+  }
+  else if (instrument_index == BONDS_2Y_INDEX)
+  {
+    const int rate_index = 1;
+    const double new_price = 1.0 / pow(1.0 + current_zero_curve[rate_index], rate_index);
+    return (new_price / previous_instrument_prices[instrument_index]) - 1.0;
+  }
+  else if (instrument_index == BONDS_5Y_INDEX)
+  {
+    const int rate_index = 4;
+    const double new_price = 1.0 / pow(1.0 + current_zero_curve[rate_index], rate_index);
+    return (new_price / previous_instrument_prices[instrument_index]) - 1.0;
+  }
+  else if (instrument_index == BONDS_20Y_INDEX)
+  {
+    const int rate_index = 4; // TODO: Currently we do not have rates > 5y
+    const double new_price = 1.0 / pow(1.0 + current_zero_curve[rate_index], rate_index);
+    return (new_price / previous_instrument_prices[instrument_index]) - 1.0;
+  }
+  else if (instrument_index == CASH_INDEX)
+  {
+    return 0.0;
+  }
+  else if (instrument_index == DOMESTIC_EQUITY_FUTURE_INDEX)
+  {
+    return (current_instrument_prices[instrument_index] / previous_instrument_prices[instrument_index]) - 1.0;
+  }
+  else if (instrument_index == INTEREST_RATE_SWAP_2Y_INDEX)
+  {
+    const int rate_index = 1;
+    const double new_price = 1.0 / pow(1.0 + current_zero_curve[rate_index], rate_index);
+    return (new_price / previous_instrument_prices[instrument_index]) - 1.0;
+  }
+  else if (instrument_index == INTEREST_RATE_SWAP_5Y_INDEX)
+  {
+    const int rate_index = 4;
+    const double new_price = 1.0 / pow(1.0 + current_zero_curve[rate_index], rate_index);
+    return (new_price / previous_instrument_prices[instrument_index]) - 1.0;
+  }
+  else if (instrument_index == INTEREST_RATE_SWAP_20Y_INDEX)
+  {
+    const int rate_index = 4; // TODO: Currently we do not have rates > 5y
+    const double new_price = 1.0 / pow(1.0 + current_zero_curve[rate_index], rate_index);
+    return (new_price / previous_instrument_prices[instrument_index]) - 1.0;
   }
 
   return change;
