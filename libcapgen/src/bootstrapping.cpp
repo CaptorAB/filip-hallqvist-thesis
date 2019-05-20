@@ -139,7 +139,8 @@ void adjust_ufr_forward_rates(
   }
 }
 
-vector<double> compute_discount_factors(
+vector<double>
+compute_discount_factors(
     vector<double> &forward_rates)
 {
   vector<double> discount_factors(forward_rates.size());

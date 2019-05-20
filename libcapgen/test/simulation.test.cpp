@@ -134,6 +134,10 @@ TEST_CASE("simulation golden master", "[simulation]")
   vector<double> rhos = {
       -0.15, -0.15, -0.1};
 
+  // TODO: Rename to forward_rate_tenors
+  vector<double> zero_coupon_tenors = {
+      1, 5, 10, 15, 20};
+
   const int n_instruments = 2;
   const int n_generic_risks = 2;
   const int n_forward_rate_risks = 5;
@@ -151,6 +155,7 @@ TEST_CASE("simulation golden master", "[simulation]")
       sigmas,
       rhos,
       correlations,
+      zero_coupon_tenors,
       n_instruments,
       n_generic_risks,
       n_forward_rate_risks,

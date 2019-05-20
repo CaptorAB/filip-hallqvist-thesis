@@ -206,7 +206,7 @@ double compute_global_equity_price(
     vector<double> &generic_risk_values,
     vector<double> &zero_coupon_rates)
 {
-  return 1.0 / pow(1.0 + zero_coupon_rates[4], 5.0); // 5 year zcb
+  return generic_risk_values[GLOBAL_MARKET_RISK_INDEX];
 }
 
 double compute_real_estate_price(vector<double> &generic_risk_values, vector<double> &zero_coupon_rates)
@@ -241,7 +241,7 @@ double compute_bonds_5y_price(vector<double> &generic_risk_values, vector<double
 
 double compute_bonds_20y_price(vector<double> &generic_risk_values, vector<double> &zero_coupon_rates)
 {
-  return 1.0 / pow(1.0 + zero_coupon_rates[4], 5.0); // TODO: We currently do not have rates > 5y
+  return 1.0 / pow(1.0 + zero_coupon_rates[19], 20.0);
 }
 
 double compute_domestic_equity_future_price(
@@ -263,7 +263,7 @@ double compute_interest_rate_swap_5y_price(vector<double> &generic_risk_values, 
 
 double compute_interest_rate_swap_20y_price(vector<double> &generic_risk_values, vector<double> &zero_coupon_rates)
 {
-  return 1.0 / pow(1.0 + zero_coupon_rates[4], 5.0); // TODO: We currently do not have rates > 5y
+  return 1.0 / pow(1.0 + zero_coupon_rates[19], 20.0);
 }
 
 double compute_instrument_price(
@@ -331,11 +331,41 @@ double compute_instrument_price(
   }
 }
 
+vector<double>
+interpolate_zero_curve(
+    vector<double> &zero_curve,
+    vector<double> &tenors)
+{
+  vector<double> interpolated(tenors[tenors.size() - 1]); // Assume sorted
+  interpolated[0] = zero_curve[0];
+  int i = 1;
+  int j = 1;
+
+  while (i < zero_curve.size())
+  {
+    const int d = tenors[i] - tenors[i - 1];
+    if (d > 1)
+    {
+      while ((j + 1) < tenors[i])
+      {
+        interpolated[j] = ((((j + 1) - tenors[i - 1]) * zero_curve[i]) + (tenors[i] - (j + 1)) * zero_curve[i - 1]) / d;
+        j++;
+      }
+    }
+    interpolated[j] = zero_curve[i];
+    i++;
+    j++;
+  }
+
+  return interpolated;
+}
+
 tuple<vector<double>, vector<double>> compute_instrument_prices(
     vector<double> &initial_forward_rate_risk_values,
     vector<double> &initial_generic_risk_values,
     vector<double> &intermediate_generic_risk_values,
     vector<double> &intermediate_forward_rate_risk_values,
+    vector<double> &zero_curve_tenors,
     const int n_generic_risks,
     const int n_forward_rate_risks,
     const int n_instruments,
@@ -344,11 +374,12 @@ tuple<vector<double>, vector<double>> compute_instrument_prices(
   // Compute initial zero curve
   vector<double> initial_discount_factors = compute_discount_factors(initial_forward_rate_risk_values);
   vector<double> initial_zero_curve = compute_zero_coupon_rates(initial_discount_factors);
+  vector<double> interpolated_initial_zero_curve = interpolate_zero_curve(initial_zero_curve, zero_curve_tenors);
 
   vector<double> initial_prices(n_instruments);
   for (int j = 0; j < n_instruments; ++j)
   {
-    initial_prices[j] = compute_instrument_price(j, initial_generic_risk_values, initial_zero_curve);
+    initial_prices[j] = compute_instrument_price(j, initial_generic_risk_values, interpolated_initial_zero_curve);
   }
 
   // Compute intermediate instrument prices from intermediate risk values
@@ -369,10 +400,11 @@ tuple<vector<double>, vector<double>> compute_instrument_prices(
 
     vector<double> current_discount_factors = compute_discount_factors(current_forward_rate_risk_values);
     vector<double> current_zero_curve = compute_zero_coupon_rates(current_discount_factors);
+    vector<double> interpolated_current_zero_curve = interpolate_zero_curve(current_zero_curve, zero_curve_tenors);
 
     for (int j = 0; j < n_instruments; ++j)
     {
-      intermediate_prices[ix + j] = compute_instrument_price(j, current_generic_risk_values, current_zero_curve);
+      intermediate_prices[ix + j] = compute_instrument_price(j, current_generic_risk_values, interpolated_current_zero_curve);
     }
   }
 
@@ -392,8 +424,7 @@ double compute_instrument_change(
   }
   else if (instrument_index == GLOBAL_EQUITY_INDEX)
   {
-    const double new_price = 1.0 / pow(1.0 + current_zero_curve[4], 5 - 1); // 5 year bond
-    return (new_price / previous_instrument_prices[instrument_index]) - 1.0;
+    return (current_instrument_prices[instrument_index] / previous_instrument_prices[instrument_index]) - 1.0;
   }
   else if (instrument_index == REAL_ESTATE_INDEX)
   {
@@ -409,20 +440,17 @@ double compute_instrument_change(
   }
   else if (instrument_index == BONDS_2Y_INDEX)
   {
-    const int rate_index = 1;
-    const double new_price = 1.0 / pow(1.0 + current_zero_curve[rate_index], rate_index);
+    const double new_price = 1.0 / pow(1.0 + current_zero_curve[0], 1.0);
     return (new_price / previous_instrument_prices[instrument_index]) - 1.0;
   }
   else if (instrument_index == BONDS_5Y_INDEX)
   {
-    const int rate_index = 4;
-    const double new_price = 1.0 / pow(1.0 + current_zero_curve[rate_index], rate_index);
+    const double new_price = 1.0 / pow(1.0 + current_zero_curve[3], 4.0);
     return (new_price / previous_instrument_prices[instrument_index]) - 1.0;
   }
   else if (instrument_index == BONDS_20Y_INDEX)
   {
-    const int rate_index = 4; // TODO: Currently we do not have rates > 5y
-    const double new_price = 1.0 / pow(1.0 + current_zero_curve[rate_index], rate_index);
+    const double new_price = 1.0 / pow(1.0 + current_zero_curve[18], 19.0);
     return (new_price / previous_instrument_prices[instrument_index]) - 1.0;
   }
   else if (instrument_index == CASH_INDEX)
@@ -435,20 +463,17 @@ double compute_instrument_change(
   }
   else if (instrument_index == INTEREST_RATE_SWAP_2Y_INDEX)
   {
-    const int rate_index = 1;
-    const double new_price = 1.0 / pow(1.0 + current_zero_curve[rate_index], rate_index);
+    const double new_price = 1.0 / pow(1.0 + current_zero_curve[0], 1.0);
     return (new_price / previous_instrument_prices[instrument_index]) - 1.0;
   }
   else if (instrument_index == INTEREST_RATE_SWAP_5Y_INDEX)
   {
-    const int rate_index = 4;
-    const double new_price = 1.0 / pow(1.0 + current_zero_curve[rate_index], rate_index);
+    const double new_price = 1.0 / pow(1.0 + current_zero_curve[3], 4.0);
     return (new_price / previous_instrument_prices[instrument_index]) - 1.0;
   }
   else if (instrument_index == INTEREST_RATE_SWAP_20Y_INDEX)
   {
-    const int rate_index = 4; // TODO: Currently we do not have rates > 5y
-    const double new_price = 1.0 / pow(1.0 + current_zero_curve[rate_index], rate_index);
+    const double new_price = 1.0 / pow(1.0 + current_zero_curve[18], 19.0);
     return (new_price / previous_instrument_prices[instrument_index]) - 1.0;
   }
 
@@ -456,9 +481,10 @@ double compute_instrument_change(
 }
 
 vector<double> compute_instrument_changes(
-    vector<double> initial_instrument_prices,
-    vector<double> intermediate_instrument_prices,
-    vector<double> intermediate_forward_rates,
+    vector<double> &initial_instrument_prices,
+    vector<double> &intermediate_instrument_prices,
+    vector<double> &intermediate_forward_rates,
+    vector<double> &zero_curve_tenors,
     const int n_forward_rate_risks,
     const int n_instruments,
     const int n_states)
@@ -472,6 +498,7 @@ vector<double> compute_instrument_changes(
 
   vector<double> current_discount_factors = compute_discount_factors(current_forward_rate_risk_values);
   vector<double> current_zero_curve = compute_zero_coupon_rates(current_discount_factors);
+  vector<double> interpolated_zero_curve = interpolate_zero_curve(current_zero_curve, zero_curve_tenors);
 
   vector<double> current_instrument_prices(
       intermediate_instrument_prices.begin(),
@@ -480,7 +507,7 @@ vector<double> compute_instrument_changes(
   vector<double> initial_prices(n_instruments);
   for (int j = 0; j < n_instruments; ++j)
   {
-    instrument_changes[j] = compute_instrument_change(j, current_instrument_prices, initial_instrument_prices, current_zero_curve);
+    instrument_changes[j] = compute_instrument_change(j, current_instrument_prices, initial_instrument_prices, interpolated_zero_curve);
   }
 
   // Intermediate changes
@@ -505,10 +532,11 @@ vector<double> compute_instrument_changes(
 
     vector<double> current_discount_factors = compute_discount_factors(current_forward_rate_risk_values);
     vector<double> current_zero_curve = compute_zero_coupon_rates(current_discount_factors);
+    vector<double> interpolated_zero_curve = interpolate_zero_curve(current_zero_curve, zero_curve_tenors);
 
     for (int j = 0; j < n_instruments; ++j)
     {
-      instrument_changes[ix + j] = compute_instrument_change(j, current_instrument_prices, previous_instrument_prices, current_zero_curve);
+      instrument_changes[ix + j] = compute_instrument_change(j, current_instrument_prices, previous_instrument_prices, interpolated_zero_curve);
     }
   }
 
@@ -525,6 +553,7 @@ vector<double> generate_state_changes(
     vector<double> &sigmas,
     vector<double> &rhos,
     vector<double> &correlations,
+    vector<double> &zero_curve_tenors,
     const int n_instruments,
     const int n_generic_risks,
     const int n_forward_rate_risks,
@@ -541,7 +570,7 @@ vector<double> generate_state_changes(
   vector<double> forward_rate_risk_sigmas(sigmas.begin() + n_generic_risks, sigmas.end());
   vector<double> forward_rate_risk_rhos(rhos.begin() + n_generic_risks, rhos.end());
 
-  // TODO: Compute this outside of this function
+  // TODO: Compute outside of this function
   const int n_gamma_trials = 100;
   tuple<vector<double>, vector<double>> gammas = compute_gammas(
       generic_risk_stds,
@@ -608,6 +637,7 @@ vector<double> generate_state_changes(
       initial_generic_risk_values,
       intermediate_generic_risk_values,
       intermediate_forward_rate_risk_values,
+      zero_curve_tenors,
       n_generic_risks,
       n_forward_rate_risks,
       n_instruments,
@@ -621,6 +651,7 @@ vector<double> generate_state_changes(
       initial_instrument_prices,
       intermediate_instrument_prices,
       intermediate_forward_rate_risk_values,
+      zero_curve_tenors,
       n_forward_rate_risks,
       n_instruments,
       n_states);

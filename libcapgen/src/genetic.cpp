@@ -556,6 +556,9 @@ Result optimize(OptimizeOptions options)
   vector<double> rhos = {
       -0.15, -0.15, -0.15, -0.15, -0.15, -0.1};
 
+  vector<double> zero_coupon_tenors = {
+      1, 5, 10, 15, 20};
+
   // Will contain the final result
   double best_fitness = 0.0;
   std::vector<double> best_individual = std::vector<double>(n_genes, 0.0);
@@ -583,6 +586,7 @@ Result optimize(OptimizeOptions options)
             sigmas,
             rhos,
             correlations,
+            zero_coupon_tenors,
             n_instruments,
             n_generic_risks,
             n_forward_rate_risks,
