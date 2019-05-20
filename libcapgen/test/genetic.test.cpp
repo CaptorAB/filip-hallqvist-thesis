@@ -48,6 +48,7 @@ MarginConstraints create_default_margin_constraints()
   return margin_constraints;
 }
 
+/*
 TEST_CASE("normalize_individuals correctly normalizes individuals", "[genetic]")
 {
   const int n_individuals = 3;
@@ -358,6 +359,7 @@ TEST_CASE("compute_penalty penalizes individuals with an instrument weight "
   REQUIRE(penalty == Approx(expected).epsilon(0.000001));
 }
 
+*/
 TEST_CASE("genetic golden master", "[genetic]")
 {
   Random::seed(42);
@@ -385,17 +387,21 @@ TEST_CASE("genetic golden master", "[genetic]")
   options.margin_constraints = margin_constraints;
   options.instrument_constraints = instrument_constraints;
 
-  Result r = optimize(options);
+  printf("Running...\n");
+  for (int i = 0; i < 10; ++i)
+  {
+    Result r = optimize(options);
+    printf("(%i) Return: %.2f%%\n", i, 100 * r.expected_return);
 
-  printf("Intermediate\n");
-  for (auto w : r.intermediate_wealths)
-    printf("%.2f ", w);
-  printf("\n");
-
-  printf("Final\n");
-  for (auto w : r.final_wealths)
-    printf("%.2f ", w);
-  printf("\n");
+    for (int j = 0; j < 3; ++j) // Scenarios
+    {
+      for (int k = 0; k < N_INSTRUMENTS; ++k) // Instruments
+      {
+        printf("%.2f ", r.individual[j * N_INSTRUMENTS + k]);
+      }
+      printf("\n");
+    }
+  }
 }
 
 /*

@@ -19,14 +19,14 @@ generate_goals(std::vector<double> &instrument_changes,
   // Iterate through scenarios
   for (int i = 0; i < n_scenarios; ++i)
   {
-    int current = i;
+    int ix = i * n_instruments;
 
-    int left = 2 * current + 1;
-    int right = 2 * current + 2;
+    int left = (2 * i) + 1;
+    int right = (2 * i) + 2;
 
     // Index of current node
-    const double current_goal = intermediate_goals[current];
-    const double current_change = instrument_changes[BONDS_20Y_INDEX];
+    const double current_goal = intermediate_goals[i];
+    const double current_change = 1.0 + instrument_changes[ix + BONDS_20Y_INDEX];
 
     if (left < n_scenarios && right < n_scenarios)
     {

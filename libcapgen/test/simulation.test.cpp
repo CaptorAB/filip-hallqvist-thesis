@@ -145,6 +145,21 @@ TEST_CASE("simulation golden master", "[simulation]")
   const int n_states = 3;
   const int n_steps = 2;
 
+  const int n_gamma_trials = 100;
+  tuple<vector<double>, vector<double>> gammas = compute_gammas(
+      generic_risk_stds,
+      pca_forward_rate_risk_eigenvalues,
+      pca_forward_rate_risk_eigenvectors,
+      sigmas,
+      rhos,
+      correlations,
+      n_gamma_trials,
+      n_pca_components,
+      n_generic_risks,
+      n_forward_rate_risks,
+      n_states,
+      n_steps);
+
   vector<double> instrument_changes = generate_state_changes(
       initial_generic_risk_values,
       initial_forward_rate_risk_values,
@@ -156,6 +171,7 @@ TEST_CASE("simulation golden master", "[simulation]")
       rhos,
       correlations,
       zero_coupon_tenors,
+      gammas,
       n_instruments,
       n_generic_risks,
       n_forward_rate_risks,

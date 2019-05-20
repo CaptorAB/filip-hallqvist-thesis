@@ -181,6 +181,7 @@ vector<double> generate_state_changes(
     vector<double> &rhos,
     vector<double> &correlations,
     vector<double> &zero_coupon_tenors,
+    tuple<vector<double>, vector<double>> &gammas,
     const int n_instruments,
     const int n_generic_risks,
     const int n_forward_rate_risks,

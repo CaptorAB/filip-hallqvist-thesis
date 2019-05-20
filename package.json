@@ -28,7 +28,7 @@
     "test:lib": "./bin/libcapgen",
     "test:app": "react-scripts test",
     "eject": "react-scripts eject",
-    "build:test": "g++ -Og -Ilibcapgen ./libcapgen/src/*.cpp ./libcapgen/test/*.cpp -o ./bin/libcapgen",
+    "build:test": "g++ -O3 -Ilibcapgen ./libcapgen/src/*.cpp ./libcapgen/test/*.cpp -o ./bin/libcapgen",
     "build:lib": "emcc --bind -O3 -Ilibcapgen -s WASM=1 -s MODULARIZE=1 -s ENVIRONMENT=\"web\" -s 'EXPORT_NAME=\"libcapgen\"' -o ./public/bin/libcapgen.js ./libcapgen/src/*.cpp",
     "docker": "docker run --rm -v ${PWD}:/src -w /src -it trzeci/emscripten /bin/bash -c \"npm run build:test && ./bin/libcapgen && npm run build:lib\"",
     "clean": "rm -rf bin build public/bin",

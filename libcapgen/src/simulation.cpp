@@ -554,6 +554,7 @@ vector<double> generate_state_changes(
     vector<double> &rhos,
     vector<double> &correlations,
     vector<double> &zero_curve_tenors,
+    tuple<vector<double>, vector<double>> &gammas,
     const int n_instruments,
     const int n_generic_risks,
     const int n_forward_rate_risks,
@@ -569,22 +570,6 @@ vector<double> generate_state_changes(
 
   vector<double> forward_rate_risk_sigmas(sigmas.begin() + n_generic_risks, sigmas.end());
   vector<double> forward_rate_risk_rhos(rhos.begin() + n_generic_risks, rhos.end());
-
-  // TODO: Compute outside of this function
-  const int n_gamma_trials = 100;
-  tuple<vector<double>, vector<double>> gammas = compute_gammas(
-      generic_risk_stds,
-      pca_forward_rate_risk_eigenvalues,
-      pca_forward_rate_risk_eigenvectors,
-      sigmas,
-      rhos,
-      correlations,
-      n_gamma_trials,
-      n_pca_components,
-      n_generic_risks,
-      n_forward_rate_risks,
-      n_states,
-      n_steps);
 
   vector<double> generic_gammas = get<0>(gammas);
   vector<double> forward_rate_gammas = get<1>(gammas);
@@ -627,7 +612,7 @@ vector<double> generate_state_changes(
 
         epsilon += nlns[n_generic_risks + j] * lambda * sqrt(12.0 * t) * pca_forward_rate_risk_eigenvectors[row + k];
       }
-      intermediate_forward_rate_risk_values[ix2 + j] = s0 * exp(epsilon - gamma);
+      intermediate_forward_rate_risk_values[ix2 + j] = s0 * exp(epsilon - gamma) + NEGATIVE_FORWARD_RATE_ADJUSTMENT;
     }
   }
 
