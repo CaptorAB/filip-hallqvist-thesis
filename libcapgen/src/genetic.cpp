@@ -531,7 +531,7 @@ Result optimize(OptimizeOptions options)
   vector<double> initial_generic_risk_values = {1.0, 1.0, 1.0, 1.0, 1.0};
   vector<double> initial_forward_rate_risk_values = {0.017682734852308, 0.022014527395177, 0.03055152080786, 0.034314728892416, 0.037618658501593, 0.035941958895264, 0.037028231412524, 0.036388694178369, 0.034014781540592, 0.030376299796611, 0.032005189961554, 0.029276283475554};
 
-  vector<double> generic_risk_means = {0.5, -0.5, -0.5, -0.5, -0.5};
+  vector<double> generic_risk_means = {0.08, 0.07, 0.05, 0.02, 0.01};
   vector<double> generic_risk_stds = {0.1, 0.1, 0.1, 0.1, 0.1};
 
   vector<double> pca_forward_rate_risk_eigenvalues = {0.223282705428122, 0.082751342396589, 0.048454437715918, 0.040635667202019, 0.02539470506845, 0.023281350019023, 0.019433965208767, 0.017605370378461, 0.016953588708945, 0.013347508862663, 0.01194883154095, 0.011169415442773};
@@ -580,7 +580,7 @@ Result optimize(OptimizeOptions options)
                         n_derivatives, n_scenarios);
 
   // Compute gammas
-  const int n_gamma_trials = 100;
+  const int n_gamma_trials = 1000;
   tuple<vector<double>, vector<double>> gammas = compute_gammas(
       generic_risk_stds,
       pca_forward_rate_risk_eigenvalues,
@@ -657,6 +657,7 @@ Result optimize(OptimizeOptions options)
     }
 
     // Print individuals
+    /*
     printf("Individuals in generation %i\n", t);
     for (int i = 0; i < n_individuals; ++i)
     {
@@ -668,6 +669,7 @@ Result optimize(OptimizeOptions options)
       printf("\n");
     }
     printf("\n");
+    */
 
     // Check global best fitness
     for (int i = 0; i < n_individuals; ++i)

@@ -5,6 +5,7 @@
 #include <include/genetic.h>
 
 using Random = effolkronium::random_static;
+using namespace std;
 
 InstrumentConstraints create_default_instrument_constraints()
 {
@@ -377,7 +378,7 @@ TEST_CASE("genetic golden master", "[genetic]")
   OptimizeOptions options;
   options.population_size = 2;
   options.elitism_copies = 1;
-  options.generations = 100;
+  options.generations = 5000;
   options.steps = 2;
   options.mutation_rate = 0.5;
   options.crossover_rate = 0.0;
@@ -388,12 +389,21 @@ TEST_CASE("genetic golden master", "[genetic]")
   options.instrument_constraints = instrument_constraints;
 
   printf("Running...\n");
-  for (int i = 0; i < 10; ++i)
+  const int n_scenarios = 3;
+  const int n_trials = 10;
+  vector<double> results(10 * N_INSTRUMENTS * n_scenarios);
+
+  for (int i = 0; i < n_trials; ++i)
   {
     Result r = optimize(options);
     printf("(%i) Return: %.2f%%\n", i, 100 * r.expected_return);
 
-    for (int j = 0; j < 3; ++j) // Scenarios
+    for (int j = 0; j < r.individual.size(); ++j)
+    {
+      results[i * r.individual.size() + j] = r.individual[j];
+    }
+
+    for (int j = 0; j < n_scenarios; ++j) // Scenarios
     {
       for (int k = 0; k < N_INSTRUMENTS; ++k) // Instruments
       {
@@ -401,6 +411,40 @@ TEST_CASE("genetic golden master", "[genetic]")
       }
       printf("\n");
     }
+  }
+
+  // Compute mean and variance
+  vector<double> summed(N_INSTRUMENTS * n_scenarios);
+  vector<double> squared(N_INSTRUMENTS * n_scenarios);
+  vector<double> means(N_INSTRUMENTS * n_scenarios);
+  vector<double> variances(N_INSTRUMENTS * n_scenarios);
+
+  for (int i = 0; i < n_scenarios; ++i)
+  {
+    for (int j = 0; j < N_INSTRUMENTS; ++j)
+    {
+      for (int k = 0; k < n_trials; ++k)
+      {
+        const double x = results[k * (N_INSTRUMENTS * n_scenarios) + (i * N_INSTRUMENTS) + j];
+        summed[i * N_INSTRUMENTS + j] += x;
+        squared[i * N_INSTRUMENTS + j] += x * x;
+      }
+    }
+  }
+
+  for (int i = 0; i < summed.size(); ++i)
+  {
+    means[i] = summed[i] / (double)n_trials;
+    variances[i] = (squared[i] - ((summed[i] * summed[i]) / (double)n_trials)) / ((double)n_trials - 1.0);
+  }
+
+  for (int j = 0; j < n_scenarios; ++j) // Scenarios
+  {
+    for (int k = 0; k < N_INSTRUMENTS; ++k) // Instruments
+    {
+      printf("%.2f (±%.2f)  ", means[j * N_INSTRUMENTS + k], sqrt(variances[j * N_INSTRUMENTS + k]));
+    }
+    printf("\n");
   }
 }
 

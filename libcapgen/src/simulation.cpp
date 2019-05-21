@@ -612,7 +612,7 @@ vector<double> generate_state_changes(
 
         epsilon += nlns[n_generic_risks + j] * lambda * sqrt(12.0 * t) * pca_forward_rate_risk_eigenvectors[row + k];
       }
-      intermediate_forward_rate_risk_values[ix2 + j] = s0 * exp(epsilon - gamma) + NEGATIVE_FORWARD_RATE_ADJUSTMENT;
+      intermediate_forward_rate_risk_values[ix2 + j] = s0 * exp(epsilon - gamma) - NEGATIVE_FORWARD_RATE_ADJUSTMENT;
     }
   }
 
