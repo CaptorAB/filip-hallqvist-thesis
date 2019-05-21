@@ -1,7 +1,10 @@
 #include <vector>
 #include <tuple>
+#include <iterator>
 
 #include <lib/stats/stats.hpp>
+// #include <lib/hammersley/hammersley.hpp>
+#include <lib/sobol/sobol.hpp>
 
 #include <include/constants.h>
 #include <include/cholesky.h>
@@ -23,6 +26,41 @@ sample_uniform_randoms(
   return r;
 }
 
+class Quasi
+{
+public:
+  /*
+  vector<double> hammersley(int m)
+  {
+    double *r = hammersley_sequence(i, i + 1, m, 1000);
+    vector<double> v(r, r + m);
+    i += 1;
+    delete[] r;
+    return v;
+  }
+  */
+  vector<double> sobol(int m)
+  {
+    double r[m];
+    i8_sobol(m, &seed, r);
+    vector<double> v(r, r + m);
+    return v;
+  }
+
+private:
+  int i = 1;
+  long long int seed = 42;
+};
+Quasi quasi;
+
+vector<double>
+sample_quasi_randoms(
+    const int n)
+{
+  vector<double> v = quasi.sobol(n);
+  return v;
+}
+
 vector<double>
 normalize_uniform_randoms(
     vector<double> &uniforms)
@@ -30,6 +68,13 @@ normalize_uniform_randoms(
   vector<double> normalized(uniforms.size());
   for (int i = 0; i < uniforms.size(); ++i)
   {
+    if (isinf(uniforms[i]) || uniforms[i] >= 1.0 || uniforms[i] <= 0.0)
+    {
+      for (auto x : uniforms)
+        printf("%.4f ", x);
+      const int dummy = 1;
+      const int dammy = qnorm(0.5);
+    }
     normalized[i] = qnorm(uniforms[i]);
   }
   return normalized;
@@ -104,10 +149,19 @@ vector<double> generate_correlated_nlns(
     vector<double> &rhos,
     vector<double> &correlations,
     const int n_generic_risks,
-    const int n_pca_components)
+    const int n_pca_components,
+    bool quasi)
 {
   const int n_uniforms = 2 * correlations.size();
-  vector<double> uniforms = sample_uniform_randoms(n_uniforms);
+  vector<double> uniforms;
+  if (quasi)
+  {
+    uniforms = sample_quasi_randoms(n_uniforms);
+  }
+  else
+  {
+    uniforms = sample_uniform_randoms(n_uniforms);
+  }
   vector<double> normals = normalize_uniform_randoms(uniforms);
   vector<double> normals_correlated = correlate_risks(normals, correlations, n_generic_risks, n_pca_components);
 
@@ -159,7 +213,7 @@ tuple<vector<double>, vector<double>> compute_gammas(
     {
       vector<double> nlns = generate_correlated_nlns(
           sigmas, rhos, correlations,
-          n_generic_risks, n_pca_components);
+          n_generic_risks, n_pca_components, false);
 
       const int sx1 = s * n_generic_risks;
       for (int j = 0; j < n_generic_risks; ++j)
@@ -582,7 +636,7 @@ vector<double> generate_state_changes(
   {
     vector<double> nlns = generate_correlated_nlns(
         sigmas, rhos, correlations,
-        n_generic_risks, n_pca_components);
+        n_generic_risks, n_pca_components, true);
 
     const double t = floor(log2(i + 1)) + 1.0;
 

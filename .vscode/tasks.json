@@ -5,7 +5,7 @@
       "label": "g++ build library",
       "command": "/usr/bin/g++",
       "args": [
-        "-Og",
+        "-O0",
         "-g",
         "-Ilibcapgen",
         "${workspaceFolder}/libcapgen/**/*.cpp",

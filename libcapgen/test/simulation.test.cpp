@@ -107,6 +107,7 @@ TEST_CASE("correlate_risks correctly correlates risks", "[simulation]")
 }
 */
 
+/*
 TEST_CASE("simulation golden master", "[simulation]")
 {
   vector<double> initial_generic_risk_values = {1.0, 1.0};
@@ -189,3 +190,4 @@ TEST_CASE("simulation golden master", "[simulation]")
     printf("\n");
   }
 }
+*/

@@ -35,6 +35,10 @@ vector<double>
 sample_uniform_randoms(
     const int n_randoms);
 
+vector<double>
+sample_quasi_randoms(
+    const int n);
+
 /**
  * Convert uniformly distributed
  * random numbers to the normal standard
@@ -66,7 +70,8 @@ sample_standardized_nlns(
     vector<double> &rhos,
     vector<double> &normals,
     const int n_generic_risks,
-    const int n_pca_components);
+    const int n_pca_components,
+    bool quasi);
 
 /**
  * Generate epsilons (shocks)

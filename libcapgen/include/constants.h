@@ -37,7 +37,7 @@ const int N_FORWARD_RATE_RISKS = 12;
 const int N_RISKS = 17;
 const int N_INSTRUMENTS = 13;
 const int N_DERIVATIVES = 4;
-const int N_TREES = 10;
+const int N_TREES = 500;
 const int N_PCA_COMPONENTS = 3;
 
 const int DOMESTIC_EQUITY_INDEX = 0;

@@ -390,7 +390,7 @@ TEST_CASE("genetic golden master", "[genetic]")
 
   printf("Running...\n");
   const int n_scenarios = 3;
-  const int n_trials = 10;
+  const int n_trials = 5;
   vector<double> results(10 * N_INSTRUMENTS * n_scenarios);
 
   for (int i = 0; i < n_trials; ++i)
@@ -432,6 +432,7 @@ TEST_CASE("genetic golden master", "[genetic]")
     }
   }
 
+  printf("\n");
   for (int i = 0; i < summed.size(); ++i)
   {
     means[i] = summed[i] / (double)n_trials;
