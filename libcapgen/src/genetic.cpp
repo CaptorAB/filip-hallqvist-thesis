@@ -305,7 +305,7 @@ double compute_fitness(std::vector<double> &individual,
                       intermediate_wealths, final_wealths, intermediate_goals,
                       final_goals, n_instruments, n_derivatives, n_scenarios, generation);
 
-  const double diff = wealth - penalty;
+  const double diff = wealth - 3 * penalty;
   return diff > 0.0 ? diff : 0.0;
 }
 
@@ -410,13 +410,6 @@ compute_fitnesses(std::vector<double> &individuals,
     std::vector<double> final_wealths = std::get<1>(wealths);
 
     // printf("Wealths for (%i): %.4f, %.4f\n", i, final_wealths[0], final_wealths[1]);
-    for (auto x : final_wealths)
-    {
-      if (x > 8.0)
-      {
-        printf("Wealths for (%i): %.4f, %.4f\n", i, final_wealths[0], final_wealths[1]);
-      }
-    }
 
     fitnesses[i] = compute_fitness(
         individual, intermediate_wealths, final_wealths, intermediate_goals,
@@ -537,7 +530,7 @@ Result optimize(OptimizeOptions options)
   const int n_genes = n_scenarios * n_instruments;
 
   vector<double> initial_generic_risk_values = {1.0, 1.0, 1.0, 1.0, 1.0};
-  vector<double> initial_forward_rate_risk_values = {0.017682734852308, 0.022014527395177, 0.03055152080786, 0.034314728892416, 0.037618658501593, 0.035941958895264, 0.037028231412524, 0.036388694178369, 0.034014781540592, 0.030376299796611, 0.032005189961554, 0.029276283475554};
+  vector<double> initial_forward_rate_risk_values = {-0.000115, 0.002165, 0.004523, 0.007205, 0.009728, 0.012166, 0.014232, 0.015880, 0.017768, 0.019085, 0.020934, 0.020369};
 
   vector<double> generic_risk_means = {0.08, 0.07, 0.05, 0.02, 0.01};
   vector<double> generic_risk_stds = {0.01, 0.01, 0.01, 0.01, 0.01};
@@ -684,7 +677,7 @@ Result optimize(OptimizeOptions options)
     {
       if (fitnesses[i] > best_fitness || best_fitness == 0.0)
       {
-        printf("%i %.4f %.4f (%.32f) \n", t, best_fitness, fitnesses[i], (fitnesses[i] / best_fitness) - 1.0);
+        // printf("%i %.4f %.4f (%.32f) \n", t, best_fitness, fitnesses[i], (fitnesses[i] / best_fitness) - 1.0);
 
         const int ix = i * n_genes;
         best_fitness = fitnesses[i];
