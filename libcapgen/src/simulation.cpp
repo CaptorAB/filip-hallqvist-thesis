@@ -3,13 +3,12 @@
 #include <iterator>
 
 #include <lib/stats/stats.hpp>
-// #include <lib/hammersley/hammersley.hpp>
-#include <lib/sobol/sobol.hpp>
 
 #include <include/constants.h>
 #include <include/cholesky.h>
 #include <include/simulation.h>
 #include <include/bootstrapping.h>
+#include <include/sobol.h>
 
 using namespace std;
 using namespace stats;
@@ -29,16 +28,6 @@ sample_uniform_randoms(
 class Quasi
 {
 public:
-  /*
-  vector<double> hammersley(int m)
-  {
-    double *r = hammersley_sequence(i, i + 1, m, 1000);
-    vector<double> v(r, r + m);
-    i += 1;
-    delete[] r;
-    return v;
-  }
-  */
   vector<double> sobol(int m)
   {
     double r[m];
@@ -181,8 +170,8 @@ vector<double> generate_correlated_nlns(
   {
     const double n1 = normals[n_generic_risks + i];
     const double n2 = normals[(normals.size() / 2) + n_generic_risks + i];
-    const double u = sample_nln(n1, n2, sigmas[n_generic_risks + 1], rhos[n_generic_risks + 1]);
-    nlns[n_generic_risks + i] = standardize_nln(u, sigmas[n_generic_risks + 1], rhos[n_generic_risks + 1]);
+    const double u = sample_nln(n1, n2, sigmas[n_generic_risks], rhos[n_generic_risks]);
+    nlns[n_generic_risks + i] = standardize_nln(u, sigmas[n_generic_risks], rhos[n_generic_risks]);
   }
 
   return nlns;
@@ -638,7 +627,7 @@ vector<double> generate_state_changes(
         sigmas, rhos, correlations,
         n_generic_risks, n_pca_components, true);
 
-    const double t = floor(log2(i + 1)) + 1.0;
+    const double t = floor(log2(i + 1));
 
     const int ix1 = i * n_generic_risks;
     const int tx1 = t * n_generic_risks;
@@ -648,8 +637,8 @@ vector<double> generate_state_changes(
       const double mu = generic_risk_means[j];
       const double std = generic_risk_stds[j];
       const double gamma = generic_gammas[tx1 + j];
-      const double epsilon = std * sqrt(t) * nlns[j];
-      intermediate_generic_risk_values[ix1 + j] = s0 * exp(mu * t - gamma + epsilon);
+      const double epsilon = std * sqrt(t + 1.0) * nlns[j];
+      intermediate_generic_risk_values[ix1 + j] = s0 * exp(mu * (t + 1.0) - gamma + epsilon);
     }
 
     const int ix2 = i * n_forward_rate_risks;
@@ -664,7 +653,8 @@ vector<double> generate_state_changes(
       {
         const int row = j * n_forward_rate_risks;
 
-        epsilon += nlns[n_generic_risks + j] * lambda * sqrt(12.0 * t) * pca_forward_rate_risk_eigenvectors[row + k];
+        epsilon += nlns[n_generic_risks + k] *
+                   lambda * sqrt(12.0 * (t + 1.0)) * pca_forward_rate_risk_eigenvectors[row + k];
       }
       intermediate_forward_rate_risk_values[ix2 + j] = s0 * exp(epsilon - gamma) - NEGATIVE_FORWARD_RATE_ADJUSTMENT;
     }

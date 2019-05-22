@@ -7,6 +7,25 @@
 using Random = effolkronium::random_static;
 using namespace std;
 
+TransactionCosts create_default_transaction_costs()
+{
+  TransactionCosts transaction_costs;
+  transaction_costs.domestic_equity = 0.0;
+  transaction_costs.global_equity = 0.0;
+  transaction_costs.real_estate = 0.0;
+  transaction_costs.alternative = 0.0;
+  transaction_costs.credit = 0.0;
+  transaction_costs.bonds_2y = 0.0;
+  transaction_costs.bonds_5y = 0.0;
+  transaction_costs.bonds_20y = 0.0;
+  transaction_costs.cash = 0.0;
+  transaction_costs.domestic_equity_future = 0.0;
+  transaction_costs.interest_rate_swap_2y = 0.0;
+  transaction_costs.interest_rate_swap_5y = 0.0;
+  transaction_costs.interest_rate_swap_20y = 0.0;
+  return transaction_costs;
+}
+
 InstrumentConstraints create_default_instrument_constraints()
 {
   InstrumentConstraints instrument_constraints;
@@ -365,7 +384,8 @@ TEST_CASE("genetic golden master", "[genetic]")
 {
   Random::seed(42);
 
-  TransactionCosts transaction_costs;
+  TransactionCosts transaction_costs =
+      create_default_transaction_costs();
   InstrumentConstraints instrument_constraints =
       create_default_instrument_constraints();
 
@@ -378,8 +398,8 @@ TEST_CASE("genetic golden master", "[genetic]")
   OptimizeOptions options;
   options.population_size = 2;
   options.elitism_copies = 1;
-  options.generations = 5000;
-  options.steps = 2;
+  options.generations = 10000;
+  options.steps = 3;
   options.mutation_rate = 0.5;
   options.crossover_rate = 0.0;
   options.initial_funding_ratio = 1.0;
@@ -389,8 +409,8 @@ TEST_CASE("genetic golden master", "[genetic]")
   options.instrument_constraints = instrument_constraints;
 
   printf("Running...\n");
-  const int n_scenarios = 3;
-  const int n_trials = 5;
+  const int n_scenarios = 7;
+  const int n_trials = 10;
   vector<double> results(10 * N_INSTRUMENTS * n_scenarios);
 
   for (int i = 0; i < n_trials; ++i)

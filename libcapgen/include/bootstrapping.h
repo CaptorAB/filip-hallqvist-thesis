@@ -3,7 +3,7 @@
 
 #include <vector>
 
-using namespace std;
+using std::vector;
 
 void adjust_credit_par_rates(vector<double> &par_rates);
 

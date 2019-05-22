@@ -4,10 +4,11 @@
 #include <vector>
 #include <string>
 
-const double NEGATIVE_FORWARD_RATE_ADJUSTMENT = 0.01;
+using std::string;
+using std::vector;
 
 // Instrument names
-const std::vector<std::string> INSTRUMENT_NAMES = {
+const vector<string> INSTRUMENT_NAMES = {
     "Domestic Equity",
     "Global Equity",
     "Real Estate",
@@ -23,7 +24,7 @@ const std::vector<std::string> INSTRUMENT_NAMES = {
     "Interest Rate Swap 20Y"};
 
 // Risk names
-const std::vector<std::string> RISK_NAMES = {
+const vector<string> RISK_NAMES = {
     "Domestic Market Risk",
     "Global Market Risk",
     "Real Estate Risk",
@@ -37,7 +38,7 @@ const int N_FORWARD_RATE_RISKS = 12;
 const int N_RISKS = 17;
 const int N_INSTRUMENTS = 13;
 const int N_DERIVATIVES = 4;
-const int N_TREES = 500;
+const int N_TREES = 1000;
 const int N_PCA_COMPONENTS = 3;
 
 const int DOMESTIC_EQUITY_INDEX = 0;
@@ -62,38 +63,7 @@ const int ALTERNATIVE_RISK_INDEX = 3;
 const int CREDIT_RISK_INDEX = 4;
 const int INTEREST_RATE_RISK_INDEX = 5;
 
-// Normal scenarios
-const std::vector<double> NORMAL_DEFAULT_MEANS = {
-    0.0,
-    0.0,
-    0.1,
-    0.0,
-    0.0,
-    0.0,
-    0.0,
-    0.0};
-
-const std::vector<double> NORMAL_DEFAULT_STANDARD_DEVIATIONS = {
-    0.1,
-    0.1,
-    0.1,
-    0.1,
-    0.1,
-    0.1,
-    0.1,
-    0.1};
-
-const std::vector<double> NORMAL_DEFAULT_CORRELATIONS = {
-    1.0, 0.0004, 0.0, -0.0172, 0.0034, 0.0176, 0.0, 0.0155,
-    0.0004, 1.0, 0.0, -0.0036, 0.0340, 0.0202, 0.0, 0.02201,
-    0.0, 0.0, 1.0, 0.0, 0.0, 0.0, 0.0, 0.0,
-    -0.0172, -0.0036, 0.0, 1.0, 0.0032, 0.0151, 0.0, -0.0185,
-    0.0034, 0.0340, 0.0, 0.0032, 1.0, -0.0185, 0.0, 0.0343,
-    0.0176, 0.0202, 0.0, 0.0151, -0.0185, 1.0, 0.0, 0.0100,
-    0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 1.0, 0.0,
-    0.0155, 0.201, 0.0, -0.0185, 0.0343, 0.01, 0.0, 1.0};
-
-const std::vector<double> DEFAULT_PAR_RATES = {
+const vector<double> DEFAULT_PAR_RATES = {
     0.00970,
     0.01388,
     0.01918,
@@ -117,5 +87,6 @@ const std::vector<double> DEFAULT_PAR_RATES = {
 
 const double PAR_CREDIT_ADJUSTMENT = -0.0035;
 const double ULTIMATE_FORWARD_RATE = 0.042;
+const double NEGATIVE_FORWARD_RATE_ADJUSTMENT = 0.01;
 
 #endif

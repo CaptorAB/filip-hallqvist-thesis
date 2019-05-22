@@ -167,9 +167,9 @@ double compute_wealth(std::vector<double> &current_weights,
     reallocations += holdings * diff * transaction_costs[i];
   }
 
-  const double wealth = holdings - reallocations;
+  double wealth = holdings - reallocations;
 
-  return std::max(0.0, wealth);
+  return wealth > 0.0 ? wealth : 0.0;
 }
 
 std::tuple<std::vector<double>, std::vector<double>>
@@ -305,7 +305,8 @@ double compute_fitness(std::vector<double> &individual,
                       intermediate_wealths, final_wealths, intermediate_goals,
                       final_goals, n_instruments, n_derivatives, n_scenarios, generation);
 
-  return std::max(0.0, wealth - penalty);
+  const double diff = wealth - penalty;
+  return diff > 0.0 ? diff : 0.0;
 }
 
 double compute_penalty(std::vector<double> &individual,
@@ -409,6 +410,13 @@ compute_fitnesses(std::vector<double> &individuals,
     std::vector<double> final_wealths = std::get<1>(wealths);
 
     // printf("Wealths for (%i): %.4f, %.4f\n", i, final_wealths[0], final_wealths[1]);
+    for (auto x : final_wealths)
+    {
+      if (x > 8.0)
+      {
+        printf("Wealths for (%i): %.4f, %.4f\n", i, final_wealths[0], final_wealths[1]);
+      }
+    }
 
     fitnesses[i] = compute_fitness(
         individual, intermediate_wealths, final_wealths, intermediate_goals,
@@ -532,7 +540,7 @@ Result optimize(OptimizeOptions options)
   vector<double> initial_forward_rate_risk_values = {0.017682734852308, 0.022014527395177, 0.03055152080786, 0.034314728892416, 0.037618658501593, 0.035941958895264, 0.037028231412524, 0.036388694178369, 0.034014781540592, 0.030376299796611, 0.032005189961554, 0.029276283475554};
 
   vector<double> generic_risk_means = {0.08, 0.07, 0.05, 0.02, 0.01};
-  vector<double> generic_risk_stds = {0.1, 0.1, 0.1, 0.1, 0.1};
+  vector<double> generic_risk_stds = {0.01, 0.01, 0.01, 0.01, 0.01};
 
   vector<double> pca_forward_rate_risk_eigenvalues = {0.223282705428122, 0.082751342396589, 0.048454437715918, 0.040635667202019, 0.02539470506845, 0.023281350019023, 0.019433965208767, 0.017605370378461, 0.016953588708945, 0.013347508862663, 0.01194883154095, 0.011169415442773};
   vector<double> pca_forward_rate_risk_eigenvectors = {
@@ -560,9 +568,9 @@ Result optimize(OptimizeOptions options)
       0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 1.0};
 
   vector<double> sigmas = {
-      1.1, 1.1, 1.1, 1.1, 1.1, 1.7};
+      1.1, 1.1, 1.1, 1.1, 1.1, 0.01};
   vector<double> rhos = {
-      -0.15, -0.15, -0.15, -0.15, -0.15, -0.1};
+      -0.15, -0.15, -0.15, -0.15, -0.15, 0.0};
 
   vector<double> zero_coupon_tenors = {
       1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 15, 20};
@@ -580,7 +588,7 @@ Result optimize(OptimizeOptions options)
                         n_derivatives, n_scenarios);
 
   // Compute gammas
-  const int n_gamma_trials = 1000;
+  const int n_gamma_trials = 50;
   tuple<vector<double>, vector<double>> gammas = compute_gammas(
       generic_risk_stds,
       pca_forward_rate_risk_eigenvalues,
@@ -653,7 +661,7 @@ Result optimize(OptimizeOptions options)
     // Compute average fitnesses
     for (int i = 0; i < n_individuals; ++i)
     {
-      fitnesses[i] = fitnesses[i] / n_trees;
+      fitnesses[i] = fitnesses[i] / (double)n_trees;
     }
 
     // Print individuals
@@ -676,7 +684,7 @@ Result optimize(OptimizeOptions options)
     {
       if (fitnesses[i] > best_fitness || best_fitness == 0.0)
       {
-        // printf("%i %.4f %.4f (%.32f) \n", t, best_fitness, fitnesses[i], (fitnesses[i] / best_fitness) - 1.0);
+        printf("%i %.4f %.4f (%.32f) \n", t, best_fitness, fitnesses[i], (fitnesses[i] / best_fitness) - 1.0);
 
         const int ix = i * n_genes;
         best_fitness = fitnesses[i];

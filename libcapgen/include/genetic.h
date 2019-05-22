@@ -1,6 +1,12 @@
 #ifndef GENETIC_H
 #define GENETIC_H
 
+#include <vector>
+#include <tuple>
+
+using std::tuple;
+using std::vector;
+
 /**
  * Embind object for retrieving
  * an array of transaction costs
@@ -99,11 +105,7 @@ struct Result
     double fitness;
     double expected_return;
     double expected_risk;
-    std::vector<double> individual;
-    std::vector<double> intermediate_wealths;
-    std::vector<double> final_wealths;
-    std::vector<double> instrument_changes;
-    std::vector<double> goals;
+    vector<double> individual;
 };
 
 /**
@@ -116,7 +118,7 @@ Result optimize(OptimizeOptions options);
  * up to 1.0.
  */
 void normalize_individuals(
-    std::vector<double> &individuals,
+    vector<double> &individuals,
     const int n_individuals,
     const int n_instruments,
     const int n_derivatives,
@@ -125,7 +127,7 @@ void normalize_individuals(
 /**
  * Create a fresh batch of individuals (solutions).
  */
-std::vector<double> initialize_individuals(
+vector<double> initialize_individuals(
     const int n_individuals,
     const int n_instruments,
     const int n_scenarios);
@@ -136,8 +138,8 @@ std::vector<double> initialize_individuals(
  * 
  * @see https://en.wikipedia.org/wiki/Fitness_proportionate_selection
  */
-std::tuple<int, int> select_roulette(
-    std::vector<double> &fitnesses);
+tuple<int, int> select_roulette(
+    vector<double> &fitnesses);
 
 /**
  * Perform uniform crossover between two individuals.
@@ -145,7 +147,7 @@ std::tuple<int, int> select_roulette(
  * @see https://en.wikipedia.org/wiki/Crossover_(genetic_algorithm)
  */
 void crossover_individuals(
-    std::vector<double> &selected,
+    vector<double> &selected,
     const double crossover_rate);
 
 /**
@@ -155,7 +157,7 @@ void crossover_individuals(
  * @see https://en.wikipedia.org/wiki/Crossover_(genetic_algorithm)
  */
 void crossover_individuals_scenario(
-    std::vector<double> &selected,
+    vector<double> &selected,
     const int n_instruments,
     const int n_scenarios,
     const double crossover_rate);
@@ -168,7 +170,7 @@ void crossover_individuals_scenario(
  * @see https://en.wikipedia.org/wiki/Mutation_(genetic_algorithm)
  */
 void mutate_individuals(
-    std::vector<double> &selected,
+    vector<double> &selected,
     const double mutation_rate);
 
 /**
@@ -176,10 +178,10 @@ void mutate_individuals(
  * step in time.
  */
 double compute_wealth(
-    std::vector<double> &current_weights,
-    std::vector<double> &next_weights,
-    std::vector<double> &instrument_changes,
-    std::vector<double> &transaction_costs,
+    vector<double> &current_weights,
+    vector<double> &next_weights,
+    vector<double> &instrument_changes,
+    vector<double> &transaction_costs,
     const double initial_wealth,
     const int n_instruments,
     const int n_derivatives);
@@ -187,10 +189,10 @@ double compute_wealth(
 /**
  * Compute the wealth for all steps in time.
  */
-std::tuple<std::vector<double>, std::vector<double>> compute_wealths(
-    std::vector<double> &individual,
-    std::vector<double> &instrument_changes,
-    std::vector<double> &transaction_costs,
+tuple<vector<double>, vector<double>> compute_wealths(
+    vector<double> &individual,
+    vector<double> &instrument_changes,
+    vector<double> &transaction_costs,
     const int n_instruments,
     const int n_derivatives,
     const int n_scenarios);
@@ -198,14 +200,14 @@ std::tuple<std::vector<double>, std::vector<double>> compute_wealths(
 /**
  * Compute the fitness of each individual in the population.
  */
-std::vector<double> compute_fitnesses(
-    std::vector<double> &individuals,
-    std::vector<double> &instrument_changes,
-    std::vector<double> &transaction_costs,
-    std::vector<double> &intermediate_goals,
-    std::vector<double> &final_goals,
-    std::vector<double> &instrument_constraints,
-    std::vector<double> &margin_constraints,
+vector<double> compute_fitnesses(
+    vector<double> &individuals,
+    vector<double> &instrument_changes,
+    vector<double> &transaction_costs,
+    vector<double> &intermediate_goals,
+    vector<double> &final_goals,
+    vector<double> &instrument_constraints,
+    vector<double> &margin_constraints,
     const int n_individuals,
     const int n_instruments,
     const int n_derivatives,
@@ -216,13 +218,13 @@ std::vector<double> compute_fitnesses(
  * Compute the fitness of a single individual.
  */
 double compute_fitness(
-    std::vector<double> &individual,
-    std::vector<double> &intermediate_wealths,
-    std::vector<double> &final_wealths,
-    std::vector<double> &intermediate_goals,
-    std::vector<double> &final_goals,
-    std::vector<double> &margin_constraints,
-    std::vector<double> &instrument_constraints,
+    vector<double> &individual,
+    vector<double> &intermediate_wealths,
+    vector<double> &final_wealths,
+    vector<double> &intermediate_goals,
+    vector<double> &final_goals,
+    vector<double> &margin_constraints,
+    vector<double> &instrument_constraints,
     const int n_instruments,
     const int n_derivatives,
     const int n_scenarios,
@@ -232,19 +234,19 @@ double compute_fitness(
  * Compute the expected wealth of a portfolio.
  */
 double compute_expected_wealth(
-    std::vector<double> &final_wealths);
+    vector<double> &final_wealths);
 
 /**
  * Compute the penalty for breaking constraints.
  */
 double compute_penalty(
-    std::vector<double> &individual,
-    std::vector<double> &instrument_constraints,
-    std::vector<double> &margin_constraints,
-    std::vector<double> &intermediate_wealths,
-    std::vector<double> &final_wealths,
-    std::vector<double> &intermediate_goals,
-    std::vector<double> &final_goals,
+    vector<double> &individual,
+    vector<double> &instrument_constraints,
+    vector<double> &margin_constraints,
+    vector<double> &intermediate_wealths,
+    vector<double> &final_wealths,
+    vector<double> &intermediate_goals,
+    vector<double> &final_goals,
     const int n_instruments,
     const int n_derivatives,
     const int n_scenarios,
@@ -254,14 +256,14 @@ double compute_penalty(
  * Utility function for parsing an Embind
  * object into a vector of instrument allocation constraints.
  */
-std::vector<double> parse_instrument_constraints(
+vector<double> parse_instrument_constraints(
     InstrumentConstraints instrument_constraints);
 
 /**
  * Utility function for parsing an Embind
  * object into a vector of derivative margin constraints.
  */
-std::vector<double> parse_margin_constraints(
+vector<double> parse_margin_constraints(
     MarginConstraints margin_constraints);
 
 #endif

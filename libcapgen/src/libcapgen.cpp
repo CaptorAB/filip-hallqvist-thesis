@@ -112,11 +112,7 @@ EMSCRIPTEN_BINDINGS(libcapgen)
         .field("fitness", &Result::fitness)
         .field("individual", &Result::individual)
         .field("expectedReturn", &Result::expected_return)
-        .field("expectedRisk", &Result::expected_risk)
-        .field("intermediateWealths", &Result::intermediate_wealths)
-        .field("finalWealths", &Result::final_wealths)
-        .field("instrumentChanges", &Result::instrument_changes)
-        .field("goals", &Result::goals);
+        .field("expectedRisk", &Result::expected_risk);
 
     emscripten::register_vector<double>("vector<double>");
     emscripten::register_vector<std::string>("vector<string>");

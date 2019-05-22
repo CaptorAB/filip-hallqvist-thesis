@@ -6,9 +6,9 @@
 # include <ctime>
 # include <cstring>
 
-using namespace std;
+#include <include/sobol.h>
 
-# include "sobol.hpp"
+using namespace std;
 
 //****************************************************************************80
 

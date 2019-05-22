@@ -3,6 +3,8 @@
 
 #include <vector>
 
-std::vector<double> compute_cholesky(std::vector<double> &A, const int n);
+using std::vector;
+
+vector<double> compute_cholesky(vector<double> &A, const int n);
 
 #endif
