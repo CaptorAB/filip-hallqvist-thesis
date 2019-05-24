@@ -532,8 +532,11 @@ Result optimize(OptimizeOptions options)
   vector<double> initial_generic_risk_values = {1.0, 1.0, 1.0, 1.0, 1.0};
   vector<double> initial_forward_rate_risk_values = {-0.000115, 0.002165, 0.004523, 0.007205, 0.009728, 0.012166, 0.014232, 0.015880, 0.017768, 0.019085, 0.020934, 0.020369};
 
-  vector<double> generic_risk_means = {0.08, 0.07, 0.05, 0.02, 0.01};
-  vector<double> generic_risk_stds = {0.01, 0.01, 0.01, 0.01, 0.01};
+  vector<double> generic_risk_means = {0.11, 0.06, 0.06, 0.04, 0.0};
+  vector<double> generic_risk_stds = {0.24, 0.17, 0.06, 0.03, 0.02};
+
+  vector<double> sigmas = {1.0, 1.9, 1.4, 1.3, 2.35, 1.0};
+  vector<double> rhos = {-0.05, -0.15, 0.10, 0.15, 0.0, 0.0};
 
   vector<double> pca_forward_rate_risk_eigenvalues = {0.223282705428122, 0.082751342396589, 0.048454437715918, 0.040635667202019, 0.02539470506845, 0.023281350019023, 0.019433965208767, 0.017605370378461, 0.016953588708945, 0.013347508862663, 0.01194883154095, 0.011169415442773};
   vector<double> pca_forward_rate_risk_eigenvectors = {
@@ -559,11 +562,6 @@ Result optimize(OptimizeOptions options)
       0.0, 0.0, 0.0, 0.0, 0.0, 1.0, 0.0, 0.0,
       0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 1.0, 0.0,
       0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 1.0};
-
-  vector<double> sigmas = {
-      1.1, 1.1, 1.1, 1.1, 1.1, 0.01};
-  vector<double> rhos = {
-      -0.15, -0.15, -0.15, -0.15, -0.15, 0.0};
 
   vector<double> zero_coupon_tenors = {
       1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 15, 20};
